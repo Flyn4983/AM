@@ -1,0 +1,34 @@
+[project]
+name = "diffmech"
+version = "0.1.0"
+description = "DiffMech: a JAX-based differentiable computational mechanics suite (FEM, FVM, DEM, SPH, MPM, phase field, crystal plasticity)"
+requires-python = ">=3.10,<3.14"
+license = { text = "MIT" }
+authors = [{ name = "DiffMech contributors" }]
+dependencies = [
+    "jax>=0.4.30",
+    "jaxlib>=0.4.30",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "optax>=0.2.2",
+    "scipy>=1.11",
+    "meshio>=5.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/diffmech"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
