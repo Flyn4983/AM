@@ -1,0 +1,39 @@
+设备清单: [CpuDevice(id=0)] [CudaDevice(id=0)]
+
+=== CPU x64（基线，与 §25.2 同工况）===
+  [cpu f64] dx= 50.0 ns=  262    1.14s     0.75 M vox·step/s | peak=  2670.3 vol=0.0687mm³ Ly=0.500
+  [cpu f64] dx= 25.0 ns= 1045   17.10s     1.35 M vox·step/s | peak=  2617.8 vol=0.0715mm³ Ly=0.550
+
+=== GPU x64（G1）===
+  [gpu f64] dx= 50.0 ns=  262    1.01s     0.84 M vox·step/s | peak=  2670.3 vol=0.0687mm³ Ly=0.500
+  [gpu f64] dx= 25.0 ns= 1045    1.39s    16.56 M vox·step/s | peak=  2617.8 vol=0.0715mm³ Ly=0.550
+
+=== GPU f32（G2/G3/G4；A2 试点）===
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/geometry.py:165: UserWarning: Explicitly requested dtype float64 requested in asarray is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  sdf=jnp.asarray(sdf, dtype=jnp.float64),
+/home/shy/.local/lib/python3.12/site-packages/jax/_src/numpy/lax_numpy.py:5914: UserWarning: Explicitly requested dtype float64 requested in arange is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  return _arange(start, stop=stop, step=step, dtype=dtype,
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/core/contracts.py:65: UserWarning: Explicitly requested dtype float64 requested in asarray is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  return jnp.asarray(x, dtype=dtype)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:421: UserWarning: Explicitly requested dtype float64 requested in asarray is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  spacing = jnp.asarray(geometry.spacing, dtype=jnp.float64)  # tracer 安全
+/home/shy/.local/lib/python3.12/site-packages/jax/_src/numpy/array_methods.py:125: UserWarning: Explicitly requested dtype float64 requested in astype is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  return lax_numpy.astype(self, dtype, copy=copy, device=device)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:427: UserWarning: Explicitly requested dtype float64 requested in asarray is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  fv = jnp.clip(0.5 - jnp.asarray(geometry.sdf, dtype=jnp.float64) / dx, 0.0, 1.0)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:331: UserWarning: Explicitly requested dtype float64 requested in asarray is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  dx = jnp.asarray(geometry.spacing, dtype=jnp.float64)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:332: UserWarning: Explicitly requested dtype float64 requested in asarray is not available, and will be truncated to dtype float32. To enable more dtypes, set the jax_enable_x64 configuration option or the JAX_ENABLE_X64 shell environment variable. See https://github.com/jax-ml/jax#current-gotchas for more.
+  return jnp.asarray(geometry.sdf, dtype=jnp.float64) < 0.5 * dx
+  [gpu f32] dx= 50.0 ns=  262    1.08s     0.79 M vox·step/s | peak=  2737.4 vol=0.0759mm³ Ly=0.500
+  [gpu f32] dx= 25.0 ns= 1045    1.50s    15.34 M vox·step/s | peak=  2648.8 vol=0.0745mm³ Ly=0.550
+
+=== 打分 ===
+  G1 GPU x64 vs CPU x64 = 1.13× (>2× 则我错)  => PASS
+  G2 GPU f32 vs CPU x64（dx=25 档）= 11.39× => WEAK
+  G3 f32 漂移：Δpeak=31.07K Δvol=4.17% => FAIL
+  G4 f32 试点因写死 float64 被拒 => FAIL（位点比预想少）
+
+=== 模块内写死 float64 的位点数（A2 待办规模）===
+  thermal_enthalpy.py: float64 出现 7 处
+完成。

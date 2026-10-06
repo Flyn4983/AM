@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AMForge 项目系统级复盘 · 2026-08-13</title>
+<style>
+  :root{
+    --bg:#f7f9fc; --panel:#ffffff; --ink:#1f2933; --muted:#5b6b7b;
+    --line:#e3e9f0; --accent:#2b6cb0; --accent-soft:#eaf2fb;
+    --red:#c0392b; --red-bg:#fdecea; --amber:#b9770e; --amber-bg:#fef5e7;
+    --green:#1e7a46; --green-bg:#e9f7ef; --chip:#eef2f7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Segoe UI","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 28px 64px}
+  header{border-bottom:3px solid var(--accent);padding-bottom:14px;margin-bottom:8px}
+  h1{font-size:25px;margin:0 0 4px;letter-spacing:.3px}
+  .sub{color:var(--muted);font-size:13.5px}
+  h2{font-size:19px;margin:34px 0 12px;padding-left:11px;border-left:5px solid var(--accent)}
+  h3{font-size:15.5px;margin:20px 0 8px;color:var(--accent)}
+  p{margin:8px 0}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(20,40,80,.04)}
+  .note{background:var(--accent-soft);border:1px solid #cfe1f5;border-radius:10px;
+    padding:12px 16px;color:#244;font-size:14px;margin:14px 0}
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:999px;
+    margin-right:6px;vertical-align:middle}
+  .t-conf{background:var(--green-bg);color:var(--green)}
+  .t-inf{background:var(--amber-bg);color:var(--amber)}
+  .t-unk{background:var(--red-bg);color:var(--red)}
+  .t-sup{background:var(--chip);color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.6px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:#f0f4f9;font-weight:700;color:#334}
+  tr:nth-child(even) td{background:#fafcfe}
+  .sev-H{color:var(--red);font-weight:700}
+  .sev-M{color:var(--amber);font-weight:700}
+  .sev-L{color:var(--green);font-weight:700}
+  ul{margin:8px 0 8px 4px;padding-left:20px}
+  li{margin:5px 0}
+  .q{background:var(--amber-bg);border-left:4px solid var(--amber);padding:9px 14px;margin:8px 0;border-radius:6px}
+  .kpi{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0}
+  .kpi .box{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px}
+  .kpi .n{font-size:22px;font-weight:800;color:var(--accent)}
+  .kpi .l{font-size:12.5px;color:var(--muted)}
+  code{background:#eef2f7;padding:1px 6px;border-radius:5px;font-size:12.5px;color:#234}
+  .foot{margin-top:30px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>AMForge 项目系统级复盘</h1>
+  <div class="sub">整体 / 系统视角 · 诉求确认 + 未完成项与潜在漏洞审视 · 2026-08-13 · <b>范围与质量标尺已确认（见下方绿条）</b></div>
+</header>
+
+<div class="note">
+  <b>阅读说明：</b>本报告分三部分——<b>① 你的诉求重建（供确认 + 待补充）</b>、<b>② 系统分层现状</b>、<b>③ 未完成项与漏洞（按严重度）</b>。
+  所有结论均经仓库实地核查（任务清单、16 个测试文件、开发日志、<code>forge_adapter</code>/<code>process.py</code> 源码），不采信记忆。
+  标注 <span class="tag t-unk">存疑</span> 处需你拍板。
+</div>
+<div class="note" style="background:#e9f7ef;border-color:#bfe3cd;color:#1e5631">
+  <b>✅ 范围与质量标尺（已确认）：</b>
+  <ul style="margin:6px 0 0">
+    <li><b>范围</b>：仅 AMForge 代码库。教学交付物与 WarpBlast/FE-LLM 为既往其他项目，不在本复盘范围（L6 教学案例落地 <b>移除</b>）。</li>
+    <li><b>质量标尺（三重）</b>：① 可复现科研软件 artifact（测试+跨机一致性门禁+文档自洽）；③ 学生可装可跑的生产级工具（易用/鲁棒，含弱 GPU 笔记本）；④ 对标 ABAQUS/解析解的物理精度。</li>
+    <li><b>推论</b>：S3 外部验证=需（标尺④）；S4 部署环境=含学生笔记本 GTX1650Ti（标尺③）。</li>
+  </ul>
+</div>
+
+<div class="kpi">
+  <div class="box"><div class="n">62 / 64</div><div class="l">任务已完成 / 总数</div></div>
+  <div class="box"><div class="n">121</div><div class="l">collected 测试条目（日志旧记 31）</div></div>
+  <div class="box"><div class="n">1</div><div class="l">pending 任务（#38 全保真回归）</div></div>
+  <div class="box"><div class="n">3</div><div class="l">高严重度漏洞（V1–V3）</div></div>
+</div>
+
+<!-- ===================== 1. 诉求 ===================== -->
+<h2>一、你的诉求重建（供确认 + 待补充）</h2>
+
+<div class="panel">
+<h3>A. 教学创新大赛交付物 <span class="tag t-conf">确证·范围存疑</span></h3>
+<ul>
+  <li>教学创新成果报告 / PPT / 说课稿（《非线性有限元方法》）</li>
+  <li>框架：三阶递进（基础8H→进阶12H→实践12H）+ 四驱 + 23案例池；BOPPPS 六环节</li>
+  <li>Taylor 杆贯穿三层级：VUMAT / NN 本构 / JAX 反演</li>
+</ul>
+<p><span class="tag t-unk">存疑</span> AMForge 软件与上述教学框架的关系——是<b>软件承载</b>该框架，还是<b>独立科研工具</b>？这决定本复盘是否要把"教学案例落地"纳入范围。</p>
+</div>
+
+<div class="panel">
+<h3>B. AMForge 软件工程目标 <span class="tag t-conf">确证（任务清单佐证）</span></h3>
+<ul>
+  <li>高保真 + 代理级 AM 多物理场求解器：thermal / micro / constitutive / asbuilt / digitaltwin / verdict / powder / MBD / phasefield</li>
+  <li>ForgeCore 契约 + 注册表 + 可微（JAX/AD）</li>
+  <li>可微逆问题 / 优化：<code>optimize_dimensional</code> / <code>optimize_geometry_process</code>(joint) / <code>pareto_optimize_geometry_process</code>(NSGA-II)</li>
+  <li>优秀便捷的 GUI 用于软件推广：前处理 #20 + 后处理/数字样机/优化 #22</li>
+  <li>工程化打包：wheel / CLI / README / 示例工程 (#23)</li>
+  <li>全保真回归验证：#38（Ubuntu + 48G）</li>
+</ul>
+</div>
+
+<div class="panel">
+<h3>C. 质量 / 过程诉求 <span class="tag t-conf">确证（你的长期习惯）</span></h3>
+<ul>
+  <li>高质量完成，<b>拒绝轻量妥协</b>；实证数据支撑，拒绝浮夸</li>
+  <li>"专家拟题 → 应对方案"闭环：每次交付后追问专家可能质疑点</li>
+  <li>文档 / 代码一致性（曾出现 <code>thermal.enthalpy</code> 假注册；本轮又见日志漂移）</li>
+  <li>"先通用性、后反演"原则</li>
+</ul>
+</div>
+
+<div class="panel">
+<h3>D. 潜在诉求（推断，需你确认是否属实）</h3>
+<ul>
+  <li><span class="tag t-conf">已确认(标尺④)</span> 对标 ABAQUS / 解析解验证：<b>需要</b>（作为物理正确性硬证据）</li>
+  <li><span class="tag t-conf">已确认(标尺③)</span> 跨机可复现且含学生笔记本（GTX1650Ti）：安装/运行鲁棒性为硬性要求</li>
+  <li><span class="tag t-unk">已排除</span> 教学案例软件落地（23案例池/Taylor杆）：属既往教学项目，本 AMForge 项目不强制</li>
+</ul>
+</div>
+
+<div class="panel" style="border-color:var(--amber)">
+<h3>📌 诉求确认状态（S1–S7）</h3>
+<p style="font-size:13px;color:#1e5631;margin:4px 0 10px"><b>已确认：</b>S1=①+③+④；S2=仅 AMForge；S5=排除。 <b>由标尺推出：</b>S3=需 ABAQUS/解析对标；S4=含学生笔记本。 <b>仍待定：</b>S6 时间节点、S7 专家质疑角度。</p>
+<div class="q"><b>S1</b> "高质量完成"的判定标准是什么？<br>→ 竞赛专家评审通过 / 可复现的科研 artifact / 学生可装可跑的生产级工具 / 对标商业软件精度？</div>
+<div class="q"><b>S2</b> 本复盘范围？<br>→ 仅 AMForge 代码 / 含 WarpBlast + FE-LLM / 含教学交付物（报告/PPT/说课稿）？</div>
+<div class="q"><b>S3</b> 外部验证基准要求？是否需要 ABAQUS / 实验数据对标？</div>
+<div class="q"><b>S4</b> 目标部署环境？仅 48G Ubuntu，还是也含学生笔记本（GTX1650Ti）？</div>
+<div class="q"><b>S5</b> 23案例池与 Taylor 杆是否需在软件中落地为可运行 / 可展示案例？</div>
+<div class="q"><b>S6</b> 时间节点与 must-have vs nice-to-have 的取舍？</div>
+<div class="q"><b>S7</b> 专家评审最可能被质疑的角度（数值方法严谨性 / 物理正确性 / 软件工程质量 / 教学契合度）？</div>
+</div>
+
+<!-- ===================== 2. 分层现状 ===================== -->
+<h2>二、系统分层现状图</h2>
+<table>
+<thead><tr><th>层</th><th>内容</th><th>状态</th><th>关键证据</th></tr></thead>
+<tbody>
+<tr><td><b>L0 治理 / 文档</b></td><td>开发日志 / README / 任务追踪</td><td><span class="sev-M">⚠ 漂移</span></td><td>§5/§6 仍写 P3/P4/P5"未做"、31 passed、3 测试文件</td></tr>
+<tr><td><b>L1 物理求解器</b></td><td>thermal/micro/constitutive/asbuilt/verdict/powder/MBD/phasefield</td><td><span class="sev-M">⚠ 单元闭环·全保真未验</span></td><td>各 §8–§17 单测绿；#38 阻塞</td></tr>
+<tr><td><b>L2 可微逆 / 优化</b></td><td>dimensional / geometry_process / joint / NSGA-II</td><td><span class="sev-L">✅ 算法+集成闭环</span></td><td>nsga2 纯数值 10 测 + 集成不变量</td></tr>
+<tr><td><b>L3 GUI</b></td><td>前处理 #20 / 后处理 #22</td><td><span class="sev-L">✅ 装好+offscreen 11 测绿</span></td><td>PySide6 6.11.1 / vtk 9.6.2 已装；VTK offscreen 守卫已加</td></tr>
+<tr><td><b>L4 打包分发</b></td><td>wheel / CLI / README / 示例</td><td><span class="sev-M">⚠ 依赖未锁·坑未文档化</span></td><td>构建验证通过；safe-delete 中和法仅在记忆里</td></tr>
+<tr><td><b>L5 测试 / QA</b></td><td>121 tests；一致性门禁</td><td><span class="sev-M">⚠ 无跨机一致性门禁</span></td><td>collected 121；numerical-consistency-gate 未跑</td></tr>
+<tr><td><b>L6 教学契合</b></td><td>三阶 / 四驱 / 23案例 / Taylor杆</td><td><span class="sev-H">❓ 软件映射未核实</span></td><td>仓库内未见案例池 / Taylor 杆算例文件</td></tr>
+</tbody>
+</table>
+
+<!-- ===================== 3. 未完成 ===================== -->
+<h2>三、未完成项清单</h2>
+<table>
+<thead><tr><th>#</th><th>项</th><th>优先级</th><th>阻塞 / 说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><b>#38 全保真回归</b>：48G Ubuntu 移植 + 相场 tip-selection 网格收敛 + Newton MBD 后端构建</td><td><span class="sev-H">最高</span></td><td>硬件阻塞；<code>mbd/__init__.py:213</code> 仍为 NotImplementedError 占位</td></tr>
+<tr><td>2</td><td><b>文档校正</b>：开发日志 §5/§6/§20.5/§21.7（P3/P4/P5 已完成、121 tests、GUI 已装 offscreen 绿）</td><td><span class="sev-H">高·低effort</span></td><td>误导性 drift，半天可清</td></tr>
+<tr><td>3</td><td><b>forge_adapter 重名注册修复</b>：<code>process.constant</code> 在 process.py:154 与 forge_adapter.py:62 双重注册</td><td><span class="sev-H">高</span></td><td>靠覆盖侥幸可用，违反单一真相</td></tr>
+<tr><td>4</td><td><b>跨机数值一致性门禁</b>：建立 golden state 回归并跑通（numerical-consistency-gate）</td><td><span class="sev-M">高</span></td><td>仿真代码高质量核心保障缺失</td></tr>
+<tr><td>5</td><td><b>GUI 导入健壮性</b>：import_config / STL 导入的校验与异常路径测试</td><td><span class="sev-M">中</span></td><td>仅 demo 路径测过，坏输入可能崩</td></tr>
+<tr><td>6</td><td><b>依赖锁定 + README 安装章节</b>：补 safe-delete 中和说明</td><td><span class="sev-M">中</span></td><td>他人/评审安装必踩同坑</td></tr>
+<tr><td>7</td><td><b>外部验证对标</b>：解析解 / ABAQUS / 实验（若 S3 要求）</td><td><span class="sev-M">取决于S3</span></td><td>有限性≠物理正确</td></tr>
+<tr><td>8</td><td><b>教学案例落地</b>：23案例池 / Taylor 杆在软件中可运行映射（若 S5 要求）</td><td><span class="sev-H">取决于S5</span></td><td>竞赛交付关键</td></tr>
+<tr><td>9</td><td><b>任务追踪修正</b>：#53 标 completed（in_progress 状态过时）</td><td><span class="sev-L">低</span></td><td>过程性整洁</td></tr>
+</tbody>
+</table>
+
+<!-- ===================== 4. 漏洞 ===================== -->
+<h2>四、潜在漏洞 / 风险（按严重度）</h2>
+
+<h3 class="sev-H">🔴 高严重度（HIGH）</h3>
+<table>
+<thead><tr><th>ID</th><th>漏洞</th><th>影响</th><th>对策</th></tr></thead>
+<tbody>
+<tr><td>V1</td><td><b>文档 / 代码漂移</b>：开发日志 §5/§6 声称 P3/P4/P5"未做"、31 passed、3 测试文件；实则已完成、121 tests、16 文件。§20.5/§21.7 "诚实边界"仍写 GUI 未装/offscreen 未跑（本轮已解决）。</td><td>误导任何评审；与曾发生的 <code>thermal.enthalpy</code> 假注册是同类"文档失真"缺陷</td><td>立即校正 §5/§6/§20.5/§21.7；建立"代码变更即更新日志"纪律</td></tr>
+<tr><td>V2</td><td><b>全保真物理未验证</b>：高保真塑性(§9)/相场(§15)/MBD(§16) 仅单元或轻量参数验证，生产尺度正确性无证据；#38 阻塞。</td><td>专家若问"你凭什么说对"，目前证据弱；是最大质量风险</td><td>推进 #38；在 48G 上跑端到端 + 网格收敛</td></tr>
+<tr><td>V3</td><td><b>求解器双重注册</b>：<code>process.constant</code> 在 <code>process.py:154</code> 与 <code>forge_adapter.py:62</code> 各 <code>@register_solver</code>/<code>register_fn</code> 一次。靠 registry 覆盖侥幸可用。</td><td>违反单一真相；行为依赖导入顺序；未来改一处另一处静默失效</td><td>适配层只注册"额外"求解器或统一用 <code>force=True</code> 并集中所有权</td></tr>
+</tbody>
+</table>
+
+<h3 class="sev-M">🟠 中严重度（MEDIUM）</h3>
+<table>
+<thead><tr><th>ID</th><th>漏洞</th><th>影响</th><th>对策</th></tr></thead>
+<tbody>
+<tr><td>V4</td><td><b>无跨机数值一致性门禁</b>：仿真代码高质量核心保障缺失。</td><td>回归/移植无法量化"是否仍正确"</td><td>建 golden state + 跨设备比对（numerical-consistency-gate）</td></tr>
+<tr><td>V5</td><td><b>GUI 导入路径未校验</b>：仅 demo 路径测过。</td><td>用户导入坏 STL / 错配置可能崩溃，影响"便捷 GUI"口碑</td><td>import_config/STL 加 schema 校验 + 异常测试</td></tr>
+<tr><td>V6</td><td><b>依赖未锁 + 安装坑未文档化</b>：safe-delete 中和法仅在我记忆里。</td><td>他人/评审在本环境装包必踩 SAFE_DELETE_FAIL_CLOSED</td><td>README 增加"本沙箱安装"专节 + 提供 requirements lock</td></tr>
+<tr><td>V7</td><td><b>验证以代理/极小几何为主</b>：有限性/形状/单调性测试 ≠ 物理正确性证明。</td><td>正确性靠"看起来对"</td><td>对 1–2 个求解器做解析解/基准对标</td></tr>
+<tr><td>V8</td><td><b>NSGA-II 全场样本效率低</b>：逐体素 u 设计变量维度高。</td><td>生产优化慢/易陷局部</td><td>降维基 或 <code>seed_with_lambda</code>（已诚实声明，仍属质量 caveat）</td></tr>
+<tr><td>V9</td><td><b>可微梯度无系统性验证门禁</b>：jax NaN 史暗示风险。</td><td>梯度错则逆问题 silently wrong</td><td>关键链路加有限差分梯度校验</td></tr>
+</tbody>
+</table>
+
+<h3 class="sev-L">🟢 低严重度（LOW）</h3>
+<table>
+<thead><tr><th>ID</th><th>项</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>V10</td><td>真实 GPU（GTX1650Ti/RTX A6000）VTK 3D 视口未实测</td><td>offscreen 守卫已加；真实显示路径待验</td></tr>
+<tr><td>V11</td><td>Newton MBD 后端占位</td><td><code>mbd/__init__.py:213</code> NotImplementedError，依赖 #38</td></tr>
+<tr><td>V12</td><td>Stokes 仅周期 BC</td><td>diffmech 通用性限制，非 AMForge 主路径</td></tr>
+<tr><td>V13</td><td>任务 #53 状态过时</td><td>in_progress 应为 completed</td></tr>
+<tr><td>V14</td><td>扫描路径未缩放守卫</td><td><code>scan_paths.py:308/335</code> 有意 raise，非缺陷，需文档说明</td></tr>
+</tbody>
+</table>
+
+<!-- ===================== 5. 建议优先级 ===================== -->
+<h2>五、建议优先级与下一步</h2>
+<div class="panel">
+<ol>
+  <li><b>立刻（低 effort 高价值，标尺①）</b>：V1 文档校正（§5/§6/§20.5/§21.7）+ V13 任务修正 → 消除误导，约半天。</li>
+  <li><b>标尺③ 学生可装可跑（高·中 effort）</b>：V6 依赖锁定 + README 安装专节（含 safe-delete 中和法）+ V5 GUI 导入健壮性/异常测试 → 他人一键可装可跑。</li>
+  <li><b>标尺④ 物理精度（高）</b>：V7 升级为"至少 1 个 ABAQUS/解析解对标"（建议选残余应力或 1D 热传导半解析）+ V2/#38 全保真回归（需 48G）+ V9 梯度有限差分校验。</li>
+  <li><b>标尺① 可复现（高）</b>：V4 跨机数值一致性门禁（golden state 回归）+ V3 forge_adapter 重名修复（单一真相）。</li>
+  <li><b>收尾</b>：V8 降维播种（NSGA-II 生产可用性）、V10 真实 GPU 视口实测、V12–V14 清理。</li>
+</ol>
+</div>
+
+<div class="note">
+  <b>结论（范围已锁定）：</b>AMForge 工程骨架（L1–L4）已高质量闭环，121 测试为证；在已确认的三重质量标尺下，
+  真正短板集中在 <b>验证闭环（V2/V4/V7/V9：一致性门禁 + ABAQUS/解析对标 + 梯度校验）</b>、
+  <b>一致性/文档纪律（V1/V3/V6：日志校正 + 重名修复 + 依赖锁定/README）</b> 与
+  <b>学生可装可跑（V5/V6/V10：导入健壮 + 安装专节 + 弱 GPU 实测）</b>。
+  教学案例落地（L6）已确认不在本范围。下一步按上方执行计划排期。
+</div>
+
+<div class="foot">生成：AMForge 系统复盘 · 基于仓库实地核查（任务清单 64 项、16 测试文件、开发日志 §0–§21、源码 forge_adapter/process）· 2026-08-13</div>
+</div>
+</body>
+</html>

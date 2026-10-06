@@ -1,0 +1,35 @@
+=== T1 体素化 1-ulp 敏感性（同物理零件，两种 dx 拼写；ns 各按自身 CFL 推导）===
+  mul  dx=1.2499999999999999e-05 shape=(97, 49, 34) nvox=161602 ns=4180
+  lit  dx=1.25e-05 shape=(97, 49, 33) nvox=156849 ns=4180
+  [gpu] dx= 12.50 nvox= 161602 ns= 4180    8.15s    82.83 M vox·step/s   1.95 ms/step | peak=  2586.6 nml= 38149 vol=0.0745mm³
+  [gpu] dx= 12.50 nvox= 156849 ns= 4180    7.87s    83.28 M vox·step/s   1.88 ms/step | peak=  2600.1 nml= 38825 vol=0.0758mm³
+  U4 1-ulp 网格差 → Δpeak=0.53% Δvol=1.77% => PASS
+
+=== U1/U2/U3 标定级 dx=12.5µm（mul 网格，与 §25.2 同）===
+  ns(全精度 cfl=0.35)=4180  ns(本次同网格对比 cfl=0.9)=1626
+/tmp/am_a5_scale2.py:84: UserWarning: params['n_steps']=1626 低于 CFL 精度目标 4180（cfl=0.35）：仍稳定但每步激光移动 3µm，移动热源被时间欠采样，峰值温度会偏低。建议 suggest_n_steps() 或提高 n_steps。
+  th = solve_enthalpy_thermal(geometry=g, process=pl,
+/tmp/am_a5_scale2.py:90: UserWarning: params['n_steps']=1626 低于 CFL 精度目标 4180（cfl=0.35）：仍稳定但每步激光移动 3µm，移动热源被时间欠采样，峰值温度会偏低。建议 suggest_n_steps() 或提高 n_steps。
+  t2 = solve_enthalpy_thermal(geometry=g, process=pl,
+  [gpu] dx= 12.50 nvox= 161602 ns= 1626    3.79s    69.40 M vox·step/s   2.33 ms/step | peak=  2586.7 nml= 38123 vol=0.0745mm³
+  [cpu] dx= 12.50 nvox= 161602 ns= 1626  109.48s     2.40 M vox·step/s  67.33 ms/step | peak=  2586.7 nml= 38123 vol=0.0745mm³
+  U1 GPU 吞吐（4180 步全程）= 82.83 M => PASS；与 v1 字面量网格 83.28 M 相差 0.5% => PASS
+  U2 同网格同 ns GPU vs CPU：Δpeak=0.0000K Δnml=+0 => PASS
+  U3 CPU 细网格吞吐 = 2.40 M vox·step/s => PASS（GPU/CPU 同网格加速比 28.9×）
+
+=== U5 反演链条小算例（开销墙）===
+  夹具 nvox=1000 ns=681
+/tmp/am_a5_scale2.py:84: UserWarning: 体素 dx=120.0µm 大于光束半径 r=60.0µm：横向仅约 1.0 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 档熔宽偏低 ~45%、熔体积偏低 ~36%）。定量熔池形态请取 dx≤r/2。
+  th = solve_enthalpy_thermal(geometry=g, process=pl,
+/tmp/am_a5_scale2.py:90: UserWarning: 体素 dx=120.0µm 大于光束半径 r=60.0µm：横向仅约 1.0 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 档熔宽偏低 ~45%、熔体积偏低 ~36%）。定量熔池形态请取 dx≤r/2。
+  t2 = solve_enthalpy_thermal(geometry=g, process=pl,
+  [gpu] dx=120.00 nvox=   1000 ns=  681    1.16s     0.59 M vox·step/s   1.70 ms/step | peak=  3013.5 nml=   154 vol=0.2661mm³
+  [cpu] dx=120.00 nvox=   1000 ns=  681    1.01s     0.67 M vox·step/s   1.49 ms/step | peak=  3013.5 nml=   154 vol=0.2661mm³
+  U5 GPU/CPU = 0.88×（预测 <2×）=> PASS；ms/step GPU=1.70 CPU=1.49
+
+=== 零件尺度外推（用实测吞吐替掉 §24.3 未实测的 100×）===
+  CPU f64（dx=12.5µm 实测）              2.40 M vox·step/s → 一次正向 =    61477.3 h =   2561.6 天
+  GPU f64（dx=25µm 档）                16.56 M vox·step/s → 一次正向 =     8910.4 h =    371.3 天
+  GPU f64（dx=12.5µm 档实测）            82.83 M vox·step/s → 一次正向 =     1781.4 h =     74.2 天
+  即 GPU 相对 CPU 省 0× 墙钟，但绝对量级仍是「天」——指数必须来自算法（多重网格/隐式+活跃网格/准稳态·本征应变）。
+完成。

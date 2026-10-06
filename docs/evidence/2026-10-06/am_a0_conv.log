@@ -1,0 +1,19 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+[integrated] dx= 100.0 nvox=   455 ns=   66   3.43s peak=  2744.8 nml=    59 Lx= 1.000 Ly= 0.300 vol=  0.0590mm3
+[integrated] dx=  50.0 nvox=  2925 ns=  262   2.87s peak=  2737.4 nml=   607 Lx= 1.100 Ly= 0.500 vol=  0.0759mm3
+[integrated] dx=  25.0 nvox= 20825 ns= 1045   3.07s peak=  2648.8 nml=  4766 Lx= 1.150 Ly= 0.550 vol=  0.0745mm3
+[integrated] dx=  12.5 nvox=156849 ns= 4180   3.64s peak=  2600.1 nml= 38825 Lx= 1.175 Ly= 0.575 vol=  0.0758mm3
+[point     ] dx= 100.0 nvox=   455 ns=   66   0.72s peak=  2652.7 nml=    86 Lx= 1.000 Ly= 0.400 vol=  0.0860mm3
+[point     ] dx=  50.0 nvox=  2925 ns=  262   0.56s peak=  2475.0 nml=   776 Lx= 1.100 Ly= 0.400 vol=  0.0970mm3
+[point     ] dx=  25.0 nvox= 20825 ns= 1045   0.60s peak=  2352.4 nml=  5796 Lx= 1.150 Ly= 0.425 vol=  0.0906mm3
+[point     ] dx=  12.5 nvox=156849 ns= 4180   0.68s peak=  2300.6 nml= 46276 Lx= 1.175 Ly= 0.450 vol=  0.0904mm3

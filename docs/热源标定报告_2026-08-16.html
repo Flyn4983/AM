@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>热源标定报告 · 方案 A · AMForge</title>
+<style>
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#1f2933; --muted:#6b7785;
+    --line:#e3e9f0; --accent:#2563eb; --ok:#0f9d58; --warn:#e08700; --bad:#d23b3b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.6;padding:32px}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;margin:0 0 4px}
+  .sub{color:var(--muted);margin-bottom:24px;font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:22px 24px;margin-bottom:18px;box-shadow:0 1px 3px rgba(16,24,40,.04)}
+  h2{font-size:18px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .tag{font-size:11px;padding:2px 9px;border-radius:999px;background:#eef3ff;color:var(--accent)}
+  table{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:center}
+  th{background:#f1f5fb;color:#33415c;font-weight:600}
+  .ok{color:var(--ok);font-weight:600}.warn{color:var(--warn);font-weight:600}.bad{color:var(--bad);font-weight:600}
+  code{background:#eef1f6;padding:1px 6px;border-radius:5px;font-size:12px}
+  ul{margin:8px 0;padding-left:20px}li{margin:4px 0}
+  .kpi{display:flex;gap:14px;flex-wrap:wrap;margin:6px 0 2px}
+  .kpi .box{flex:1;min-width:160px;background:#f8fafc;border:1px solid var(--line);
+    border-radius:10px;padding:12px 14px}
+  .kpi .n{font-size:22px;font-weight:700}.kpi .l{font-size:12px;color:var(--muted)}
+  .note{font-size:12.5px;color:var(--muted);background:#fbfcfe;border-left:3px solid var(--accent);
+    padding:8px 12px;border-radius:0 8px 8px 0;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>热源标定报告 · 方案 A</h1>
+  <div class="sub">AMForge · 真实焓法热解（<code>thermal.enthalpy</code>）· 2026-08-16 · 默认链数值相变</div>
+
+  <div class="card">
+    <h2>目标与原则 <span class="tag">非解析</span></h2>
+    <p style="margin:4px 0">用户原则：<b>“仿真＝数值方法（FEM/FVM 等），不是解析近似”</b>。默认热学链已接真实焓法相变（含潜热），
+    但热源标度导致峰值温度严重失真（高功率工况爆到 8000–10000 K，远超蒸气化上限 ~3090 K），使下游塑性求解景观失稳。
+    本方案对标热源，使峰值回到物理区间 <b>2000–3000 K</b>。</p>
+  </div>
+
+  <div class="card">
+    <h2>标定方案 <span class="tag">thermal_enthalpy.py</span></h2>
+    <ul>
+      <li><b>蒸发封顶</b> <code>_evap_sink(T, T_lo, T_hi, c)</code>：当 T 越过 <code>T_boil−200K</code>（316L=2890 K）后，
+        以 smoothstep 平滑介入，把峰值钳制在蒸气化上限（≈3090 K）。低温熔化区恒为 0，对潜热相变与 <code>jax.grad</code> 完全透明。
+        参数 <code>c_evap=3e11</code>（可由 <code>params["evap_coeff"]</code> 覆盖）。</li>
+      <li><b>离散化补偿</b> <code>heat_scale=1.4</code>：补偿粗网格（80–100 µm）下体积热源能量被体素稀释、等效耦合偏弱的问题，
+        使物理合理工况（线能量 0.2–0.6 J/mm）峰值落在 2000–2800 K 舒适熔化区（可由 <code>params["heat_scale"]</code> 覆盖）。</li>
+    </ul>
+    <div class="note">物理依据：高功率/低扫描速度下蒸发反冲与等离子体屏蔽本就把熔池峰值钳制在蒸气化温度附近——这正是峰值不可能无限增长的根本原因。</div>
+  </div>
+
+  <div class="card">
+    <h2>标定结果 <span class="tag">实证</span></h2>
+    <div class="kpi">
+      <div class="box"><div class="n ok">3070 K</div><div class="l">高功率 900W/0.6 → 封顶（原 10173 K）</div></div>
+      <div class="box"><div class="n ok">2121 K</div><div class="l">默认 heuristic 工艺（原 1701 K，不熔化）</div></div>
+      <div class="box"><div class="n ok">6/6</div><div class="l">test_enthalpy_thermal 全绿</div></div>
+    </div>
+    <table>
+      <tr><th>工况 (316L)</th><th>线能量 J/mm</th><th>标定前峰值</th><th>标定后峰值</th><th>熔化</th></tr>
+      <tr><td>默认 heuristic (≈360W, v1.0)</td><td>0.36</td><td class="warn">1701 K</td><td class="ok">2121 K</td><td class="ok">✓ 11格</td></tr>
+      <tr><td>P=300, v=0.8</td><td>0.375</td><td>1982 K</td><td class="ok">2735 K</td><td class="ok">✓ 19格</td></tr>
+      <tr><td>P=600, v=1.2</td><td>0.50</td><td>2210 K</td><td class="ok">2963 K</td><td class="ok">✓ 21格</td></tr>
+      <tr><td>_high_energy (900W,0.6)</td><td>1.50</td><td class="bad">10173 K</td><td class="ok">3070 K</td><td class="ok">✓ 72格</td></tr>
+      <tr><td>P=1200, v=0.8</td><td>1.50</td><td class="bad">8002 K</td><td class="ok">3057 K</td><td class="ok">✓ 74格</td></tr>
+      <tr><td>P=100, v=1.0（极低线能量）</td><td>0.10</td><td>966 K</td><td>966 K</td><td class="warn">✗ 不熔化（符合物理）</td></tr>
+    </table>
+    <div class="note">极低线能量工况（如 P=100W、0.17 J/mm）保持不熔化——这是物理正确行为，非缺陷。</div>
+  </div>
+
+  <div class="card">
+    <h2>关键诊断：3 个 dimensional 测试为何仍失败 <span class="tag">根因</span></h2>
+    <p style="margin:4px 0">标定后 3 个用例仍失败，失败模式为 <b>geom_dev 不降（0.0028→0.0063 反升）</b> 与 <b>Pareto 塌缩（Δgeom=Δstress=0）</b>。
+    诊断脚本 <code>diag_sens.py</code> 证明：</p>
+    <ul>
+      <li>asbuilt 塑性求解对设计变量<b>敏感</b>：<code>grad_u</code> 范数 5.7e-2（非零）；不同工艺下 geom_dev 由 0.00268 → 0.01180（Δ=0.00912 显著）。热源标定确实影响 asbuilt。</li>
+      <li><code>geom_dev(u=0)=0.00268</code> 已极小；测试断言 <code>min(gh) &lt; gh[0]*0.5</code>（降到 0.0014）基于<b>旧 Rosenthal 降阶 Landscape</b>，
+        切到真实焓法后 geom_dev 物理下界就在 0.002–0.003（热收缩固有偏差），<b>断言不可达</b>。</li>
+    </ul>
+    <div class="note"><b>结论：</b>方案 A 是必要且正确的物理改进（已验证、enthalpy 6/6 绿），但<b>不是这 3 个失败的充分解药</b>。
+    失败根因落在<b>测试断言与真实热学 Landscape 不匹配</b>——即方案 <b>B（重标定/放宽断言阈值）</b> 或 C（重调优化器 lr/步数）的领地。</div>
+  </div>
+
+  <div class="card">
+    <h2>回归状态与下一步 <span class="tag">进行中</span></h2>
+    <ul>
+      <li><code>test_enthalpy_thermal.py</code>：<b class="ok">6/6 passed</b>（标定不影响既有断言）。</li>
+      <li><code>test_dimensional_optimization.py</code> 完整套件：后台回归确认中，验证方案 A 未引入新增失败（已知 3 个失败模式不变）。</li>
+      <li><b>下一步建议</b>：进入 <b>方案 B</b>——把 3 个断言的收敛阈值重标定到真实焓法 Landscape（或将 <code>min&lt;0.5×init</code> 放宽为可达区间如 <code>min&lt;0.85×init</code> 且要求 δ≠0），
+        亦可同步评估方案 C（优化器 lr/步数）。请定夺。</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>

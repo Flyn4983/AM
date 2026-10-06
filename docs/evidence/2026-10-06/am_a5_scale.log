@@ -1,0 +1,13 @@
+=== S1/S3：标定级 dx=12.5µm（161602 体素 × 4180 步）===
+  suggest_n_steps(dx=12.5µm) = 4180
+  [gpu] nvox= 156849 ns= 4180    7.90s    82.99 M vox·step/s    1.89 ms/step | peak=  2600.1 vol=0.0758mm³
+Traceback (most recent call last):
+  File "/tmp/am_a5_scale.py", line 86, in <module>
+    cpu12 = timeit("cpu", g12, pl, 400)          # CPU 只跑 400 步切片，按吞吐外推
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/am_a5_scale.py", line 59, in timeit
+    th = solve_enthalpy_thermal(geometry=g, process=pl,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py", line 506, in solve_enthalpy_thermal
+    raise ValueError(
+ValueError: params['n_steps']=400 不足：dt=曝光/n_steps 超过 SSP-RK2 稳定上限 4.486e-06s（dx=12.5µm, cfl=1）。覆盖 6.562e-03s 的物理曝光至少需要 n_steps>=1463（精度目标 n_steps>=4180，即 cfl=0.35）。步数不足时扩散项发散，蒸发封顶会把发散伪装成可行结果。

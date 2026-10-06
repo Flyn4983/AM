@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AMForge 帮助与使用说明书</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f5f7fa; --ink:#1f2328; --muted:#5b6470;
+    --line:#e3e8ef; --accent:#1f6feb; --accent2:#0b8a6b; --warn:#b54708;
+    --code-bg:#f3f4f6; --sidebar:#0f1f33; --sidebar-ink:#cfe0f5; --sidebar-active:#1f6feb;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.7;font-size:15px;}
+  /* layout */
+  #layout{display:flex;min-height:100vh;}
+  nav{position:sticky;top:0;align-self:flex-start;height:100vh;width:290px;flex:0 0 290px;
+      background:var(--sidebar);color:var(--sidebar-ink);overflow-y:auto;padding:18px 14px;}
+  nav h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#7fa8d6;margin:18px 8px 8px;}
+  nav a{display:block;color:var(--sidebar-ink);text-decoration:none;padding:6px 10px;border-radius:6px;font-size:13.5px;}
+  nav a:hover{background:#16324f;}
+  nav a.active{background:var(--sidebar-active);color:#fff;}
+  nav .sub a{padding-left:22px;font-size:12.5px;opacity:.85;}
+  #search{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #2a4a6e;background:#0b1726;color:#dce8f7;margin-bottom:8px;}
+  main{flex:1;max-width:980px;padding:38px 46px 120px;margin:0 auto;}
+  /* headings */
+  h1{font-size:30px;margin:0 0 6px;border-bottom:3px solid var(--accent);padding-bottom:10px;}
+  h2{font-size:23px;margin:46px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--line);}
+  h3{font-size:18px;margin:28px 0 8px;color:#10395f;}
+  h4{font-size:15.5px;margin:18px 0 6px;color:var(--accent2);}
+  p{margin:10px 0;}
+  code{background:var(--code-bg);padding:1px 6px;border-radius:5px;font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;font-size:13px;}
+  pre{background:#0d1b2a;color:#e6edf3;padding:16px 18px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55;
+      font-family:"SFMono-Regular",Consolas,Menlo,monospace;}
+  pre code{background:none;color:inherit;padding:0;}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--panel);}
+  tr:nth-child(even) td{background:#fafbfc;}
+  blockquote{background:#fff8ec;border-left:4px solid var(--warn);margin:14px 0;padding:10px 16px;border-radius:0 8px 8px 0;color:#6b4a16;}
+  .tag{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:1px 9px;font-size:11.5px;margin:0 2px;}
+  .tag.green{background:var(--accent2);}
+  .tag.warn{background:var(--warn);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;margin:14px 0;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  .feat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;}
+  .feat b{color:var(--accent);}
+  .toc-top{position:fixed;bottom:24px;right:24px;background:var(--accent);color:#fff;border:none;border-radius:50%;
+           width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+  .small{font-size:12.5px;color:var(--muted);}
+  svg{display:block;margin:14px auto;max-width:100%;}
+  hr{border:none;border-top:1px solid var(--line);margin:30px 0;}
+  a.inline{color:var(--accent);}
+  @media (max-width:900px){#layout{flex-direction:column;}nav{position:relative;width:100%;height:auto;flex:none;}}
+</style>
+</head>
+<body>
+<div id="layout">
+<nav>
+  <input id="search" placeholder="🔍 过滤目录…" />
+  <h2>AMForge 手册</h2>
+  <a href="#ch0">封面与阅读指引</a>
+  <a href="#ch1">1. 项目概览与功能清单</a>
+  <a href="#ch2">2. 工程背景</a>
+  <a href="#ch3">3. 理论模型</a>
+  <a href="#ch4">4. 整体架构</a>
+  <a href="#ch5">5. 安装与运行环境</a>
+  <a href="#ch6">6. 命令快速入门 (CLI)</a>
+  <a href="#ch7">7. 代码 / 二次开发入门</a>
+  <a href="#ch8">8. GUI 快速入门</a>
+  <a href="#ch9">9. 结果可视化</a>
+  <a href="#ch10">10. 使用案例教程</a>
+  <a href="#ch11">11. API 接口详解与速查</a>
+  <a href="#ch12">12. 使用规范</a>
+  <a href="#ch13">13. 验证 · 边界 · FAQ</a>
+  <a href="#appendix">附录 · 术语表</a>
+</nav>
+
+<main>
+<!-- ============================ 封面 ============================ -->
+<h1 id="ch0">AMForge · 端到端可微分增材制造仿真平台</h1>
+<p class="small">帮助与使用说明书 · 版本 0.1.0 · 面向使用者（工程师 / 研究者 / 二次开发者）</p>
+
+<div class="card">
+<b>一句话定位：</b>AMForge 把「<b>工艺 → 熔池 → 组织 → 本构 → 结构 → 服役判定</b>」整条增材制造（AM）物理链建成一串 <b>纯函数</b>，
+既能像 Flow3D 那样<b>正向</b>做高保真熔池 / 热力模拟，也能对整条链求梯度，<b>反向</b>优化工艺参数乃至神经网络权重。
+底层数值核心由同仓库的 <code>diffmech</code>（JAX 可微分计算力学：FEM/FVM/DEM/SPH/MPM/相场/CPFE）提供，
+通用引擎 <code>forgecore</code> 负责按数据契约自动布线、可替换、可扩展。
+</div>
+
+<p><b>本手册能帮你做到三件事：</b></p>
+<ol>
+  <li><b>看懂</b>：用一章讲清工程背景、物理理论与代码实现思路，快速建立整体心智模型。</li>
+  <li><b>上手</b>：分别用「命令 / 代码（二次开发）/ GUI」三种路径，从零搭出一个仿真模型并跑出结果。</li>
+  <li><b>深入</b>：给出 API 速查、自定义求解器、积木式建模与可微反演示例，支撑二次开发与科研复现。</li>
+</ol>
+
+<blockquote>阅读建议：首次使用直接跳到 <a class="inline" href="#ch6">第 6 章（命令）</a> 或 <a class="inline" href="#ch8">第 8 章（GUI）</a> 跑通第一个例子；想<b>照着跑完整案例</b>看 <a class="inline" href="#ch10">第 10 章教程</a>；想理解原理看第 2、3 章；<b>查 API</b> 看 <a class="inline" href="#ch11">第 11 章</a>；<b>用对约定</b>看 <a class="inline" href="#ch12">第 12 章</a>；要写插件 / 科研复现看第 7、11 章。</blockquote>
+
+<hr/>
+
+<!-- ============================ 1. 概览 ============================ -->
+<h2 id="ch1">1. 项目概览与功能清单</h2>
+
+<h3>1.1 四大功能域</h3>
+<table>
+<thead><tr><th>功能</th><th>对应需求</th><th>实现模块</th></tr></thead>
+<tbody>
+<tr><td><b>① 多数值手段模拟 AM 过程</b></td><td>用真实数值方法（非解析近似）模拟熔池、热力、成形</td><td><code>amforge.meltpool</code>（VOF/CFD 熔池）、<code>amforge.buildup</code>（逐层激活热-力耦合）、<code>amforge.geometry</code>（任意几何→SDF 体素→分层→扫描路径）</td></tr>
+<tr><td><b>② 可微分模拟 / 工艺反演</b></td><td>对整链求梯度，优化工艺参数 / 几何修形 / NN 权重</td><td><code>amforge.inverse</code>（神经工艺预测器 + 端到端闭环）、<code>Pipeline.function()</code> + <code>jax.grad</code></td></tr>
+<tr><td><b>③ 微观模拟 → 本构模型</b></td><td>凝固组织 → 宏观各向异性本构</td><td><code>amforge.micro</code>（相场凝固 / 统计代理）、<code>amforge.constitutive</code>（CPFE 均质化 → Hall-Petch 各向异性本构场）</td></tr>
+<tr><td><b>④ 数字样机 / 数字化试验</b></td><td>服役裕度判定与机构仿真</td><td><code>amforge.digitaltwin</code>（柔性多体 + FEM 接触）、<code>amforge.verdict</code>（服役判定）</td></tr>
+</tbody>
+</table>
+
+<h3>1.2 求解器 / 方法矩阵</h3>
+<p>下表汇总 <code>amforge</code> 内置注册求解器（注册于 <code>amforge.core.registry</code>），覆盖「代理（默认、~免费、全可微）↔ 高保真（显式启用）」两档。每一行都对应一个可被 <code>Pipeline.auto(select=...)</code> 切换的物理环节。</p>
+<table>
+<thead><tr><th>物理环节</th><th>求解器 id</th><th>作用</th><th>档位</th></tr></thead>
+<tbody>
+<tr><td>几何</td><td><code>geometry.parametric</code></td><td>参数化几何生成</td><td>—</td></tr>
+<tr><td>工艺</td><td><code>process.constant</code> / <code>process.heuristic</code></td><td>常量工艺方案 / 几何感知规则式规划</td><td>代理</td></tr>
+<tr><td>熔池</td><td><code>meltpool.fdm</code>（默认，传导 FVM，含温度相关 k + Beer-Lambert 体积热源）/ <code>meltpool.surrogate_eagar_tsai</code>（代理）/ <code>meltpool.vof_flow3d</code>（高保真 NS+VOF：Marangoni / 匙孔 / 自由界面，已验证稳定）</td><td>真实传导 FVM / Eagar-Tsai 半解析代理 / Flow3D 式 VOF 熔池 CFD</td><td>默认 / 代理 / 高保真</td></tr>
+<tr><td>热历史</td><td><code>thermal.history</code> / <code>thermal.vof_resolved</code> / <code>thermal.enthalpy</code></td><td>降阶零件级热历史 / VOF 解析热历史 / <b>焓法相变热传导</b></td><td>代理 / 高保真</td></tr>
+<tr><td>微观组织</td><td><code>micro.surrogate</code> / <code>micro.phasefield</code></td><td>统计微观模型 / <b>相场凝固</b></td><td>代理 / 高保真</td></tr>
+<tr><td>本构均质化</td><td><code>constitutive.homogenize</code></td><td>Hall-Petch + 各向异性</td><td>代理</td></tr>
+<tr><td>成形</td><td><code>buildup.layer_activation</code> / <code>asbuilt.thermomechanical_plastic</code></td><td>逐层激活热力耦合（ROM）/ <b>CPFE 生死单元弹塑性</b>收缩翘曲</td><td>代理 / 高保真</td></tr>
+<tr><td>支撑结构</td><td><code>support.auto</code>（代理默认）/ <code>support.simulate</code>（高保真，复用逐层弹塑性 FEM）</td><td>悬垂/薄壁自动布点 / 支撑作「约束+散热边界」降低变形</td><td>代理 / 高保真</td></tr>
+<tr><td>数字样机</td><td><code>digitaltwin.rom</code> / <code>mbd.assembly</code></td><td>降阶数字样机 / 多体+FEM 刚柔耦合装配</td><td>代理 / 高保真</td></tr>
+<tr><td>服役</td><td><code>verdict.service</code></td><td>服役裕度判定</td><td>—</td></tr>
+<tr><td>逆问题</td><td><code>inverse.predict_process</code></td><td>神经网络几何→工艺预测</td><td>可微</td></tr>
+<tr><td>粉末尺度</td><td><code>powder.bed</code></td><td>粉末缺陷（surrogate / DEM / SPH / MPM）</td><td>代理 / 高保真</td></tr>
+</tbody>
+</table>
+<p class="small">注：<code>meltpool.vof_flow3d</code>、<code>thermal.vof_resolved</code>、<code>micro.phasefield</code>、<code>mbd.assembly</code>、<code>powder.bed</code> 仅在 <code>amforge</code> 原生注册表；<code>asbuilt.thermomechanical_plastic</code> 仅镜像进 <code>forgecore</code>。两者均为有效求解器，仅注册入口不同（见第 4 章）。</p>
+
+<div class="note"><b>熔池物理保真档位（诚实说明）</b>：
+<ul>
+  <li><b>默认链走 <code>meltpool.fdm</code></b>（传导 FVM，<b>无</b> NS/VOF 自由界面）。它已是真实数值离散，且已升级：<b>温度相关导热系数</b>（固→液 k 跳变）+ <b>Beer-Lambert 体积吸收热源</b>（∫q dV = A_eff·P 功率守恒）。适用绝大多数工艺窗口的快速、可微预测。</li>
+  <li><b>高保真 <code>meltpool.vof_flow3d</code>（NS+VOF）</b>显式解自由界面、Marangoni 对流、汽化反冲压与匙孔，需 <code>select={'meltpool':'meltpool.vof_flow3d'}</code> 启用。该求解器<b>已验证稳定</b>（压力投影 CG 收敛、熔池成形/匙孔正反馈/Marangoni 效应均经测试确认），但<b>仍是 opt-in，非默认</b>——默认链不声称含自由界面/匙孔。</li>
+  <li><b>可微性边界</b>：默认链（含 <code>meltpool.fdm</code>）全程 <code>jax.grad</code> 可微、梯度良态，可直接进反演优化器。而 <code>meltpool.vof_flow3d</code> 虽可求梯度（有限、非 NaN），但几何尺寸量经长时程显式链反向<b>条件数病态</b>（∂depth/∂P ~1e45 量级），裸梯度直接喂优化器会爆——用于反演前须配 gradient clipping / 输出归一 / 自适应步长。</li>
+</ul>
+详见 <code>docs/熔池物理保真升级_AB档_开发纪实.md</code>。</div>
+
+<div class="note"><b>支撑结构（M2，已落地）</b>：
+<ul>
+  <li><b>默认链走 <code>support.auto</code></b>（几何规则布点，秒级，<code>cost=1</code>）：按悬垂角阈值自动判定需支撑区域，产出 <code>SupportStructure</code> 符号场。</li>
+  <li><b>高保真 <code>support.simulate</code></b>（<code>cost=50</code>）复用 <code>asbuilt_plastic</code> 的逐层生死单元弹塑性 FEM，把 <code>geometry ∪ support</code> 合并求解，再按零件遮罩回 <code>AsBuiltPart</code>——支撑以「额外约束 + 散热边界」角色<b>真实降低变形/残余应力</b>。需 <code>select={'support':'support.simulate'}</code> 启用（与 vof 同理的 select-only 档位机制，<b>非未实现</b>）。</li>
+  <li>GUI 前处理面板 <code>generate_support()</code> 可生成并在 2D 切片叠加蓝色支撑足迹预览。</li>
+</ul>
+详见 <code>docs/支撑结构_M2_开发纪实.md</code>；四模块蓝图 M1–M4 状态见 <code>docs/项目开发总览.md</code>。</div>
+
+<h3>1.3 底层数值方法（diffmech 内核）</h3>
+<div class="grid3">
+  <div class="feat"><b>FEM</b><br/>线/非线性弹性、刚度装配、应变应力恢复</div>
+  <div class="feat"><b>FVM</b><br/>扩散、移动高斯热源、扫描步、显式/隐式时间积分</div>
+  <div class="feat"><b>DEM</b><br/>颗粒接触力、墙体、重力铺粉、动能</div>
+  <div class="feat"><b>SPH</b><br/>核近似密度/压力、加速度、球化</div>
+  <div class="feat"><b>MPM</b><br/>P2G/G2P、剥蚀/飞溅、质心/体积</div>
+  <div class="feat"><b>相场</b><br/>Allen-Cahn 凝固/枝晶、断裂损伤</div>
+  <div class="feat"><b>CPFE</b><br/>晶体塑性、滑移系、等效塑性应变</div>
+  <div class="feat"><b>AM 方法</b><br/>SDF 几何、扫描路径、逐层激活、热-力耦合、颗粒 AM、微观组织</div>
+  <div class="feat"><b>优化</b><br/>NSGA-II、可微 loss、optax 反传</div>
+</div>
+
+<h3>1.4 项目结构</h3>
+<pre><code>AM-workbuddy/
+├─ pyproject.toml          # 包元数据 + 控制台入口 amforge
+├─ README.md
+├─ src/
+│  ├─ amforge/             # AM 编排层（JAX 求解器 + 契约 + 注册表 + 流水线）
+│  │  ├─ __init__.py       # 顶层 API（契约、Pipeline、注册函数）
+│  │  ├─ core/             # contracts / registry / graph(Pipeline)
+│  │  ├─ cli.py            # 命令行入口（info/selftest/pareto/gui）
+│  │  ├─ geometry.py meltpool.py thermal*.py micro.py constitutive.py
+│  │  │  buildup.py digitaltwin.py verdict.py inverse.py powder*.py
+│  │  ├─ forge_adapter.py  # 把 amforge 求解器镜像进 forgecore
+│  │  └─ gui/              # 分层 GUI：preproc/postproc（逻辑）+ *_app.py（界面）
+│  ├─ diffmech/            # 计算力学内核（FEM/FVM/DEM/SPH/MPM/相场/CPFE/AM）
+│  └─ forgecore/           # 通用引擎（REGISTRY / SimulationGraph / SimulationModel / Block）
+├─ tests/  tests_diffmech/ # 主回归 + 内核回归套件
+├─ docs/                   # 架构、审计报告、标定报告、本说明书
+└─ examples/               # （当前空，示例见 README 与 cli.run_selftest）</code></pre>
+
+<hr/>
+
+<!-- ============================ 2. 背景 ============================ -->
+<h2 id="ch2">2. 工程背景</h2>
+
+<h3>2.1 什么是增材制造（AM）</h3>
+<p>增材制造（俗称 3D 打印，本平台聚焦 <b>SLM 选区激光熔融</b> 与 <b>LSF 激光送粉</b>）通过逐层铺设粉末、用高功率激光按扫描路径选择性熔融，
+把三维 CAD 模型「长」成实体零件。与减材制造相比，它几乎不受拓扑复杂度限制，可制造点阵、随形冷却流道等「传统工艺做不出」的构件。
+代价是：热-力过程极端剧烈且跨多尺度，缺陷（翘曲、残余应力、未熔合、孔隙、裂纹）极易产生。</p>
+
+<h3>2.2 为什么需要仿真</h3>
+<p>AM 过程横跨多个物理尺度与时间尺度：</p>
+<table>
+<thead><tr><th>尺度</th><th>典型长度</th><th>典型现象</th><th>数值方法</th></tr></thead>
+<tbody>
+<tr><td>熔池</td><td>10⁻⁴ ~ 10⁻³ m</td><td>Marangoni 对流、汽化、匙孔</td><td>VOF/CFD（FVM）</td></tr>
+<tr><td>零件热历程</td><td>10⁻³ ~ 10⁻² m</td><td>逐层热循环、相变潜热</td><td>焓法热传导（FVM/FEM）</td></tr>
+<tr><td>微观组织</td><td>10⁻⁶ ~ 10⁻⁵ m</td><td>晶粒生长、枝晶、相变</td><td>相场 / 统计代理</td></tr>
+<tr><td>本构</td><td>—</td><td>各向异性、硬化</td><td>CPFE 均质化</td></tr>
+<tr><td>结构/服役</td><td>10⁻² ~ 10⁻¹ m</td><td>翘曲、残余应力、强度</td><td>热-力耦合 FEM / MBD</td></tr>
+<tr><td>粉末尺度</td><td>10⁻⁵ m</td><td>铺粉密实度、飞溅、球化</td><td>DEM / SPH / MPM</td></tr>
+</tbody>
+</table>
+<p>实验试错成本高、可观测性差（熔池内部无法直接测量）。仿真能在「试打印前」预测变形与缺陷、优化扫描策略与工艺窗口，是 AM 走向「首件即合格」的关键。</p>
+
+<h3>2.3 本平台的物理链与「无缝链接」</h3>
+<p>AMForge 把上述物理串成一条数据契约驱动的前向链：</p>
+<pre><code>geometry → process → meltpool → thermal → microstructure
+         → constitutive → asbuilt → structural → verdict
+                          ↘ powder.bed （粉末尺度缺陷）</code></pre>
+<p>每个环节只声明「吃什么契约、吐什么契约」。编排器据此<b>自动布线</b>，换求解器只改一行 <code>select</code>，调用代码不动——
+这正是「无缝链接」的含义，也是构建可维护、可扩展仿真系统的核心设计。</p>
+
+<h3>2.4 仿真 ≠ 解析近似</h3>
+<blockquote>设计原则（用户明确要求）：本平台的「仿真」一律指<b>真实数值方法</b>（FEM/FVM/MPM/SPH/DEM 等离散计算），
+<strong>不使用闭式/解析解（如 Rosenthal 解析温度场）作为默认「模拟」求解器</strong>。
+默认热链路已接真实<b>焓法相变</b>（糊状区有效扩散 + SSP-RK2 时间积分，数值求解并包含潜热）；
+<code>thermal.history</code> 为降阶代理（仅教学/快速回归用）。</blockquote>
+
+<hr/>
+
+<!-- ============================ 3. 理论 ============================ -->
+<h2 id="ch3">3. 理论模型与代码实现思路</h2>
+<p>本章按「物理链顺序」逐环节给出原理与关键实现位置，便于你理解代码与做二次开发。公式只点到为止，重点在「用什么方法、落在哪个模块」。</p>
+
+<h3>3.1 几何：SDF 体素化</h3>
+<p><b>原理：</b>任意几何统一表示为<b>有符号距离场（SDF）</b>的体素栅格。好处：① SDF 是标量场，几何本身可作优化变量（可微）；
+② 单一栅格贯穿分层、路径、生死单元激活、几何偏差比较，避免跨网格插值误差；③ 内部孔洞/薄壁/点阵一视同仁。</p>
+<p><b>实现：</b><code>amforge.geometry</code> 复用 <code>diffmech.methods.am.geometry</code>：<code>from_sdf_fn</code>（解析式基元+CSG 布尔）、<code>from_stl</code>/<code>from_mesh</code>（最近点距离+广义绕数定号）、
+<code>from_occupancy</code>/<code>from_density</code>（CT/拓扑优化场）、<code>gyroid</code>/<code>schwarz_p</code>/<code>bcc_lattice</code>（点阵）。AM 诊断：<code>overhang_field</code>/<code>thin_wall_field</code>/<code>printability_report</code>。</p>
+
+<h3>3.2 扫描路径</h3>
+<p><b>原理：</b>按层切片得到二维区域，用光栅（hatch）填充 + 轮廓（contour）环绕，可用之字形、螺旋等策略。
+路径是热载荷的时空分布来源。</p>
+<p><b>实现：</b><code>diffmech.methods.am.scan_paths</code>：<code>zigzag_hatch</code> / <code>contour_hatch</code> / <code>spiral_hatch</code> / <code>from_csv</code> / <code>from_gcode</code>；GUI 前处理 <code>generate_hatch_paths</code> 直接生成。</p>
+
+<h3>3.3 热学：焓法相变热传导（高保真）</h3>
+<p><b>原理：</b>固-液共存（糊状区）的相变潜热用<b>焓法（enthalpy method）</b>处理：以焓 H 为未知量，有效扩散系数在固/液/糊状区连续过渡，
+潜热自然进入能量方程；时间推进用 <b>SSP-RK2</b>（强稳定保辛 Runge-Kutta）。相比「表观热容法」更稳，比 Rosenthal 解析更真实。</p>
+<p><b>实现：</b><code>amforge.thermal_enthalpy.solve_enthalpy_thermal</code>（注册为 <code>thermal.enthalpy</code>）；底层 FVM 见 <code>diffmech.methods.fvm.thermal</code>（<code>diffusion_rhs</code>/<code>step_thermal_scan</code>/<code>gaussian_heat_source</code>/<code>moving_gaussian_source</code>）。</p>
+
+<h3>3.4 微观组织：相场凝固 vs 统计代理</h3>
+<table>
+<thead><tr><th>方法</th><th>原理</th><th>位置</th></tr></thead>
+<tbody>
+<tr><td><b>相场（高保真）</b></td><td>用序参量方程（Allen-Cahn / Karma-Rappel 各向异性）数值求解枝晶/晶粒生长，物理真实</td><td><code>amforge.phasefield</code> / <code>diffmech.methods.phase_field</code></td></tr>
+<tr><td><b>统计代理（默认）</b></td><td>由冷却速率/温度梯度经验映射晶粒尺寸、相分数（~免费、全可微）</td><td><code>amforge.micro.solve_microstructure</code></td></tr>
+</tbody>
+</table>
+
+<h3>3.5 本构：CPFE 均质化</h3>
+<p><b>原理：</b>晶体塑性有限元（CPFE）在每个积分点用滑移系本构描述单晶塑性，经 voigt/reuss 上采样得到<b>各向异性宏观本构场</b>（含 Hall-Petch 细晶强化）。</p>
+<p><b>实现：</b><code>amforge.constitutive.solve_constitutive</code>（均质化）；内核 <code>diffmech.methods.cpfe</code>（<code>solve_cpfe</code>/<code>qp_state_at_cell</code>/<code>average_equivalent_plastic_strain</code>）。</p>
+
+<h3>3.6 成形：逐层激活热-力耦合</h3>
+<p><b>原理：</b>按分层高度给单元赋予「激活时间」，未激活单元不计入刚度矩阵（生死单元）；激光热载荷叠加热应变，得到逐层累积的位移/残余应力。</p>
+<p><b>实现：</b><code>amforge.buildup.solve_buildup</code>（ROM 趋势，默认）；<code>asbuilt.thermomechanical_plastic</code> 走 CPFE 生死单元弹塑性收缩/翘曲（高保真，经 <code>inverse.simulate(asbuilt_solver="plastic")</code> 触发）。
+内核：<code>diffmech.methods.am.activation</code>（<code>LayeredMesh</code>/<code>assign_activation_times</code>）、<code>thermomechanical.py</code>（<code>solve_thermomechanical</code>/<code>assemble_activated_stiffness</code>）。</p>
+
+<h3>3.7 粉末尺度：DEM / SPH / MPM</h3>
+<p><b>原理：</b>铺粉用离散元法（DEM）求颗粒接触力与重力沉降，得密实度/配位数/表面粗糙度；球化用光滑粒子流体动力学（SPH）；剥蚀/飞溅用物质点法（MPM）。</p>
+<p><b>实现：</b>内核 <code>diffmech.methods.dem</code> / <code>.sph</code> / <code>.mpm</code>；AM 封装 <code>diffmech.methods.am.powder_bed</code>（<code>synth_powder_bed</code> 抖动晶格+对数正态 PSD；<code>recoat_dem</code> 铺粉）；<code>amforge.powder.py</code>（<code>ParticleCollection</code> 导入/导出/统计/DEM 求解）、<code>amforge.powderbed.py</code>（<code>powder.bed</code>，按 <code>powder_fidelity</code> 选 surrogate/dem/sph/mpm）。</p>
+
+<h3>3.8 数字样机：MBD + FEM</h3>
+<p><b>原理：</b>零件本体用 FEM 保证强度/残余应力精度；周边机构用多体动力学（MBD）保证运动/接触效率，二者经协同接口（FEM 子模型边界位移 ↔ MBD 关节载荷）耦合。</p>
+<p><b>实现：</b><code>amforge.digitaltwin.solve_digital_twin</code>（ROM）；<code>amforge.mbd</code> + <code>diffmech</code> FEM 装配评估。</p>
+
+<h3>3.9 可微与逆问题</h3>
+<p><b>原理：</b>因为整条链是 JAX 纯函数，<code>jax.grad</code> 可穿透全图，对「工艺向量 z、几何形变场 u、甚至 NN 权重」求梯度，最小化 <code>loss = 尺寸偏差 + 残余应力 + 缺陷罚项</code>。</p>
+<p><b>实现：</b><code>amforge.inverse</code>：<code>simulate</code>（正向可微闭环）、<code>predict_process</code>（NN 几何→工艺）、<code>optimize_*</code>（形状/工艺/几何-工艺优化）、optax 反传。<code>Pipeline.function()</code> 把整链柯里化成 <code>f(params, **inputs)</code>，直接喂 <code>jax.grad</code>。</p>
+
+<h3>3.10 多目标优化：为什么用 NSGA-II</h3>
+<p>加权求和 <code>L(λ)=λ·尺寸偏差+(1-λ)·残余应力</code> 只能覆盖 Pareto 前沿的<b>凸包</b>，会系统性漏掉非凸段上的真实最优解。
+<code>pareto_optimize_geometry_process(algorithm="nsga2")</code> 在联合设计空间（形状场 u，工艺向量 z∈[0,1]⁹）上做真 NSGA-II 进化（非支配排序+拥挤度），恢复真实（凸/非凸皆可）前沿。旧 <code>"lambda"</code> 路径保留作回归对照。</p>
+
+<hr/>
+
+<!-- ============================ 4. 架构 ============================ -->
+<h2 id="ch4">4. 整体架构</h2>
+
+<h3>4.1 三包关系</h3>
+<svg viewBox="0 0 680 360" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" font-size="12">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#1f6feb"/>
+    </marker>
+  </defs>
+  <rect x="14" y="14" width="652" height="332" rx="12" fill="#f5f7fa" stroke="#e3e8ef"/>
+  <!-- user layer -->
+  <rect x="30" y="40" width="180" height="64" rx="8" fill="#1f6feb" fill-opacity="0.12" stroke="#1f6feb"/>
+  <text x="120" y="62" text-anchor="middle" fill="#10395f" font-weight="bold">使用者入口</text>
+  <text x="120" y="80" text-anchor="middle">CLI · Python API · GUI</text>
+  <text x="120" y="96" text-anchor="middle" font-size="10" fill="#5b6470">amforge cli / af.* / gui</text>
+  <!-- amforge -->
+  <rect x="250" y="30" width="180" height="120" rx="8" fill="#0b8a6b" fill-opacity="0.12" stroke="#0b8a6b"/>
+  <text x="340" y="50" text-anchor="middle" fill="#064a37" font-weight="bold">amforge（编排层）</text>
+  <text x="340" y="70" text-anchor="middle">contracts · registry</text>
+  <text x="340" y="86" text-anchor="middle">Pipeline.auto 自动布线</text>
+  <text x="340" y="102" text-anchor="middle">9 契约 · 17 内置求解器</text>
+  <text x="340" y="120" text-anchor="middle">thermal/micro/mbd/…</text>
+  <text x="340" y="138" text-anchor="middle" font-size="10" fill="#5b6470">forge_adapter 镜像求解器</text>
+  <!-- diffmech -->
+  <rect x="250" y="170" width="180" height="120" rx="8" fill="#7a3fb5" fill-opacity="0.12" stroke="#7a3fb5"/>
+  <text x="340" y="190" text-anchor="middle" fill="#4a2270" font-weight="bold">diffmech（内核）</text>
+  <text x="340" y="210" text-anchor="middle">FEM / FVM / DEM</text>
+  <text x="340" y="226" text-anchor="middle">SPH / MPM / 相场</text>
+  <text x="340" y="242" text-anchor="middle">CPFE / AM 方法</text>
+  <text x="340" y="260" text-anchor="middle" font-size="10" fill="#5b6470">JAX 可微分基础离散</text>
+  <!-- forgecore -->
+  <rect x="470" y="30" width="180" height="120" rx="8" fill="#b54708" fill-opacity="0.10" stroke="#b54708"/>
+  <text x="560" y="50" text-anchor="middle" fill="#7a3005" font-weight="bold">forgecore（通用引擎）</text>
+  <text x="560" y="70" text-anchor="middle">REGISTRY（SolverRegistry）</text>
+  <text x="560" y="86" text-anchor="middle">SimulationGraph</text>
+  <text x="560" y="102" text-anchor="middle">SimulationModel / Block</text>
+  <text x="560" y="120" text-anchor="middle" font-size="10" fill="#5b6470">与物理域解耦</text>
+  <!-- jax -->
+  <rect x="470" y="170" width="180" height="60" rx="8" fill="#1f2328" fill-opacity="0.08" stroke="#1f2328"/>
+  <text x="560" y="196" text-anchor="middle" font-weight="bold">JAX 后端</text>
+  <text x="560" y="214" text-anchor="middle" font-size="10" fill="#5b6470">x64 · grad · jit · vmap</text>
+  <!-- arrows -->
+  <line x1="210" y1="72" x2="248" y2="72" stroke="#1f6feb" marker-end="url(#arr)"/>
+  <line x1="430" y1="90" x2="468" y2="72" stroke="#1f6feb" marker-end="url(#arr)"/>
+  <line x1="340" y1="150" x2="340" y2="168" stroke="#7a3fb5" marker-end="url(#arr)"/>
+  <line x1="430" y1="210" x2="468" y2="200" stroke="#7a3fb5" marker-end="url(#arr)"/>
+  <line x1="560" y1="150" x2="560" y2="168" stroke="#1f2328" marker-end="url(#arr)"/>
+  <line x1="250" y1="90" x2="248" y2="200" stroke="#0b8a6b" marker-end="url(#arr)" stroke-dasharray="4"/>
+</svg>
+<p class="small">消费关系：amforge 直接 <code>from diffmech...</code> 调用内核；amforge 通过 <code>forge_adapter</code> 把求解器镜像进 forgecore；forgecore 不反向依赖 amforge（仅惰性 <code>import amforge.forge_adapter</code>）。</p>
+
+<h3>4.2 数据契约（contracts）</h3>
+<p>9 个 frozen dataclass 契约是唯一通信语言：<code>PartGeometry, ProcessPlan, ThermalHistory, MeltPoolResult, MicrostructureResult, ConstitutiveField, AsBuiltPart, StructuralResult, ServiceVerdict</code>（另有 <code>PowderBedResult</code>）。所有求解器输入/输出都是这些契约，单位统一 SI。换求解器不会破坏上下游。</p>
+
+<h3>4.3 双注册表与镜像</h3>
+<table>
+<thead><tr><th></th><th><code>amforge.core.registry</code></th><th><code>forgecore.registry.REGISTRY</code></th></tr></thead>
+<tbody>
+<tr><td>类型</td><td>模块级字典 <code>_SOLVERS</code>（静态，不参与 JAX 追踪）</td><td><code>SolverRegistry</code> 类 + 全局实例（两索引 <code>_by_name</code>/<code>_by_produces</code>）</td></tr>
+<tr><td>消费方</td><td><code>amforge.core.graph.Pipeline</code> 自动布线（活路径）</td><td><code>forgecore</code> <code>SimulationModel.build</code> / <code>REGISTRY.auto</code></td></tr>
+<tr><td>注册</td><td><code>@register_solver</code></td><td><code>REGISTRY.register_fn(...)</code></td></tr>
+</tbody>
+</table>
+<p>两套表 <b>各自独立、各自活跃</b>（不是「靠覆盖侥幸」）。<code>forge_adapter.register_am_solvers()</code> 在导入时把 amforge 求解器<b>镜像</b>进 forgecore（含统一 cost 单一事实源），使两个引擎都能用同一组求解器。</p>
+
+<h3>4.4 编排：Pipeline.auto 自动布线</h3>
+<p><code>Pipeline.auto(target, modality, select, given, require_differentiable)</code> 从目标契约<b>反向</b>链式搜索最小代价路径（带记忆化的 DFS），求解器优先于适配器、按 cost 排序保证可复现。结果是一个<b>静态</b>拓扑序 <code>Pipeline</code>（不含张量），可安全被 <code>jax.jit</code> 捕获。</p>
+<ul>
+  <li><code>.describe()</code> / <code>.mermaid()</code>：人可读 / Mermaid 流程图，可贴进报告。</li>
+  <li><code>.run(geometry=...)</code>：正向执行，返回 <code>{槽名: 契约}</code>。</li>
+  <li><code>.function()</code>：柯里化成 <code>f(params, **inputs)</code>，供 <code>jax.grad/jit</code> 穿透整图。</li>
+</ul>
+
+<h3>4.5 GUI 分层</h3>
+<p>所有计算收敛在<b>纯逻辑层</b>（<code>amforge.gui.preproc</code> / <code>postproc</code>，仅依赖 numpy，可无显示 pytest），界面层（<code>*_app.py</code>，PySide6+VTK）只负责呈现。因此核心算法可被单元测试守住，而不只是「能弹个窗口」。</p>
+
+<hr/>
+
+<!-- ============================ 5. 安装 ============================ -->
+<h2 id="ch5">5. 安装与运行环境</h2>
+<p><b>要求：</b>Python ≥ 3.10（已 3.13 验证）；JAX ≥ 0.4.30（默认 CPU 版 <code>jaxlib</code>，要 CUDA 自装对应轮子）。</p>
+<pre><code># 可编辑安装（开发用，源码修改即时生效）
+pip install -e .
+
+# 仅运行时
+pip install .
+
+# 开发 / 打包 / 测试
+pip install -e ".[dev]"
+
+# 前处理 GUI（PySide6 + VTK 桌面界面）
+pip install -e ".[gui]"</code></pre>
+<blockquote><b>受限 / 沙箱环境（safe-delete 拦截）</b>装 GUI 依赖前先中和拦截层：<br/>
+<code>export PYTHONPATH= BASH_ENV=</code> 使 <code>os.remove</code> 恢复原生删除，再用镜像源：<br/>
+<code>pip install -e ".[gui]" -i https://pypi.tuna.tsinghua.edu.cn/simple --default-timeout=120</code><br/>
+经验证可装版本（Python 3.13 预编译 wheel）：<code>PySide6==6.11.1 / vtk==9.6.2 / matplotlib==3.11.1</code>。</blockquote>
+
+<p><b>运行环境变量（重要）：</b></p>
+<table>
+<thead><tr><th>变量</th><th>取值</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>JAX_ENABLE_X64</code></td><td><code>1</code></td><td>启用 float64 精度（默认求解器依赖，务必开启）</td></tr>
+<tr><td><code>PYTHONPATH</code></td><td><code>src</code></td><td>仓库模式下指向 <code>src</code> 包根</td></tr>
+<tr><td><code>QT_QPA_PLATFORM</code></td><td><code>offscreen</code></td><td>无显示环境跑 GUI 测试（VTK 3D 自动回退 2D 云图）</td></tr>
+</tbody>
+</table>
+<p class="small">仓库内运行示例（必须用 <code>amsim</code> 虚拟环境 + 上述变量）：<br/>
+<code>PYTHONPATH=src JAX_ENABLE_X64=1 &lt;amsim&gt;/python -m pytest tests/ -q</code></p>
+
+<hr/>
+
+<!-- ============================ 6. CLI ============================ -->
+<h2 id="ch6">6. 命令快速入门（CLI）</h2>
+<p>安装后可用 <code>amforge</code> 命令（或 <code>python -m amforge</code>）。四个子命令：</p>
+<table>
+<thead><tr><th>命令</th><th>参数</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td><code>amforge info</code></td><td>—</td><td>版本 / JAX x64 状态 / 依赖导入状态 / 按 stage 清点的求解器与适配器</td></tr>
+<tr><td><code>amforge selftest</code></td><td><code>--quiet</code></td><td>轻量端到端前向自检（几十秒），验证「安装即可用」</td></tr>
+<tr><td><code>amforge pareto</code></td><td><code>--material --pop-size --n-gen --n-grid --max-layers --n-sub-cp --seed</code></td><td>NSGA-II 多目标优化演示：尺寸偏差 ↔ 残余应力（~1–3 分钟）</td></tr>
+<tr><td><code>amforge gui</code></td><td>—</td><td>启动 PySide6 + VTK 统一工作台（前处理 + 后处理/数字样机/优化）</td></tr>
+</tbody>
+</table>
+
+<h4>示例 1：安装后第一件事——自检</h4>
+<pre><code>amforge selftest
+# 输出示例：
+# ok: 所有内置求解器模块导入成功
+# ok: AsBuiltPart 全部叶子有限
+# ok: 产生非零弹塑性位移 (max|u|=3.21e-07 m)
+# ok: digitaltwin+verdict 流入正常 (安全系数=1.842)
+# selftest 通过 (耗时 12.4s)</code></pre>
+
+<h4>示例 2：查看可用求解器</h4>
+<pre><code>amforge info
+# 打印版本、x64 状态、各模块导入状态，
+# 以及按 stage 分组的求解器清单（geometry / process / meltpool / ...）</code></pre>
+
+<h4>示例 3：跑一次多目标优化演示</h4>
+<pre><code>amforge pareto --material 316L --pop-size 12 --n-gen 20 --seed 0
+# 输出 NSGA-II 前沿：每行一个解的 geom_dev / stress / feasible，
+# 并给出 utopia 点与推荐折中方案 best_compromise。</code></pre>
+
+<hr/>
+
+<!-- ============================ 7. 代码/二次开发 ============================ -->
+<h2 id="ch7">7. 代码 / 二次开发快速入门</h2>
+
+<h3>7.1 最小可运行示例</h3>
+<pre><code>import jax
+jax.config.update("jax_enable_x64", True)          # 务必开启 float64
+
+import amforge as af
+from amforge import geometry as G
+from amforge import process as P
+from amforge import inverse as inv
+
+# 1) 几何：半径 0.45mm 球，50µm 体素
+geo = G.from_sdf_fn(
+    lambda x: jnp.linalg.norm(x, axis=-1) - 0.45e-3,
+    bounds=[(-0.6e-3, 0.6e-3)] * 3, spacing=50e-6, name="demo",
+)
+
+# 2) 自动布线：从几何反推完整 8 步路径，正向跑通整条链
+pipe = af.Pipeline.auto("ServiceVerdict", modality="SLM")
+print(pipe.describe())                              # 静态查看 DAG
+out = pipe.run(geometry=geo)
+print(out["verdict"].summary())
+
+# 3) 可微反演：对几何形变场 + 工艺向量求梯度，最小化尺寸偏差+残余应力
+plan = P.heuristic_plan(geo, material="316L", modality="SLM")
+out = inv.simulate(geo, plan, material="316L", asbuilt_solver="plastic")
+print("几何尺寸偏差 =", float(out["asbuilt"].geom_dev()))
+
+# 4) NSGA-II 多目标：尺寸偏差 ↔ 残余应力 真实非支配前沿
+res = inv.pareto_optimize_geometry_process(
+    geo, material="316L", algorithm="nsga2",
+    pop_size=12, n_gen=20, asbuilt_solver="plastic", verbose=False,
+)
+print("推荐折中方案:", res["best_compromise"]["final_plan"])</code></pre>
+
+<h3>7.2 几何构建（四种来源）</h3>
+<pre><code>from amforge import geometry as G
+import jax.numpy as jnp
+
+# 解析式 + CSG 布尔
+sdf = lambda x: G.smooth_union(G.sdf_sphere(x, 0.4e-3), G.sdf_box(x, (0.5e-3,)*3), k=20e-6)
+geo = G.from_sdf_fn(sdf, bounds=[(-0.8e-3,0.8e-3)]*3, spacing=50e-6, name="csg")
+
+# STL / 网格
+geo = G.from_stl("part.stl", spacing=60e-6)
+
+# 点阵（AM 杀手级应用）
+geo = G.gyroid(bounds=[(-1e-3,1e-3)]*3, spacing=40e-6, period=0.3e-3)
+
+# 可打印性诊断
+rep = G.printability_report(geo)
+print(rep["overhang_fraction"], rep["thin_wall_fraction"])</code></pre>
+
+<h3>7.3 切换求解器保真度（一行 select）</h3>
+<pre><code>import amforge as af
+
+# 默认走快速代理模型；下面把熔池换成高保真 VOF CFD
+pipe = af.Pipeline.auto(
+    "AsBuiltPart",
+    select={"meltpool": "meltpool.vof_flow3d",
+            "thermal":  "thermal.enthalpy"},   # 焓法相变热传导
+)
+out = pipe.run(geometry=geo, params={"material": "316L"})
+
+# 高保真 CPFE 成形（生死单元弹塑性）
+out = inv.simulate(geo, plan, material="316L", asbuilt_solver="plastic")</code></pre>
+
+<h3>7.4 可微闭环（jax.grad 穿透整图）</h3>
+<pre><code>import jax, jax.numpy as jnp
+import amforge as af
+
+pipe = af.Pipeline.auto("AsBuiltPart", require_differentiable=True)
+f = pipe.function()                                   # f(params, geometry) -> AsBuiltPart
+
+def loss(params):
+    ab = f(params, geometry=geo)
+    return ab.geom_dev() + 0.1 * jnp.mean(ab.residual_stress()**2)
+
+grads = jax.grad(loss)(pipe.param_template())         # 梯度一路回传到工艺参数</code></pre>
+
+<h3>7.5 积木式建模（forgecore SimulationModel）</h3>
+<p>GUI 与 Python API 都落到一个唯一的 canonical 模型对象，导出同一份 <code>.amf</code> 工程文件，二者可互相无损转换。</p>
+<pre><code>from forgecore import SimulationModel
+
+m = SimulationModel("demo")
+m.add_part("part", geometry=geo)       # 也可 factory=... 描述重建
+m.add_material("mat", material="316L") # 或 material 对象
+m.set_modality("SLM")
+m.add_step("verdict", produces="verdict")
+m.add_bc("basefix", type="fixed", region="bottom")
+m.set_param("n_grid", 20)
+
+ctx = m.run(params={"material": "316L", "n_grid": 20})
+print(ctx["verdict"].summary())
+
+# 序列化 / 复现
+m.save("demo.amf")                      # 或 save_model(m, "demo.amf")
+m2 = SimulationModel.load("demo.amf")   # 或 load_model("demo.amf")</code></pre>
+
+<h3>7.6 自定义求解器（二次开发核心）</h3>
+<p>新增物理 / 数值方法 = 写一个纯函数 + 一行 <code>@register_solver</code>。核心永不硬编码某种方法。</p>
+<pre><code>from amforge.core.registry import register_solver
+from amforge.core.contracts import ProcessPlan, PartGeometry
+
+@register_solver(
+    "process.my_rule",
+    consumes=("PartGeometry",),
+    produces="ProcessPlan",
+    stage="process", modality=("SLM",),
+    differentiable=True, cost=1.0,
+    doc="我的几何感知工艺规则",
+)
+def my_process(*, geometry: PartGeometry, params=None) -> ProcessPlan:
+    # 任意 JAX 纯函数；返回契约即可
+    return ProcessPlan(laser_power=200.0, scan_speed=1.0, layer_thickness=30e-6, ...)
+
+# 之后即可被自动布线选中
+pipe = af.Pipeline.auto("AsBuiltPart", select={"process": "process.my_rule"})</code></pre>
+<p>镜像进 forgecore（让 GUI / SimulationModel 也能用）：在 <code>forge_adapter.py</code> 的 <code>register_am_solvers()</code> 增加一条 <code>REGISTRY.register_fn(...)</code>，或让自动镜像覆盖（同名即镜像）。</p>
+
+<h3>7.7 diffmech 低级方法（做底层研究）</h3>
+<p>当 amforge 的高层封装不够用时，可直接用内核纯函数（均已可微分）：</p>
+<pre><code>from diffmech.methods.am.geometry import sdf_sphere, slice_mask, layer_heights
+from diffmech.methods.fvm.thermal import step_thermal_scan, gaussian_heat_source
+from diffmech.methods.dem.dem import make_dem_state, step_dem
+from diffmech.methods.phase_field.phase_field import step_allen_cahn
+from diffmech.methods.cpfe.cpfe_solver import solve_cpfe</code></pre>
+
+<hr/>
+
+<!-- ============================ 8. GUI ============================ -->
+<h2 id="ch8">8. GUI 快速入门</h2>
+<p><code>amforge gui</code> 启动一个 <b>PySide6 + VTK 桌面统一工作台</b>（单窗口多标签页），覆盖完整「建模 → 仿真 → 后处理 → 优化」闭环。逻辑层与界面层分离，核心算法可被测试守住。</p>
+
+<h3>8.1 标签页 ① 前处理</h3>
+<ol>
+  <li><b>几何</b>：解析体素化几何（球/柱/方）或 <b>STL 导入</b> → 三维等值面查看。</li>
+  <li><b>分层切片</b> + <b>hatch 光栅扫描路径</b>叠加显示。</li>
+  <li><b>工艺参数面板</b>：功率 / 扫描速度 / 层厚等 → 实时 <b>可打印性 / 能量密度（VED/LED）</b>评估。</li>
+  <li><b>粉末 / 粒子导入</b>：从 CSV / JSON 导入 <code>ParticleCollection</code>，或用内置合成床；可勾选「用导入粒子作 DEM 初始态」做精确粒子注入。</li>
+  <li><b>导出配置</b>（几何 SDF + 工艺方案），可直接喂给 <code>amforge.inverse.simulate</code>。</li>
+</ol>
+
+<h3>8.2 标签页 ② 后处理 / 数字样机 / 可微优化</h3>
+<ul>
+  <li><b>场浏览器</b>：温度 / 残余应力(vM) / 位移 / 微观组织 / 本构 等体素场的 2D 云图（构建方向切片滑块）+ 3D 场着色面（VTK）。所有场可一键<b>导出 ParaView 可读 .vtk + .csv + manifest.json</b>（含各场 min/max/mean）。</li>
+  <li><b>数字样机</b>：多体 + FEM 耦合装配评估（关节弯曲刚度柱状图、稳定性裕度、装配评分）+ 铰接链示意。</li>
+  <li><b>可微优化</b>：loss 历史曲线 / NSGA-II Pareto 前沿散点（utopia 与 best-compromise 标记），覆盖 <code>dimensional</code> / <code>joint</code> / <code>pareto</code> 三种入口。</li>
+  <li><b>后处理动画</b>：库级 <code>save_field_gif</code> / <code>save_field_pvd</code> 可按时间序列导出。</li>
+</ul>
+
+<h3>8.3 粉末 / 粒子导入工作流</h3>
+<pre><code># 逻辑层（可在无显示下用 pytest 验证，GUI 调用同一函数）
+from amforge.gui import preproc
+col = preproc.build_particle_collection_csv("particles.csv")   # 或从 STL/JSON
+params = col.powder_bed_params(geometry=geo, n_steps=120, use_precise=False)
+result = col.solve_dem(geo, plan, n_steps=120, use_precise=True)  # 精确粒子注入
+print(result.summary_str())</code></pre>
+
+<hr/>
+
+<!-- ============================ 9. 结果可视化 ============================ -->
+<h2 id="ch9">9. 结果可视化</h2>
+<p>仿真跑完不会只给你一串数字——AMForge 内置了完整的<b>结果可视化链路</b>：从 GUI 实时云图、3D 着色面，到逐帧温度动画播放，再到导出 GIF / ParaView（<code>.pvd</code> / <code>.vtk</code> / <code>.csv</code>）做专业后处理。本章给出 GUI 操作流与代码（二次开发）两种路径。</p>
+
+<div class="card">
+<b>可视化能力总览</b>
+<ul>
+  <li><span class="tag green">2D 云图</span> 体素场下拉选择 + 构建方向切片滑块 + matplotlib 云图 + colorbar —— <b>始终可用</b>（含无显示 / offscreen 环境）。</li>
+  <li><span class="tag green">3D 着色面</span> 几何 SDF 面用所选体素场经 <code>vtkProbeFilter</code> 着色（VTK 渲染）—— <b>仅真实桌面</b>（需 OpenGL，无头环境自动回退占位）。</li>
+  <li><span class="tag green">温度动画</span> ▶播放 / ⏸暂停 + 时间帧滑块，逐帧播放温度演化 —— <b>已接进 GUI</b>（前提：求解器 <code>record_frames=True</code>）。</li>
+  <li><span class="tag">导出</span> 一键导出 GIF（动画）、PVD（ParaView 时间序列）、VTK/CSV（含 <code>manifest.json</code>）。</li>
+</ul>
+</div>
+
+<h3>9.1 GUI 后处理标签页操作流</h3>
+<p>运行 <code>amforge gui</code> → 切到 <b>标签页 ② 后处理 / 数字样机 / 可微优化</b>。该标签页自上而下分三块：场浏览器（上）、扫描温度动画（中）、数字样机 / 可微优化（下）。</p>
+<ol>
+  <li><b>看 2D 云图</b>：在「体素场」下拉选 <code>温度</code> / <code>残余应力(vM)</code> / <code>位移</code> / <code>微观组织</code> / <code>本构</code> 等；拖动「构建方向切片」滑块切换 z 层，右侧实时刷新 2D 云图 + 色标。</li>
+  <li><b>看 3D 着色面</b>：若运行在真实桌面（非 offscreen），几何表面会用当前所选场着色显示；无 OpenGL 时自动回退为占位，仅保留 2D 视图。</li>
+  <li><b>播放温度动画</b>：先在工艺面板勾选「记录温度帧」（<code>record_frames</code>），跑一次高保真热仿真；回到后处理页点 <b>▶播放</b>，或用时间帧滑块逐帧查看熔池 / 温度场演化。</li>
+  <li><b>导出</b>：点「导出 GIF」生成动画 GIF；点「导出 PVD」生成 ParaView 时间序列；点「导出场 (VTK/CSV)…」导出全部场为 <code>.vtk</code> + <code>.csv</code> + <code>manifest.json</code>。</li>
+</ol>
+
+<blockquote><b>前提提醒</b>：动画 / GIF / PVD 需要求解器开启 <code>record_frames=True</code>（GUI 工艺面板有「记录温度帧」勾选框；代码路径见 9.4）。未开启时导出按钮灰显并提示「需求解器 record_frames=True」。3D VTK 仅真实桌面可用，offscreen / CI 环境下会跳过 3D 渲染、仅保留 2D 云图（刻意设计，避免无 OpenGL 上下文触发原生段错误）。</blockquote>
+
+<h3>9.2 各场含义速查</h3>
+<table>
+<thead><tr><th>场名</th><th>物理含义</th><th>典型用途</th></tr></thead>
+<tbody>
+  <tr><td><code>温度</code> / <code>temperature</code></td><td>瞬态 / 准静态温度场（含潜热、糊状区）</td><td>熔池形貌、热影响区、冷却速率</td></tr>
+  <tr><td><code>残余应力(vM)</code></td><td>von Mises 等效残余应力</td><td>变形、开裂风险判定</td></tr>
+  <tr><td><code>位移</code></td><td>装配 / 成形位移场</td><td>尺寸偏差、回弹</td></tr>
+  <tr><td><code>微观组织</code></td><td>凝固组织 / 相分数（相场或代理输出）</td><td>各向异性本构输入</td></tr>
+  <tr><td><code>本构</code></td><td>宏观各向异性本构场（CPFE 均质化）</td><td>结构力学再分析</td></tr>
+</tbody>
+</table>
+
+<h3>9.3 导出格式与 ParaView 打开方法</h3>
+<table>
+<thead><tr><th>格式</th><th>生成方式</th><th>在 ParaView 中</th></tr></thead>
+<tbody>
+  <tr><td><code>.pvd</code>（时间序列）</td><td>导出 PVD 按钮 / <code>PP.save_field_pvd</code></td><td>直接 <code>File → Open</code> 选 <code>.pvd</code>，时间轴可播放（每帧一个 legacy <code>.vtk</code>）</td></tr>
+  <tr><td><code>.vtk</code> + <code>.csv</code> + <code>manifest.json</code></td><td>导出场按钮 / <code>PP.export_all_fields</code></td><td>打开 <code>.vtk</code>；<code>manifest.json</code> 记录各场 min/max/mean</td></tr>
+  <tr><td><code>.gif</code></td><td>导出 GIF 按钮 / <code>PP.save_field_gif</code></td><td>任意浏览器 / 播放器直接看动画</td></tr>
+</tbody>
+</table>
+
+<h3>9.4 代码 / 二次开发：amforge.gui.postproc</h3>
+<p>结果可视化不依赖 GUI 窗口——纯逻辑层 <code>amforge.gui.postproc</code>（别名 <code>PP</code>）即可在脚本 / Notebook / 测试里使用：</p>
+<pre><code>import jax
+jax.config.update("jax_enable_x64", True)
+import amforge as af
+import amforge.inverse as inv
+from amforge import geometry as G, process as P
+from amforge.gui import postproc as PP
+
+geo  = G.from_sdf_fn(lambda x: jnp.linalg.norm(x, axis=-1) - 0.5e-3,
+                     bounds=[(-0.7e-3, 0.7e-3)] * 3, spacing=80e-6, name="bracket")
+plan = P.heuristic_plan(geo, material="316L", modality="SLM")
+
+# 高保真热链路 + 记录温度帧（simulate 接受扁平 params）
+out  = inv.simulate(geo, plan, material="316L",
+                    thermal_solver="enthalpy",
+                    params={"record_frames": True})
+
+# 1) 取温度演化帧
+frames = PP.extract_temperature_frames(out, geo)
+print(f"温度帧数: {len(frames)}")
+
+# 2) 导出动画 GIF（matplotlib + Pillow，无需 vtk）
+gif_path = PP.save_field_gif(frames, "scan_thermal.gif", fps=8)
+
+# 3) 导出 ParaView 时间序列
+pvd_path = PP.save_field_pvd(frames, "scan_thermal.pvd", geometry=geo)
+
+# 4) 导出全部体素场为 VTK / CSV + manifest
+PP.export_all_fields(out, geo, "fields_out")</code></pre>
+
+<h4>postproc 关键 API</h4>
+<table>
+<thead><tr><th>函数</th><th>作用</th></tr></thead>
+<tbody>
+  <tr><td><code>extract_temperature_frames(out, geo)</code></td><td>抽取温度演化帧序列（需 <code>record_frames=True</code>）</td></tr>
+  <tr><td><code>grid_fields(out, geo)</code> / <code>get_field(out, name, geo)</code></td><td>列出 / 取单个体素场（返回 <code>VolumeField</code>，含 data/origin/spacing/cmap/unit）</td></tr>
+  <tr><td><code>save_field_gif(frames, path, fps, cmap, vmin, vmax)</code></td><td>帧序列 → 动画 GIF</td></tr>
+  <tr><td><code>save_field_pvd(frames, path, geometry)</code></td><td>帧序列 → ParaView <code>.pvd</code> 时间序列</td></tr>
+  <tr><td><code>write_field_csv</code> / <code>export_all_fields</code> / <code>write_vtk_structured_points</code></td><td>单场 CSV / 全量 VTK+CSV+manifest / 单场 VTK</td></tr>
+</tbody>
+</table>
+
+<h3>9.5 底层数值场：diffmech.postprocess</h3>
+<p>若你直接用 <code>diffmech</code> 的 FEM / FVM / MPM / DEM 等底层方法求解，可用其自有后处理包把原始场写成 ParaView 动画：</p>
+<pre><code>from diffmech.postprocess import TimeSeriesWriter, FieldCollection
+
+with TimeSeriesWriter("bending", directory="out") as w:
+    for i, t in enumerate(times):
+        U = solve_step(...)                       # 当前步位移场 (n, dim)
+        fields = FieldCollection(point_data={"displacement": U.reshape(-1, dim)})
+        w.write(t, mesh, fields, u=U)             # 每步一个 .vtu + 历史 .npz
+# out/bending.pvd 与 out/bending.npz 现已生成，ParaView 打开 .pvd 即可时间轴播放</code></pre>
+<p class="small">另提供 <code>save_field_gif</code> / <code>save_field_grid_png</code>（<code>diffmech.postprocess</code>）用于快速生成动画与网格快照。</p>
+
+<hr/>
+
+<!-- ============================ 10. 使用案例教程 ============================ -->
+<h2 id="ch10">10. 使用案例教程</h2>
+<p>本章用<b>真实可运行</b>的端到端教程，带你从零搭出仿真模型并跑出结果。每个教程都给出<b>命令 / 代码 / GUI 三路径对照</b>，并标注它演示了哪些 API（详见 <a class="inline" href="#ch11">第 11 章 API 详解</a>）与哪些设计约定（详见 <a class="inline" href="#ch12">第 12 章使用规范</a>）。建议先跑 <a class="inline" href="#ch10-t1">教程 1</a> 建立直觉。</p>
+
+<div class="card">
+<b>教程索引</b>
+<ol>
+  <li><a class="inline" href="#ch10-t1">第一个仿真：球体 SLM（最小闭环）</a> — geometry / process / simulate / 看结果</li>
+  <li><a class="inline" href="#ch10-t2">高保真热-力耦合：焓法 + 塑性本构</a> — 切高保真、record_frames、导出动画</li>
+  <li><a class="inline" href="#ch10-t3">粉末床与 DEM 铺粉</a> — 粒子导入 / 合成床 / 精确粒子注入</li>
+  <li><a class="inline" href="#ch10-t4">工艺反演：可微优化找折中工艺</a> — jax.grad / pareto_optimize</li>
+</ol>
+</div>
+
+<h3 id="ch10-t1">10.1 教程 1 · 第一个仿真：球体 SLM（最小闭环）</h3>
+<p>目标：用最小代码跑通「几何 → 工艺 → 可微正向仿真 → 服役判定」，理解 <a class="inline" href="#ch3">第 3 章</a> 的物理链。这是后续所有教程的基础。</p>
+
+<h4>路径 A · 代码（推荐入门）</h4>
+<pre><code>import jax
+jax.config.update("jax_enable_x64", True)   # 必须：64 位精度（见第 12 章）
+import amforge as af
+from amforge import geometry as G, process as P, inverse as inv
+
+# 1) 建模：半径 0.5mm 球，体素间距 80µm
+geo = G.from_sdf_fn(
+    lambda x: jnp.linalg.norm(x, axis=-1) - 0.5e-3,
+    bounds=[(-0.7e-3, 0.7e-3)] * 3, spacing=80e-6, name="ball",
+)
+# 2) 工艺规划：几何感知规则式工艺（悬垂/薄壁自动降功率）
+plan = P.heuristic_plan(geo, material="316L", modality="SLM")
+
+# 3) 可微正向仿真（默认代理链路，全可微）
+out = inv.simulate(geo, plan, material="316L",
+                   asbuilt_solver="buildup", constitutive="j2")
+ab, ver = out["asbuilt"], out["verdict"]
+print("尺寸偏差  :", float(ab.geom_dev()))
+print("最大位移  :", float(jnp.max(jnp.abs(ab.displacement))))
+print("安全系数  :", float(ver.strength_safety_factor))</code></pre>
+<p class="small">关键 API：<a class="inline" href="#ch11-geo">G.from_sdf_fn</a> · <a class="inline" href="#ch11-proc">P.heuristic_plan</a> · <a class="inline" href="#ch11-inv">inv.simulate</a>。返回的 dict 含 <code>meltpool / thermal / micro / constitutive / asbuilt / assembly / structural / verdict</code> 等槽。</p>
+
+<h4>路径 B · 命令</h4>
+<pre><code>amforge info                       # 查看可用求解器与契约
+amforge selftest                   # 安装后端到端冒烟
+# 把上面脚本存为 my_sim.py 后直接 `python my_sim.py` 运行；
+# 交互式参数扫描见 `amforge pareto --help`</code></pre>
+
+<h4>路径 C · GUI</h4>
+<ol>
+  <li>运行 <code>amforge gui</code> → 前处理标签页，选「球体」基元并设置尺寸 / 间距。</li>
+  <li>切到工艺面板，确认材料 316L / SLM，点「评估可打印性」看 VED / LED。</li>
+  <li>点「运行仿真」→ 切到后处理标签页，下拉选「温度 / 残余应力」看 2D 云图（详见 <a class="inline" href="#ch9">第 9 章</a>）。</li>
+</ol>
+
+<h3 id="ch10-t2">10.2 教程 2 · 高保真热-力耦合（焓法 + 塑性本构）</h3>
+<p>目标：用 <a class="inline" href="#ch11-inv">inv.simulate</a> 切到<b>真实数值</b>高保真热链路（焓法相变 <code>thermal.enthalpy</code>）与塑性成形求解器，并开启温度帧记录，便于后续做动画（见 <a class="inline" href="#ch9">第 9 章</a>）。</p>
+<pre><code>out = inv.simulate(geo, plan, material="316L",
+                   thermal_solver="enthalpy",      # 焓法相变（真实数值，非解析）
+                   asbuilt_solver="plastic",       # 塑性热-力耦合成形
+                   constitutive="j2",
+                   params={"record_frames": True}) # 记录温度演化帧 → 可导出动画
+
+# 取温度演化帧并导出 ParaView 时间序列 / GIF
+from amforge.gui import postproc as PP
+frames = PP.extract_temperature_frames(out, geo)
+print("温度帧数:", len(frames))
+PP.save_field_pvd(frames, "thermal.pvd", geometry=geo)   # ParaView 时间轴播放
+PP.save_field_gif(frames, "thermal.gif", fps=8)          # 浏览器直接看</code></pre>
+<blockquote>保真度由 <code>*_solver</code> / <code>select</code> 参数控制：默认是<b>代理模型</b>（快、全可微）；显式传 <code>thermal_solver="enthalpy"</code> 等才走高保真数值求解。详见 <a class="inline" href="#ch12-fid">第 12 章保真度选择</a> 与 <a class="inline" href="#ch3">第 3 章理论</a>。想看自动布线拓扑：<code>print(af.Pipeline.auto("AsBuiltPart", modality="SLM").describe())</code>。</blockquote>
+
+<h3 id="ch10-t3">10.3 教程 3 · 粉末床与 DEM 铺粉</h3>
+<p>目标：导入真实粉末粒子（CSV / JSON）或合成随机密堆床，跑<b>真实 DEM 铺粉</b>，并演示「用导入粒子作 DEM 初始态」的精确注入（增强项）。</p>
+<pre><code>from amforge.gui import preproc as PRE
+from amforge import geometry as G, process as P
+
+geo  = G.from_sdf_fn(lambda x: jnp.linalg.norm(x) - 0.5e-3,
+                     bounds=[(-0.7e-3, 0.7e-3)] * 3, spacing=80e-6, name="part")
+plan = P.heuristic_plan(geo, material="316L", modality="SLM")
+
+# 方式一：从 CSV 导入真实粒子
+col = PRE.build_particle_collection_csv("powder.csv", material="316L")
+# 方式二：合成一层随机密堆粉末床
+# col = PRE.generate_powder_bed(geo, d50=30e-6, psd_sigma=0.25)
+
+# 真实统计 → powder.bed 参数 → 真实 DEM 铺粉
+res = PRE.solve_powder_from_collection(col, geo, plan, n_steps=120, use_precise=True)
+print(col.summary_str())</code></pre>
+<p class="small">关键 API：<a class="inline" href="#ch11-powder">ParticleCollection / PRE.solve_powder_from_collection</a>。<code>use_precise=True</code> 将导入粒子坐标作为 DEM 沉降初态（跳过抖动采样），向后兼容默认 RCP 床。</p>
+
+<h3 id="ch10-t4">10.4 教程 4 · 工艺反演：可微优化找折中工艺</h3>
+<p>目标：对整条仿真链求梯度，做<b>形状预补偿</b>或<b>多目标 Pareto 工艺优化</b>，体现「仿真＝可微纯函数」的核心价值（见 <a class="inline" href="#ch3">第 3 章</a>）。</p>
+<pre><code>import jax
+# (a) 梯度形状优化：反变形预补偿
+res = inv.optimize_shape(geo, material="316L",
+                         asbuilt_solver="plastic", n_steps=24,
+                         learning_rate=0.01)          # 默认 lr=0.01（真实焓法下 0.05 会发散）
+print("loss 历史末值:", float(res["loss_history"][-1]))
+
+# (b) 多目标 Pareto：尺寸偏差 ↔ 残余应力折中
+res = inv.pareto_optimize_geometry_process(
+    geo, material="316L", algorithm="nsga2",
+    pop_size=16, n_gen=30, asbuilt_solver="plastic", verbose=False)
+print("推荐工艺 :", res["best_compromise"]["final_plan"])</code></pre>
+<blockquote>优化器对整链 <code>jax.grad</code> 求梯度；学习率须保守（<a class="inline" href="#ch12-perf">第 12 章性能与数值规范</a>）。NSGA-II 在凸 / 非凸基准上已用回归测试守住正确性。</blockquote>
+
+<hr/>
+
+<!-- ============================ 10. API 速查 ============================ -->
+<h2 id="ch11">11. API 接口详解与速查</h2>
+<p>本章按模块给出<b>精确签名、参数、返回值与最小示例</b>。所有签名均来自源码（非编造）。建议先读 <a class="inline" href="#ch10">第 10 章教程</a> 上手，参数不确定再回查本章；设计约定见 <a class="inline" href="#ch12">第 12 章</a>。速查表集中在 <a class="inline" href="#ch11-ref">11.8–11.11</a>。</p>
+
+<h3 id="ch11-top">11.1 顶层与编排 API（amforge）</h3>
+<h4>Pipeline（自动布线）</h4>
+<pre><code>af.Pipeline.auto(target, *, given=("PartGeometry",), modality=None,
+                 select=None, exclude=(), require_differentiable=False,
+                 use_adapters=True, name="") -> Pipeline</code></pre>
+<ul>
+  <li><code>target</code>：契约类名或槽名，如 <code>"AsBuiltPart"</code> / <code>"ServiceVerdict"</code> / <code>"verdict"</code>。按它反向推导最小代价求解路径。</li>
+  <li><code>select={环节: 求解器id}</code>：强制某环节走指定求解器（如 <code>{"thermal":"thermal.enthalpy"}</code> 切高保真）。</li>
+  <li>返回 frozen <code>Pipeline</code>，含拓扑序 <code>steps</code>；纯函数，可进 <code>jax.jit</code>。</li>
+</ul>
+<pre><code>pipe = af.Pipeline.auto("AsBuiltPart", modality="SLM")
+print(pipe.describe())                 # 自省求解路径（mermaid / 文本）
+out  = pipe.run(geometry=geo, process=plan,
+                params={"thermal.enthalpy": {"record_frames": True}})
+fn   = pipe.function()                 # 柯里化 f(params, **inputs) 供 jax.grad / jit</code></pre>
+<p class="small"><code>run</code> 的 <code>params</code> 为<b>嵌套 dict</b> <code>{求解器id: {参数}}</code>；高层 <code>inv.simulate</code> 接受<b>扁平 params</b>。两者不要混用（见 <a class="inline" href="#ch12-params">12.3 参数格式约定</a>）。</p>
+
+<h4>注册表查询 / 注册</h4>
+<pre><code>af.register_solver(name, *, consumes=(), produces, stage="utility",
+                   modality=(), differentiable=True, cost=1.0,
+                   defaults=None, doc="", overwrite=False)
+af.get_solver(name) -> SolverSpec
+af.find_solvers(produces="verdict") -> list[SolverSpec]
+af.list_solvers() / af.solver_table() / af.import_status()</code></pre>
+
+<h3 id="ch11-geo">11.2 几何 API（amforge.geometry）</h3>
+<pre><code>G.from_sdf_fn(sdf_fn, *, bounds, spacing, name="part", chunk=None) -> PartGeometry
+G.from_stl(path, *, spacing, scale=1.0, pad=None, name=None,
+           winding_order=1, chunk=50000) -> PartGeometry
+G.slice_masks(part, layer_thickness, *, smoothness=None) -> (masks, z_heights)
+G.layer_z_heights(part, layer_thickness) -> np.ndarray
+G.resample(part, spacing, *, name=None) -> PartGeometry
+G.sample_sdf(part, points) -> jnp.ndarray</code></pre>
+<ul>
+  <li>几何以 <b>SDF 体素</b>表示（<code>PartGeometry</code> frozen dataclass）。</li>
+  <li>扫描路径不在 geometry 模块，而在 <code>process</code>：<code>P.zigzag_segments / contour_segments / spiral_segments</code>，或 GUI 侧 <code>PRE.generate_hatch_paths</code>。</li>
+</ul>
+
+<h3 id="ch11-proc">11.3 工艺 API（amforge.process）</h3>
+<pre><code>P.heuristic_plan(geometry, *, material="Ti6Al4V", modality="SLM",
+                 target_enthalpy=12.0, scan_speed=None, beam_radius=None,
+                 overhang_derate=0.35, thinwall_derate=0.25,
+                 hatch_overlap=0.35, rotation_per_layer=67°, per_layer=True) -> ProcessPlan</code></pre>
+<p>几何感知规则式规划：悬垂 / 薄壁自动降功率，锁定无量纲焓工艺窗口。</p>
+
+<h3 id="ch11-inv">11.4 反演与优化 API（amforge.inverse）</h3>
+<pre><code>inv.simulate(geometry, process, *, thermal_solver="enthalpy", material="316L",
+             service_stress=150e6, params=None, asbuilt_solver="buildup",
+             micro_solver="surrogate", mbd_solver="surrogate",
+             powder_solver=None, constitutive="j2") -> dict</code></pre>
+<ul>
+  <li>返回 dict，键含 <code>meltpool / thermal / micro / constitutive / asbuilt / assembly / structural / verdict</code>（含可选 <code>powderbed</code>）。</li>
+  <li><code>params</code> 为<b>扁平 dict</b>（如 <code>{"record_frames": True, "n_grid": 6}</code>），由内部路由到各求解器。</li>
+</ul>
+<pre><code>inv.pareto_optimize_geometry_process(target, *, material="316L",
+             n_steps=20, learning_rate=0.05, lambdas=(0.0,0.2,0.4,0.6,0.8,1.0),
+             asbuilt_solver="plastic", constitutive="j2",
+             algorithm="nsga2", pop_size=16, n_gen=8, ...) -> dict
+inv.optimize_shape(target, *, thermal_solver="enthalpy", material="316L",
+             process=None, n_steps=20, learning_rate=0.01, ...) -> dict
+inv.optimize_geometry_process(target, *, ..., learning_rate=0.01, ...) -> dict
+inv.predict_process(params_nn, features, *, n_layers=8, modality="SLM") -> ProcessPlan</code></pre>
+<p class="small"><code>optimize_shape</code> / <code>optimize_geometry_process</code> 默认 <code>learning_rate=0.01</code>（真实焓法下 0.05 首步过冲发散，见 <a class="inline" href="#ch12-perf">12.7</a>）。</p>
+
+<h3 id="ch11-powder">11.5 粉末与粒子 API（amforge.powder / gui.preproc）</h3>
+<pre><code>ParticleCollection.from_part_bed(part, *, layer_thickness=40e-6, d50=30e-6,
+             psd_sigma=0.25, n_layers=1, seed=0, material="316L", jitter=0.35)
+PRE.build_particle_collection_csv(path, *, material="316L") -> ParticleCollection
+PRE.generate_powder_bed(part, *, layer_thickness, d50=30e-6, psd_sigma=0.25,
+             n_layers=1, seed=0, material="316L")
+col.powder_bed_params(*, n_steps=120, geometry=None, use_precise=False) -> dict
+col.solve_dem(geometry, process, *, n_steps=120, use_precise=False) -> PowderBedResult
+col.summary_str() -> str
+PRE.solve_powder_from_collection(collection, part, plan, *, n_steps=120,
+             use_precise=False)</code></pre>
+
+<h3 id="ch11-forgecore">11.6 forgecore 积木式建模 API</h3>
+<pre><code>from forgecore.model import SimulationModel
+m = SimulationModel("demo")
+m.add_part("part", geometry=geo)
+m.add_step("verdict", produces="verdict").set_modality("SLM")
+ctx = m.run(params={"material": "316L", "n_grid": 20})
+m.save("demo.amf")                      # 序列化（JSON，.amf）
+m2  = SimulationModel.load("demo.amf")  # 复现</code></pre>
+<pre><code>from forgecore.registry import REGISTRY, SolverSpec
+REGISTRY.register(SolverSpec(name="verdict.simple", produces="verdict",
+                             consumes=("asbuilt",), fn=my_fn))
+REGISTRY.get("verdict.simple")</code></pre>
+
+<h3 id="ch11-diff">11.7 diffmech.postprocess（底层场后处理）</h3>
+<pre><code>from diffmech.postprocess import TimeSeriesWriter, FieldCollection, PVDSeries
+from diffmech.postprocess import save_field_gif, save_field_grid_png
+
+with TimeSeriesWriter("bending", directory="out") as w:
+    for t in times:
+        fields = FieldCollection(point_data={"displacement": U.reshape(n, dim)})
+        w.write(t, mesh, fields, u=U)        # 每步 .vtu + 历史 .npz
+# out/bending.pvd 与 out/bending.npz 已生成，ParaView 打开 .pvd 时间轴播放
+
+save_field_gif(temp_history, "thermal.gif", cmap="inferno", fps=12)</code></pre>
+<p class="small">底层 FEM / FVM / MPM / DEM 求解的原始场写 ParaView 动画用此包；AMForge 高层结果用 <a class="inline" href="#ch9">第 9 章</a> 的 <code>amforge.gui.postproc</code>。</p>
+
+
+
+<h3 id="ch11-ref">11.8 速查表 · 顶层 API（amforge）</h3>
+<table>
+<thead><tr><th>对象</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>af.Pipeline.auto(target, modality, select, given, require_differentiable)</code></td><td>反向自动布线，返回静态拓扑序 Pipeline</td></tr>
+<tr><td><code>pipe.describe() / .mermaid() / .run(geometry=...) / .function()</code></td><td>自省 / 正向 / 柯里化供 grad</td></tr>
+<tr><td><code>af.Pipeline.of(*names, given=...)</code></td><td>由显式求解器名构造并拓扑排序</td></tr>
+<tr><td><code>af.register_solver / get_solver / find_solvers / list_solvers / solver_table</code></td><td>注册表查询与注册</td></tr>
+<tr><td><code>af.import_status()</code></td><td>诊断内置模块导入失败原因</td></tr>
+<tr><td><code>af.geometry / process / meltpool / thermal / micro / constitutive / digitaltwin / verdict / inverse</code></td><td>各物理环节模块</td></tr>
+</tbody>
+</table>
+
+<h3>11.9 速查表 · CLI 参数</h3>
+<table>
+<thead><tr><th>命令</th><th>参数（默认值）</th></tr></thead>
+<tbody>
+<tr><td><code>pareto</code></td><td><code>--material 316L</code> · <code>--pop-size 6</code> · <code>--n-gen 3</code> · <code>--n-grid 4</code> · <code>--max-layers 2</code> · <code>--n-sub-cp 4</code> · <code>--seed 0</code></td></tr>
+<tr><td><code>selftest</code></td><td><code>--quiet</code></td></tr>
+</tbody>
+</table>
+
+<h3>11.10 速查表 · GUI 逻辑层关键函数</h3>
+<table>
+<thead><tr><th>函数</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td><code>preproc.build_primitive / build_from_stl</code></td><td>构造几何（球/柱/方或 STL）</td></tr>
+<tr><td><code>preproc.generate_hatch_paths</code></td><td>生成 hatch 光栅扫描路径</td></tr>
+<tr><td><code>preproc.build_process_plan / default_process_params</code></td><td>工艺方案与默认参数</td></tr>
+<tr><td><code>preproc.assess</code></td><td>可打印性 / VED / LED 评估</td></tr>
+<tr><td><code>preproc.build_particle_collection_csv / generate_powder_bed / solve_powder_from_collection</code></td><td>粉末/粒子导入与 DEM 求解</td></tr>
+<tr><td><code>preproc.export_config / import_config</code></td><td>配置导出 / 导入（SDF + 工艺）</td></tr>
+<tr><td><code>postproc.available_fields / get_field / scalar_summary</code></td><td>体素场浏览</td></tr>
+<tr><td><code>postproc.export_all_fields</code></td><td>导出 .vtk + .csv + manifest.json（ParaView）</td></tr>
+<tr><td><code>postproc.assembly_summary / optimization_summary</code></td><td>数字样机 / 优化结果聚合</td></tr>
+<tr><td><code>postproc.save_field_gif / save_field_pvd</code></td><td>后处理动画（时间序列）</td></tr>
+</tbody>
+</table>
+
+<h3>11.11 速查表 · forgecore 积木式 API</h3>
+<table>
+<thead><tr><th>方法</th><th>作用</th></tr></thead>
+<tbody>
+<tr><td><code>SimulationModel(name)</code></td><td>唯一 canonical 模型对象</td></tr>
+<tr><td><code>.add_part / .add_material / .add_step / .add_bc / .add_ic / .add_mesh / .add_solver / .add_output</code></td><td>增删积木块</td></tr>
+<tr><td><code>.set_modality / .set_target / .set_param</code></td><td>工艺 / 目标端口 / 全局参数</td></tr>
+<tr><td><code>.build() / .graph() / .run(params)</code></td><td>装配 / 调试图 / 运行</td></tr>
+<tr><td><code>.save(path) / SimulationModel.load(path)</code></td><td>序列化 / 复现（.amf）</td></tr>
+<tr><td><code>REGISTRY.auto(target, modality, select)</code></td><td>通用引擎自动选路</td></tr>
+</tbody>
+</table>
+
+<hr/>
+
+<!-- ============================ 12. 使用规范 ============================ -->
+<h2 id="ch12">12. 使用规范</h2>
+<p>把项目用对、用好，需要遵守下面几条约定。部分是<b>强制</b>的（精度、参数格式），部分是<b>推荐最佳实践</b>（保真度、二次开发）。与 <a class="inline" href="#ch10">教程</a> / <a class="inline" href="#ch11">API</a> 配套阅读。</p>
+
+<h3 id="ch12-env">12.1 环境与精度（强制）</h3>
+<ul>
+  <li>运行前必须置 <code>PYTHONPATH=src</code> 与 <code>JAX_ENABLE_X64=1</code>（见 <a class="inline" href="#ch5">第 5 章</a>）。不开启 x64 会出现 NaN / Inf 或被吞掉的精度损失。</li>
+  <li>使用 <code>amsim</code> 虚拟环境（已装 jax 0.11 + pytest）。<code>default</code> 环境无 jax，不可用。</li>
+  <li>受限环境装 GUI 依赖前先 <code>export PYTHONPATH= BASH_ENV=</code> 中和 safe-delete 拦截层，再用国内镜像源安装。</li>
+</ul>
+
+<h3 id="ch12-fid">12.2 保真度选择（默认 vs 高保真）</h3>
+<table>
+<thead><tr><th>场景</th><th>配置</th><th>说明</th></tr></thead>
+<tbody>
+  <tr><td>快速预研 / 可微优化</td><td>默认（代理模型）</td><td>快、全可微；绝对精度依赖校准</td></tr>
+  <tr><td>真实熔池 / 热-力</td><td><code>thermal_solver="enthalpy"</code> / <code>asbuilt_solver="plastic"</code> / <code>micro_solver="phasefield"</code></td><td>数值方法（FVM / FEM / 相场），含潜热、糊状区</td></tr>
+  <tr><td>自定义环节</td><td><code>Pipeline.auto(..., select={"thermal":"thermal.enthalpy"})</code></td><td>按环节强制高保真</td></tr>
+</tbody>
+</table>
+<blockquote>设计原则：<b>仿真＝数值方法，不是解析近似</b>。默认链路已是真实数值（焓法相变）；Rosenthal 解析仅作教学 / 快速回归，勿当作默认物理。</blockquote>
+
+<h3 id="ch12-params">12.3 参数格式约定</h3>
+<ul>
+  <li><code>inv.simulate(..., params={...})</code>：<b>扁平 dict</b>，键为参数名（如 <code>record_frames</code>、<code>n_grid</code>），由内部路由。</li>
+  <li><code>Pipeline.run(..., params={...})</code>：<b>嵌套 dict</b> <code>{求解器id: {参数}}</code>（如 <code>{"thermal.enthalpy": {"record_frames": True}}</code>）。</li>
+  <li><code>record_frames=True</code> 是动画 / GIF / PVD 的前提（详见 <a class="inline" href="#ch9">第 9 章</a>）。</li>
+</ul>
+
+<h3 id="ch12-powder">12.4 粉末床与粒子规范</h3>
+<ul>
+  <li>CSV 导出用 <code>%.17e</code> 保 float64 无损往返（<code>%.9e</code> 会丢精度导致 <code>__eq__</code> 静默失败）。</li>
+  <li><code>use_precise=True</code> 将导入坐标作为 DEM 沉降初态；均匀床统计等价，结构化异质点云才保留布局信息。</li>
+  <li>粉末床参数（d50 / PSD / 层数）按真实统计映射到 <code>powder.bed</code>，避免大零件床被稀释。</li>
+</ul>
+
+<h3 id="ch12-dev">12.5 二次开发规范</h3>
+<ul>
+  <li>新增求解器用 <code>@register_solver(name, consumes=, produces=, stage=, cost=, differentiable=)</code> 声明契约；保持<b>纯函数</b>（无副作用），方可被 <code>jax.jit / grad</code> 与自动布线消费。</li>
+  <li>优先在原生 <code>amforge.core.registry</code> 注册，再经 <code>forge_adapter</code> 镜像进 <code>forgecore</code>；镜像 cost 须从原生 spec 取（单一事实源），避免发散。</li>
+  <li>每个新增能力配 pytest，守住契约类型与（若可微）梯度有限性。</li>
+</ul>
+
+<h3 id="ch12-gui">12.6 GUI 与可视化规范</h3>
+<ul>
+  <li>无显示环境设 <code>QT_QPA_PLATFORM=offscreen</code>；VTK 3D 自动回退 2D 云图，<b>不要</b>强制 <code>Render()</code>（会触发原生段错误）。</li>
+  <li>GUI 测试须<b>隔离跑</b>（同进程多 Qt+VTK 窗口触发段错误），不要与其它 GUI 测试混跑。</li>
+  <li>大网格性能：先用小 <code>n_grid</code> / 少层快速验证，再放大规模。</li>
+</ul>
+
+<h3 id="ch12-perf">12.7 性能与数值规范</h3>
+<ul>
+  <li>可微优化学习率保守（<code>optimize_shape</code> 默认 0.01）；真实焓法下 0.05 首步过冲发散。</li>
+  <li>形状场为全网格体素，纯进化收敛慢；生产级建议对 u 用降维基（Zernike / 随机傅里叶），或开启 <code>seed_with_lambda</code> 梯度种子引导。</li>
+</ul>
+
+<hr/>
+
+<!-- ============================ 13. 验证/边界/FAQ ============================ -->
+<h2 id="ch13">13. 验证 · 能力边界 · FAQ</h2>
+
+<h3>13.1 测试与验证</h3>
+<pre><code>pytest tests/ -q                 # 主回归（amforge 契约链 + 可微性 + Pareto）
+pytest tests/test_nsga2.py -q    # NSGA-II 纯数值单元验证
+amforge selftest                 # 安装后端到端冒烟
+pytest tests/test_gui_app*.py -q # GUI offscreen 冒烟（需先装 [gui]）</code></pre>
+<p>正确性由已知问题严格保证：NSGA-II 在凸/非凸/一维双目标基准上可恢复真实前沿且同种子可复现；可微性由整链 <code>jax.grad</code> 前向回归测试守住（无 NaN/Inf）。粉末导入 CSV 往返为 float64 无损（<code>%.17e</code>）。</p>
+
+<h3>13.2 能力边界（诚实声明）</h3>
+<ul>
+  <li><b>算法正确性</b>：NSGA-II 与整链可微性有回归测试守住。</li>
+  <li><b>工程保真度</b>：默认链路为代理模型，绝对精度依赖你切换的高保真求解器与校准材料参数；框架本身不「免费」给出工业级定量精度，需配合标定使用。</li>
+  <li><b>样本效率</b>：形状场 u 为全网格体素，纯进化收敛较慢。生产级前沿建议：对 u 用降维基（Zernike / 随机傅里叶），或开启 <code>seed_with_lambda</code> 用梯度种子引导。</li>
+  <li><b>平台</b>：已在 Windows + 管理 Python 3.13 验证；Ubuntu + 48G GPU 全保真回归（#38）待硬件到位。</li>
+</ul>
+
+<h3>13.3 常见问题</h3>
+<table>
+<thead><tr><th>现象</th><th>原因 / 解决</th></tr></thead>
+<tbody>
+<tr><td><code>Unresolvable: 没有任何求解器产出 X</code></td><td>目标契约缺求解器或被 modality/exclude 过滤。<code>af.info</code> 查看可用求解器；必要时自定义并 <code>@register_solver(produces="X")</code>，或把该契约放进 <code>given=</code>。</td></tr>
+<tr><td>结果含 NaN / Inf</td><td>确认开启了 <code>JAX_ENABLE_X64=1</code>；高保真链未校准材料参数可能发散。先跑 <code>amforge selftest</code> 确认基础链路有限。</td></tr>
+<tr><td>GUI 在无显示环境段错误</td><td>设 <code>QT_QPA_PLATFORM=offscreen</code>；VTK 3D 在该环境自动回退 2D 云图，不要强制 Render()。</td></tr>
+<tr><td>GUI 测试同进程多窗口崩溃</td><td>GUI 测试须<b>隔离跑</b>（offscreen 下多 Qt+VTK 窗口同进程触发原生段错误），不要与其它 GUI 测试混跑。</td></tr>
+<tr><td>装 GUI 依赖报 safe-delete 失败</td><td>先 <code>export PYTHONPATH= BASH_ENV=</code> 中和拦截层，再用国内镜像源安装（见第 5 章）。</td></tr>
+</tbody>
+</table>
+
+<hr/>
+
+<!-- ============================ 附录 ============================ -->
+<h2 id="appendix">附录 · 术语表</h2>
+<table>
+<thead><tr><th>术语</th><th>含义</th></tr></thead>
+<tbody>
+<tr><td>AM / SLM / LSF</td><td>增材制造 / 选区激光熔融 / 激光送粉</td></tr>
+<tr><td>SDF</td><td>有符号距离场（几何体素表示）</td></tr>
+<tr><td>契约（Contract）</td><td>模块间唯一通信的数据结构（9 个 frozen dataclass）</td></tr>
+<tr><td>Pipeline</td><td>由契约反向自动布线得到的解算器链（静态拓扑序）</td></tr>
+<tr><td>注册表（Registry）</td><td>声明「吃什么、吐什么、代价多少」的求解器目录</td></tr>
+<tr><td>焓法相变</td><td>以焓为未知量处理固-液潜热的热传导方法（高保真热链）</td></tr>
+<tr><td>CPFE</td><td>晶体塑性有限元（微观→宏观本构均质化）</td></tr>
+<tr><td>DEM / SPH / MPM</td><td>离散元 / 光滑粒子流体 / 物质点法（粉末尺度）</td></tr>
+<tr><td>MBD</td><td>多体动力学（数字样机机构仿真）</td></tr>
+<tr><td>VED / LED</td><td>体积能量密度 / 线能量密度（工艺可打印性指标）</td></tr>
+<tr><td>NSGA-II</td><td>非支配排序遗传算法 II（多目标 Pareto 优化）</td></tr>
+<tr><td>SimulationModel / .amf</td><td>forgecore 唯一模型对象 / 工程文件（GUI 与 API 共用）</td></tr>
+</tbody>
+</table>
+
+<p class="small">文档生成于 2026-08-17 · 配套源码见 <code>src/amforge</code>、<code>src/diffmech</code>、<code>src/forgecore</code> · 更多架构细节见 <code>docs/AMForge-architecture.md</code> 与 <code>docs/需求对照审计_2026-08-16.html</code>。</p>
+
+</main>
+</div>
+<button class="toc-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="回到顶部">↑</button>
+
+<script>
+// 目录过滤：输入时仅显示匹配的章节链接
+(function(){
+  var s = document.getElementById('search');
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav a'));
+  s.addEventListener('input', function(){
+    var q = s.value.trim().toLowerCase();
+    links.forEach(function(a){
+      var t = a.textContent.toLowerCase();
+      a.style.display = (!q || t.indexOf(q) !== -1) ? '' : 'none';
+    });
+  });
+  // 滚动高亮当前章节
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main h2[id], main h1[id]'));
+  var navLinks = links;
+  function onScroll(){
+    var pos = window.scrollY + 120;
+    var cur = null;
+    sections.forEach(function(h){ if(h.offsetTop <= pos) cur = h.id; });
+    navLinks.forEach(function(a){
+      var href = a.getAttribute('href');
+      if(href && href === '#' + cur) a.classList.add('active');
+      else a.classList.remove('active');
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

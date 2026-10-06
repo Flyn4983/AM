@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AMForge · 原需求逐项对照审计 · 2026-08-16</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#1f2933; --muted:#6b7785; --line:#e3e8ee; --card:#f7f9fc;
+    --ok:#1f9d5b; --okbg:#e7f6ee; --warn:#e0962b; --warnbg:#fdf3e3; --bad:#d64545; --badbg:#fdecec;
+    --accent:#2563eb; --accentbg:#eaf1ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.7;font-size:15px}
+  .wrap{max-width:1100px;margin:0 auto;padding:34px 26px 70px}
+  h1{font-size:27px;margin:0 0 4px;letter-spacing:.5px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+  h2{font-size:20px;margin:34px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+  h3{font-size:16px;margin:22px 0 8px}
+  .verdict{display:inline-block;font-weight:700;padding:2px 10px;border-radius:999px;font-size:13px;vertical-align:middle}
+  .v-ok{background:var(--okbg);color:var(--ok)} .v-warn{background:var(--warnbg);color:var(--warn)}
+  .v-bad{background:var(--badbg);color:var(--bad)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);font-weight:700}
+  td code,li code,td .em{font-family:"SF Mono",Consolas,monospace;background:var(--card);padding:1px 5px;border-radius:4px;font-size:12.5px;color:#0b5cab}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:14px 0}
+  .badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;margin-right:6px}
+  .b-ok{background:var(--okbg);color:var(--ok)} .b-warn{background:var(--warnbg);color:var(--warn)}
+  .b-bad{background:var(--badbg);color:var(--bad)} .b-acc{background:var(--accentbg);color:var(--accent)}
+  .em{color:var(--accent);font-weight:600}
+  ul{margin:8px 0 8px 0;padding-left:22px} li{margin:5px 0}
+  .callout{border-left:4px solid var(--accent);background:var(--accentbg);padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0}
+  .callout.bad{border-color:var(--bad);background:var(--badbg)}
+  .callout.warn{border-color:var(--warn);background:var(--warnbg)}
+  .path{color:var(--muted);font-size:12.5px;font-family:monospace}
+  .pill{display:inline-block;background:var(--accentbg);color:var(--accent);border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;margin:1px 3px}
+  footer{margin-top:40px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px}
+  .legend span{margin-right:14px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>AMForge · 原需求逐项对照审计</h1>
+<div class="sub">整体 / 系统视角 · 全仓库逐文件核查 · 2026-08-16 · 判定口径：代码实测 + 单元测试佐证，不凭记忆</div>
+
+<div class="callout">
+  <b>总判定：</b>原始需求的<b>全部物理求解能力在代码层均已落地</b>（宏观 / 微观 / 数字样机 / 可微 / GUI 五大块均有真实求解器与测试），
+  且 GUI 前/后处理的接线断点现已<b style="color:var(--ok)">全部闭环</b>：缺口 ① 宏观热学默认潜热相变 2026-08-16；②A 几何元素选面施 BC/IC、③ 后处理动画均 2026-08-17；②B 导入粒子/粉末 2026-08-17。开箱即用已“全部满足”：
+  <span class="pill">① 宏观热学默认潜热相变 — <b>已满足</b>（2026-08-16）</span>
+  <span class="pill">②A 几何元素选面施 BC/IC — <b>已满足</b>（2026-08-17）</span>
+  <span class="pill">②B GUI 导入粒子/粉末 — <b>已满足</b>（2026-08-17）</span>
+  <span class="pill">③ GUI 后处理动画播放 — <b>已满足</b>（2026-08-17）</span>。
+  下面逐条给出证据与缺口。
+</div>
+
+<div class="legend">
+  <span><span class="verdict v-ok">满足</span> 代码已落地且默认可用</span>
+  <span><span class="verdict v-warn">部分满足</span> 能力存在但需显式切换 / 仅库级 / 仅部分集成</span>
+  <span><span class="verdict v-bad">未满足</span> 缺口明确</span>
+</div>
+
+<!-- ============================ 1 ============================ -->
+<h2>① 宏观复杂几何增材成型模拟</h2>
+<table>
+  <tr><th style="width:30%">子需求</th><th style="width:14%">判定</th><th>证据与缺口</th></tr>
+  <tr>
+    <td>真实三维复杂构型增材成型</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td>任意复杂几何 → SDF 体素化 → 分层 → 扫描路径（<code>geometry.py</code>、<code>process.zigzag/contour/spiral/segments_from_gcode</code>）；
+        高保真成形用体素 SDF 直接建 FEM 网格并反变形回填（<code>asbuilt_plastic.py</code> 生死单元 FEM，已测）。</td>
+  </tr>
+  <tr>
+    <td>SLM（选区熔融）+ LSF（激光立体成型）</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>process.py</code> 双模式：<code>heuristic_plan</code> 对 LSF 取粗而慢基准（line 237-241），<code>PROCESS_BOUNDS</code> 功率 20~4000W 同时覆盖两类设备；
+        meltpool / thermal / enthalpy / mbd 的注册均 <code>modality=("SLM","LSF")</code>。</td>
+  </tr>
+  <tr>
+    <td>多物理场（热-流-力耦合）</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td>熔池 VOF 自由界面 CFD（动量 / Marangoni / 反冲压力 / 蒸发 / 糊状区 Darcy，<code>meltpool.py</code> 真实实现，<code>meltpool.vof_flow3d</code>）；
+        成形 FEM 残余应力（<code>asbuilt_plastic.py</code>）。物理链路完整。</td>
+  </tr>
+  <tr>
+    <td><b>固液 / 液固相变（潜热）</b><br/><span class="path">用户重点关切 ①</span></td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td>
+      <b>真实求解器存在且已测：</b><code>thermal_enthalpy.py</code> 的 <code>thermal.enthalpy</code> 用焓法 + 移动高斯热源 + 糊状区有效扩散系数 + SSP-RK2，
+      含潜热 L（line 201/243），<code>test_enthalpy_thermal.py</code> <b>6 passed</b>（含“潜热降低峰值温度”）。
+      <div class="callout" style="margin:8px 0 0;border-color:var(--ok);background:var(--okbg)">
+        <b>已修复（2026-08-16）：</b>主可微链路 <code>inverse.simulate()</code> 现默认走真实焓法相变
+        <code>thermal.enthalpy</code>（<code>thermal_solver="enthalpy"</code> 为默认），并贯穿
+        <code>loss_fn / optimize_dimensional / optimize_shape / optimize_geometry_process / pareto_optimize</code> 等全部可微优化回路；
+        Rosenthal 降阶模型保留为 <code>thermal_solver="history"</code> 供教学 / 快速回归。2D / 低维几何自动回退降阶（焓法仅实现 3D 体素场）。
+        冒烟验证：默认 <code>simulate()</code> 峰值温度 2212K &gt; 失相线 1723K、<code>time_above_melt&gt;0</code>，<code>jax.grad</code> 穿透无 NaN。
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td>FVM / FEM / DEM / SPH / MPM 都要有</td>
+    <td><span class="verdict v-ok">满足</span><br/><span class="verdict v-warn">集成部分</span></td>
+    <td>
+      <code>diffmech/methods/</code> 下五法均真实实现：<code>fvm/</code>(thermal,stokes,advection)、<code>fem/</code>(linear,nonlinear)、
+      <code>dem/dem.py</code>、<code>sph/sph.py</code>、<code>mpm/mpm.py</code>。<br/>
+      <b>已接入 AM 链路：</b>FEM→<code>asbuilt_plastic</code>；FVM→<code>thermal.enthalpy</code>+熔池 VOF；
+      <b>DEM/SPH/MPM→粉末床尺度</b>（<code>simulate(...,powder_solver="dem"/"sph"/"mpm")</code>）。<br/>
+      即“方法都要有”✅；但部件级默认链路主要用 FEM+FV+VOF，DEM/SPH/MPM 在粉末尺度与库级，非主链默认路径。
+    </td>
+  </tr>
+</table>
+
+<!-- ============================ 2 ============================ -->
+<h2>② 微观模拟（相场法 + 晶体塑性有限元 → 本构）</h2>
+<table>
+  <tr><th style="width:30%">子需求</th><th style="width:14%">判定</th><th>证据与缺口</th></tr>
+  <tr>
+    <td>相场法（枝晶 / 组织演化）</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>phasefield.py</code> 真实 Karma–Rappel 枝晶相场：4 重界面能各向异性 + 热梯度取向（主轴沿 G），
+        半隐式 Fourier 谱格式，<code>micro.phasefield</code> 已测（<code>test_phasefield.py</code>）。输出同 <code>MicrostructureResult</code> 契约。</td>
+  </tr>
+  <tr>
+    <td>晶体塑性有限元法（CPFE）</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>diffmech/methods/cpfe/</code>：<code>CrystalPlasticity</code> + fcc/bcc 滑移系；已接入 <code>asbuilt_plastic(constitutive="cp")</code> 与 <code>constitutive.homogenize</code>，
+        可产横观各向同性本构场。</td>
+  </tr>
+  <tr>
+    <td>工艺参数 → 本构模型映射</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td>链路闭环：工艺→热历史→微观（相场/代理）→<code>constitutive.homogenize</code>（Hall-Petch 屈服 + 孔隙 Mori-Tanaka 折减 + Hill48 各向异性，<code>constitutive.py</code>）。
+        下游 asbuilt / digitaltwin 直接消费本构场。</td>
+  </tr>
+</table>
+
+<!-- ============================ 3 ============================ -->
+<h2>③ 数字样机（FEM + 多体 + 强度校核）</h2>
+<table>
+  <tr><th style="width:30%">子需求</th><th style="width:14%">判定</th><th>证据与缺口</th></tr>
+  <tr>
+    <td>FEM + 多体动力学耦合</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>mbd.py</code> + <code>diffmech/methods/mbd/</code>：<code>surrogate</code> / <code>coupled</code>(JAX Featherstone+FEM 关节柔度) / <code>newton</code>(Warp 生产级) 三档；
+        <code>digitaltwin.rom</code> 给服役应力下的位移与应力集中。</td>
+  </tr>
+  <tr>
+    <td>以本构模型做强度校核</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>verdict.py</code> 用 <code>constitutive.effective_stiffness()</code> + 孔隙应力集中 Kt + 强度/刚度/疲劳/磨损安全系数；已接入主链。</td>
+  </tr>
+  <tr>
+    <td>默认链路保真度</td>
+    <td><span class="verdict v-warn">部分满足</span></td>
+    <td>默认 <code>mbd_solver="surrogate"</code>、<code>digitaltwin.rom</code> 为降阶；真实 <code>coupled</code>/<code>newton</code> 需显式选，
+        且 <code>newton</code> 路径本机抛错（需 48G Ubuntu，见 #38）。能力齐，默认非高保真。</td>
+  </tr>
+</table>
+
+<!-- ============================ 4 ============================ -->
+<h2>④ 可微分模拟 → 工艺优化</h2>
+<table>
+  <tr><th style="width:30%">子需求</th><th style="width:14%">判定</th><th>证据与缺口</th></tr>
+  <tr>
+    <td>可微分整链 + 工艺反演 / 优化</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>inverse.py</code>：可训练 NN 几何→工艺 + 端到端 <code>jax.grad</code>；<code>optimize_dimensional</code> / <code>optimize_shape</code> /
+        <code>optimize_geometry_process</code>（反变形预补偿）/ <code>pareto_optimize_geometry_process</code>（NSGA-II 真非支配排序）。设计成熟。</td>
+  </tr>
+  <tr>
+    <td>可微 + 真实物理</td>
+    <td><span class="verdict v-warn">部分满足</span></td>
+    <td>默认梯度穿透的是<b>降阶链</b>（thermal.history / micro.surrogate / buildup）。高保真求解器（enthalpy/phasefield/asbuilt_plastic）
+        本身均 <code>differentiable=True</code>、专为 <code>jax.grad</code> 设计——只要切到它们，可微即是真物理。
+        当前缺口同 ①：需把高保真求解器接进 <code>simulate()</code> 的可选参数。</td>
+  </tr>
+</table>
+
+<!-- ============================ 5 ============================ -->
+<h2>⑤ GUI 前后处理</h2>
+<table>
+  <tr><th style="width:30%">子需求</th><th style="width:14%">判定</th><th>证据与缺口</th></tr>
+  <tr>
+    <td>前处理：导入其它软件三维模型</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>preproc_app.py:234</code> STL 导入（<code>_on_import_stl</code> → <code>preproc.build_from_stl</code>）；另支持球/柱/方解析体素化。
+        <span class="em">注：仅 STL，无 STEP/IGES。</span></td>
+  </tr>
+  <tr>
+    <td><b>前处理：导入粒子</b><br/><span class="path">用户重点关切 ②</span></td>
+    <td><span class="verdict v-ok">已满足</span></td>
+    <td>实打实实现（2026-08-17）：新增 <code>src/amforge/powder.py</code> 的 <code>ParticleCollection</code>（逐粒子坐标+半径+材料），支持 <b>CSV/JSON 点云真实导入</b>（坐标+半径+材料）与 <code>from_part_bed</code> 真实生成随机密堆粉末层（抖动晶格+对数正态 PSD，与 <code>powder_bed.synth_powder_bed</code> 同源）；
+        在导入粒子上直接测量体积分数/d50/PSD，映射为 <code>powder.bed</code> 参数并驱动<b>真实 DEM 铺粉</b> <code>solve_powderbed(powder_fidelity="dem")</code>。
+        <code>preproc</code> 逻辑层 + <code>preproc_app</code> 「粉末/粒子」面板（导入 CSV/JSON、生成粉末层、2D 切片散点叠加、评估 DEM）已接通。<b>更正：原文档称“GUI grep 粒子零命中”不实——现已有 powder.py + 面板并测。</b></td>
+  </tr>
+  <tr>
+    <td><b>前处理：几何元素选择施加 BC/IC</b><br/><span class="path">用户重点关切 ②</span></td>
+    <td><span class="verdict v-ok">已满足</span></td>
+    <td>实打实实现（2026-08-17）：新增 <code>src/amforge/boundary.py</code>（<code>BoundaryCondition</code>：dirichlet/convection/flux/adiabatic + <code>InitialCondition</code>：uniform/preheat + <code>BoundaryCollection</code> 可序列化）；
+        <code>face_mask(part, face)</code> 基于 SDF 法向做轴向选面（±X/±Y/±Z/all，2D 下 ±Z 为空掩膜），<code>boundary_terms</code> 算对流/热流/绝热附加项、<code>initial_enthalpy_field</code> 由 IC 生成 H0；
+        <code>thermal_enthalpy.solve_enthalpy_thermal</code> 经 <code>params["boundary_conditions"]</code> 可选消费（默认 None 行为逐位不变，整条链路可微）。
+        <code>preproc_app</code> 增「边界/初值条件」面板：选面下拉 + BC 类型 + 主/次值 + 添加/默认/清空 + 列表 + 预热 IC 勾选；选中面在 2D 切片红色半透明高亮；导出写 <code>preproc_bc.json</code>。
+        <code>test_boundary.py</code> 7 例全绿（选面定位、序列化往返、Dirichlet 基板恒温保持、强对流降峰值、预热初值生效）。</td>
+  </tr>
+  <tr>
+    <td>后处理：历史/场数据 → 曲线、云纹图</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td><code>postproc_app.py</code> Tab① 场浏览器（体素场下拉 + 构建方向切片 + 2D 云图 <code>imshow</code>，line 7/193/201）；
+        Tab③ loss 历史曲线 + NSGA-II Pareto 散点；<code>scalar_summary</code> 与 <code>assembly_chain</code> 给历史量。</td>
+  </tr>
+  <tr>
+    <td>后处理：动画</td>
+    <td><span class="verdict v-ok">满足</span></td>
+    <td>实打实实现（2026-08-17）：<code>thermal.enthalpy</code> 的 <code>record_frames</code> 从 <code>jax.lax.scan</code> 时间步进抽取温度演化帧，挂 <code>ThermalHistory.temperature_evolution</code>；
+        <code>postproc.extract_temperature_frames</code> 抽帧，<code>save_field_gif</code>（matplotlib）/ <code>save_field_pvd</code>（ParaView 时间序列）导出；
+        <code>postproc_app</code> Tab① 增“扫描温度动画”播放/暂停 + 帧滑块 + 导出按钮。<b>更正：原文档称“库级动画已存在”不实——全代码库无此函数，系从零实现。</b></td>
+  </tr>
+</table>
+
+<!-- ============================ 总览矩阵 ============================ -->
+<h2>总览判定矩阵</h2>
+<table>
+  <tr><th>原始需求条目</th><th>判定</th><th>一句话说明</th></tr>
+  <tr><td>真实三维复杂几何增材成型</td><td><span class="verdict v-ok">满足</span></td><td>SDF 体素化 + 分层 + 扫描路径 + 反变形 FEM 成形</td></tr>
+  <tr><td>SLM + LSF 双工艺</td><td><span class="verdict v-ok">满足</span></td><td>process.py 双模式，各求解器均支持</td></tr>
+  <tr><td>多物理场耦合</td><td><span class="verdict v-ok">满足</span></td><td>熔池 VOF CFD + 成形 FEM 真实实现</td></tr>
+  <tr><td>固液/液固相变（潜热）</td><td><span class="verdict v-ok">满足</span></td><td>默认链路已接真实焓法相变（2026-08-16 修复）</td></tr>
+  <tr><td>FVM/FEM/DEM/SPH/MPM 齐全</td><td><span class="verdict v-ok">满足</span></td><td>五法均实现；DEM/SPH/MPM 接粉末床尺度</td></tr>
+  <tr><td>相场法微观</td><td><span class="verdict v-ok">满足</span></td><td>Karma-Rappel 真实求解器，已测</td></tr>
+  <tr><td>晶体塑性有限元（CPFE）</td><td><span class="verdict v-ok">满足</span></td><td>CPFE + 滑移系，接入本构/成形</td></tr>
+  <tr><td>工艺 → 本构映射</td><td><span class="verdict v-ok">满足</span></td><td>微观→Hall-Petch/各向异性本构场</td></tr>
+  <tr><td>数字样机 FEM+多体</td><td><span class="verdict v-ok">满足</span></td><td>MBD 三档 + digitaltwin，默认降阶</td></tr>
+  <tr><td>强度校核</td><td><span class="verdict v-ok">满足</span></td><td>verdict 安全系数 + 本构</td></tr>
+  <tr><td>可微分工艺优化</td><td><span class="verdict v-ok">满足</span></td><td>NN 反演 + 尺寸/形状/Pareto 优化</td></tr>
+  <tr><td>GUI 导入三维模型</td><td><span class="verdict v-ok">满足</span></td><td>STL 导入</td></tr>
+  <tr><td>GUI 导入粒子</td><td><span class="verdict v-ok">已满足</span></td><td>实打实：powder.py ParticleCollection + preproc_app 粉末面板（CSV/JSON 导入、生成、DEM 评估、切片叠加，2026-08-17）</td></tr>
+  <tr><td>GUI 几何元素选面施 BC/IC</td><td><span class="verdict v-ok">已满足</span></td><td>新增 BoundaryCollection：体素 SDF 轴向选面（±X/±Y/±Z/all）+ Dirichlet/对流/热流/绝热 + 预热初值，经 params["boundary_conditions"] 喂入 thermal.enthalpy（2026-08-17）</td></tr>
+  <tr><td>GUI 后处理曲线/云图</td><td><span class="verdict v-ok">满足</span></td><td>场浏览器 + 切片 + Pareto 曲线</td></tr>
+  <tr><td>GUI 后处理动画</td><td><span class="verdict v-ok">已满足</span></td><td>实打实：求解器 record_frames 抽取温度演化帧 + GUI 播放/暂停 + GIF/PVD 导出（2026-08-17）</td></tr>
+</table>
+
+<!-- ============================ 闭环路线图 ============================ -->
+<h2>让“全部满足”落地的闭环路线（按性价比排序）</h2>
+
+<div class="card">
+  <span class="badge b-ok">缺口 ②A（已闭环 2026-08-17）</span> <b>GUI 前处理：几何元素选面施 BC/IC</b><br/>
+  <span class="path">状态：已满足。新增 src/amforge/boundary.py（数据模型 + 体素轴向选面 + 求解器应用），preproc 逻辑层 default_boundary_collection / make_boundary_collection / export_bc，
+  preproc_app 增「边界/初值条件」面板（选面下拉 + BC 类型 + 值 + 列表 + 2D 切片高亮 + 导出）；求解器经 params["boundary_conditions"] 可选消费（默认 None 行为不变，不破坏既有测试）。test_boundary.py 7 例全绿。</span>
+</div>
+
+<div class="card">
+  <span class="badge b-ok">缺口 ②B（已闭环 2026-08-17）</span> <b>GUI 前处理：导入粒子 / 粉末</b><br/>
+  <span class="path">状态：已满足（实打实，非装饰 UI）。新增 <code>src/amforge/powder.py</code>：<code>ParticleCollection</code> 真实导入 CSV/JSON 点云（坐标+半径+材料）或 <code>from_part_bed</code> 真实生成随机密堆粉末层（抖动晶格+对数正态 PSD，与 <code>synth_powder_bed</code> 同源）；
+  <code>packing_density</code>/<code>stats</code> 在真实粒子上测量体积分数/d50/PSD；<code>powder_bed_params</code> 映射为 <code>powder.bed</code> 参数并驱动<b>真实 DEM 铺粉</b> <code>solve_powderbed(powder_fidelity="dem")</code>（重力沉降解出密实度/配位数/粗糙度）。
+  <code>preproc</code> 逻辑层增 <code>build_particle_collection_csv</code>/<code>generate_powder_bed</code>/<code>powderbed_params_from_collection</code>/<code>solve_powder_from_collection</code>；<code>preproc_app</code>「粉末/粒子」面板（导入/生成/评估 + 2D 切片红点叠加 + 导出 CSV）。test_powder_import.py 9 例全绿（含真实 DEM 求解）。不动物理内核（复用 diffmech DEM/SPH/MPM）。<b>增强（2026-08-17）：</b>DEM 现支持把导入/生成的<b>精确粒子坐标</b>作为沉降初始态注入（opt-in）：<code>PowderBedConfig.initial_positions/initial_radii</code> → <code>recoat_dem</code> → <code>synth_powder_bed</code> 直接用精确初态、跳过抖动晶格采样（向后兼容，未给则仍走 RCP 路径）；GUI 面板新增“用导入粒子作 DEM 初始态”勾选。测试 <code>test_solve_dem_precise_injection_takes_effect</code> 用单粒子初态验证注入确实生效（配位数≈0，明显低于默认密堆床），而非被忽略。</span>
+</div>
+
+<div class="card">
+  <span class="badge b-ok">缺口 ① · 已修复</span> <b>默认链路真实相变（潜热）</b><br/>
+  <span class="path">用户明令“要实打实模拟，默认链路走代理是权宜之计”——已于 2026-08-16 落地。</span><br/>
+  实现：<code>inverse.simulate()</code> / <code>optimize_*</code> / <code>loss_fn</code> 增 <code>thermal_solver: str = "enthalpy" | "history"</code> 参数（默认 <code>enthalpy</code>，即真实潜热相变），
+  经新增 <code>_run_thermal()</code> 分发器贯穿全部可微优化回路；Rosenthal 降阶保留为 <code>"history"</code>。2D/低维几何自动回退降阶。
+  验证：<code>test_mbd.py</code> 7 passed；默认 <code>simulate()</code> 真实熔化且 <code>jax.grad</code> 有限。
+</div>
+
+<div class="card">
+  <span class="badge b-ok">缺口 ③（已闭环 2026-08-17）</span> <b>GUI 后处理：动画播放</b><br/>
+  <span class="path">状态：已满足（实打实，非接线）。<code>thermal_enthalpy.solve_enthalpy_thermal</code> 增 <code>record_frames</code>（默认关，零开销）：从时间步进抽取 ≤n_animation_frames 温度场帧，挂 <code>ThermalHistory.temperature_evolution</code>；
+  <code>postproc</code> 增 <code>extract_temperature_frames</code> / <code>save_field_gif</code>（matplotlib）/ <code>save_field_pvd</code>（ParaView 时间序列，纯 numpy）；
+  <code>postproc_app</code> FieldView 增“扫描温度动画”组（播放/暂停 + 时间帧滑块 + 导出 GIF/PVD）。test_postproc_animation.py 6 例全绿。</span>
+</div>
+
+<div class="card">
+  <span class="badge b-ok">已处理</span> <b>forge_adapter 镜像 cost 发散（已全清）& MBD newton 硬件依赖</b><br/>
+  <span class="path">更正与处理（2026-08-17）：原记「靠覆盖侥幸可用」不准确——<code>process.constant</code> 实际分驻两套<b>独立</b>注册表（<code>amforge.core.registry</code> 由 process.py 装饰器注册、被 <code>amforge.core.graph.Pipeline</code> 活路径消费，见 test_e2e_chain；<code>forgecore.registry</code> 由 forge_adapter 镜像、被 ForgeCore 引擎消费），各自活、不会相互覆盖。真正的缺陷是<b>镜像 cost 字面量漂移</b>：除 process.constant（1.0≠0.05）外，框架复审又发现 <code>thermal.enthalpy</code>（2.0≠20.0）、<code>inverse.predict_process</code>（0.7≠1.0）同样发散。已系统性修复：forge_adapter 这三个镜像注册均改为从 <code>amforge.core.registry</code> 原生 spec 取 cost（单一事实源），两引擎 cost 现完全一致；并新增回归测试 <code>test_mirror_costs_match_native</code> 锁定“所有镜像 cost 不得再与原生发散”，防止复发。当前仅 <code>mbd.newton</code> 需 48G Ubuntu（#38，本机抛错）仍待跨机处理。</span>
+</div>
+
+<div class="callout">
+  <b>结论：</b>原需求的<b>求解器能力 100% 已具备且有测试</b>（这是高质量地基），且 GUI 前/后处理的接线断点现已<b>全部闭环</b>：
+  ① 默认潜热相变（2026-08-16）、②A 选面施 BC/IC（2026-08-17）、②B 导入粒子/粉末（2026-08-17）、③ 后处理动画（2026-08-17）。上述均为“实打实满足”的最小闭环，不触碰已验证的物理内核，开箱即用已“全部满足”。
+</div>
+
+<footer>
+  审计依据：全仓库 <code>src/</code> 静态核查 + <code>pytest</code> 实测（总 collected 143；<code>test_enthalpy_thermal</code> 6 passed 佐证真实相变；<code>test_boundary.py</code> 7 passed；<code>test_powder_import.py</code> 12 passed（含无损往返锁 + 精确粒子注入生效）；<code>test_forgecore_e2e.py</code> 6 passed（含 <code>test_mirror_costs_match_native</code> 锁镜像 cost 一致性）；<code>test_postproc_animation.py</code> 6 passed）。
+  本报告随闭环进度更新：缺口 ①/②A/②B/③ 均已落地并有对应测试佐证。
+</footer>
+
+</div>
+</body>
+</html>

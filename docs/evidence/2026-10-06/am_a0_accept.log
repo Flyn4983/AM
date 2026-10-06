@@ -1,0 +1,71 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+316L k=30.0 rho=7950.0 cp=650.0 alpha0=5.8055e-06 Tsol=1658.0 Tliq=1723.0 Tboil=3090.0 latent=270000.0
+
+=== J1 单元体积分源：Σ frac 应恒为 1（与 dx/r 无关）===
+  [integrated] r=  100 dx=   25  Σfrac=1.000000000000 rel=2.22e-16  PASS
+  [integrated] r=  100 dx=   50  Σfrac=1.000000000000 rel=8.88e-16  PASS
+  [integrated] r=  100 dx=  100  Σfrac=1.000000000000 rel=5.77e-15  PASS
+  [integrated] r=  100 dx=  200  Σfrac=1.000000000000 rel=1.20e-14  PASS
+  [integrated] r=   50 dx=   50  Σfrac=1.000000000000 rel=5.77e-15  PASS
+  [integrated] r=   25 dx=  100  Σfrac=1.000000000000 rel=1.78e-14  PASS
+  [integrated] r=   10 dx=  100  Σfrac=1.000000000000 rel=2.89e-15  PASS
+  J1 => PASS
+
+--- 对照：旧中点取值模型 Σ Q·dV / (ηP)（随 dx/r 漂移即离散漏能）---
+  [point     ] r=  100 dx=   25  Σ/ηP=1.000000 偏差=0.00%
+  [point     ] r=  100 dx=   50  Σ/ηP=1.000000 偏差=0.00%
+  [point     ] r=  100 dx=  100  Σ/ηP=1.000009 偏差=0.00%
+  [point     ] r=   50 dx=  100  Σ/ηP=0.999009 偏差=0.10%
+
+=== 拓扑（应与 dx 无关）===
+  dx=100.0 shape=(13, 7, 6) nvox=   546 n_layers=1 n_lines=4 path=5.250mm ns_cfl=66
+  dx= 50.0 shape=(25, 13, 10) nvox=  3250 n_layers=1 n_lines=4 path=5.250mm ns_cfl=262
+  dx= 25.0 shape=(49, 25, 18) nvox= 22050 n_layers=1 n_lines=4 path=5.250mm ns_cfl=1045
+
+=== J2 求解器注入剂量 == Σ Q·dV·dt = ηP·t_exposure（dx=25µm, r=100µm）===
+  t_exposure=6.562500e-03s n_steps=1045 dt=6.279904e-06s ηP·t_exp=1.771875J
+  全域 Σ=1.674174J rel_err=5.51e-02 => FAIL
+  实体内 Σ=1.559799J 份额=0.880310（<1 者为光束越出零件边界的真实损失，非离散误差）
+
+=== J3 三档收敛（两种源模型；P=600W r=100µm 线能量0.75J/mm）===
+  [integrated] dx=100.0 mult=1 nvox=   546 ns=   66    3.04s | peak=  1794.2K nml=   12 | Lx= 0.600 Ly= 0.200 depth= 0.100mm vol=   0.012mm³
+  [integrated] dx= 50.0 mult=1 nvox=  3250 ns=  262    2.70s | peak=  2232.9K nml=  270 | Lx= 1.050 Ly= 0.350 depth= 0.150mm vol=   0.034mm³
+  [integrated] dx= 25.0 mult=1 nvox= 22050 ns= 1045    1.73s | peak=  2417.4K nml= 3094 | Lx= 1.150 Ly= 0.500 depth= 0.175mm vol=   0.048mm³
+  [point     ] dx=100.0 mult=1 nvox=   546 ns=   66    0.72s | peak=  1841.0K nml=   14 | Lx= 0.600 Ly= 0.200 depth= 0.100mm vol=   0.014mm³
+  [point     ] dx= 50.0 mult=1 nvox=  3250 ns=  262    0.56s | peak=  2026.7K nml=  248 | Lx= 1.000 Ly= 0.350 depth= 0.150mm vol=   0.031mm³
+  [point     ] dx= 25.0 mult=1 nvox= 22050 ns= 1045    0.59s | peak=  2110.5K nml= 3028 | Lx= 1.075 Ly= 0.400 depth= 0.175mm vol=   0.047mm³
+  [integrated] peak =[1794.242, 2232.919, 2417.376] 极差= 25.78% FAIL
+  [integrated] Lx   =[0.6, 1.05, 1.15] 极差= 47.83% FAIL
+  [integrated] vol  =[0.012, 0.034, 0.048] 极差= 75.18% FAIL
+  [integrated] 三档均熔化=[True, True, True] PASS
+  [integrated] 相邻档收敛比 (T100→T50)/(T50→T25)=2.38 （2阶收敛理论值≈4.0）
+  [point     ] peak =[1840.985, 2026.725, 2110.512] 极差= 12.77% FAIL
+  [point     ] Lx   =[0.6, 1.0, 1.075] 极差= 44.19% FAIL
+  [point     ] vol  =[0.014, 0.031, 0.047] 极差= 70.41% FAIL
+  [point     ] 三档均熔化=[True, True, True] PASS
+  [point     ] 相邻档收敛比 (T100→T50)/(T50→T25)=2.22 （2阶收敛理论值≈4.0）
+
+=== 时间采样归因：同网格加步数（dt 低于 CFL）看峰值是否靠拢细档 ===
+  [integrated] dx=100.0 mult=2 nvox=   546 ns=  132    1.64s | peak=  1786.9K nml=   14 | Lx= 0.600 Ly= 0.200 depth= 0.100mm vol=   0.014mm³
+  [integrated] dx=100.0 mult=4 nvox=   546 ns=  264    1.65s | peak=  1770.8K nml=   14 | Lx= 0.600 Ly= 0.200 depth= 0.100mm vol=   0.014mm³
+  [integrated] dx= 50.0 mult=2 nvox=  3250 ns=  524    1.62s | peak=  2233.3K nml=  272 | Lx= 1.100 Ly= 0.350 depth= 0.150mm vol=   0.034mm³
+  [integrated] dx= 50.0 mult=4 nvox=  3250 ns= 1048    1.70s | peak=  2232.4K nml=  276 | Lx= 1.100 Ly= 0.350 depth= 0.150mm vol=   0.034mm³
+    dx= 100.0 mult=1 ns=   66 peak=  1794.2 Lx= 0.600 vol=   0.012
+    dx= 100.0 mult=2 ns=  132 peak=  1786.9 Lx= 0.600 vol=   0.014
+    dx= 100.0 mult=4 ns=  264 peak=  1770.8 Lx= 0.600 vol=   0.014
+    dx=  50.0 mult=1 ns=  262 peak=  2232.9 Lx= 1.050 vol=   0.034
+    dx=  50.0 mult=2 ns=  524 peak=  2233.3 Lx= 1.100 vol=   0.034
+    dx=  50.0 mult=4 ns= 1048 peak=  2232.4 Lx= 1.100 vol=   0.034
+    dx=  25.0 mult=1 ns= 1045 peak=  2417.4 Lx= 1.150 vol=   0.048
+
+完成。

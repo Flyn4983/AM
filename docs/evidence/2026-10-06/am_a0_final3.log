@@ -1,0 +1,87 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+316L alpha0=5.8055e-06 Tsol=1658.0 Tliq=1723.0 latent=270000.0
+
+=== J1 单元体积分源守恒（应与 dx/r 无关）===
+  r=  100 dx=   25 Σfrac=1.00000000000000 rel=2.22e-16 PASS
+  r=  100 dx=   50 Σfrac=1.00000000000000 rel=8.88e-16 PASS
+  r=  100 dx=  100 Σfrac=1.00000000000001 rel=5.77e-15 PASS
+  r=  100 dx=  200 Σfrac=1.00000000000001 rel=1.20e-14 PASS
+  r=   50 dx=   50 Σfrac=1.00000000000001 rel=5.77e-15 PASS
+  r=   25 dx=  100 Σfrac=1.00000000000002 rel=1.78e-14 PASS
+  r=   10 dx=  100 Σfrac=1.00000000000000 rel=2.89e-15 PASS
+  J1 => PASS (P1 预测 7/7 rel<1e-13)
+
+=== J2 剂量核算 + 逐步 frac 剖面（截断归因）===
+  t_exp=6.562500e-03s ns=1045 dt=6.279904e-06s ηP·t_exp=1.771875J
+  全域 Σ=1.674174J  预测(=ref×mean frac)=1.674174J |Σ-pred|/pred=0.00e+00 => PASS（恒等式：核对的是累加/量纲不写错，非独立证据）
+  直接对 ref 的缺口=5.5140%（P2 预测 mean frac 0.94~0.95 → 实测 0.9449；内部步占比 0/1045=0.0%；min frac=0.584）
+  低份额步共 1045 步，前 3 个下标=[0, 1, 2] 对应激光 x=[-0.5977033492822965, -0.5931100478468898, -0.5885167464114831] mm（零件 x 范围 ±0.6mm）→ 缺口集中在行程端点而非均匀分布 = 有限域截断，非离散漏能
+  实体内(按 fv 加权) Σ=1.616986J 份额=0.9126
+
+=== 拓扑（实体足迹 sdf<dx/2，应与 dx 无关）===
+  dx=100.0 shape=(13, 7, 6) nvox=    546 n_layers=1 n_lines=4 path=5.250mm ns_cfl=66
+  dx= 50.0 shape=(25, 13, 10) nvox=   3250 n_layers=1 n_lines=4 path=5.250mm ns_cfl=262
+  dx= 25.0 shape=(49, 25, 18) nvox=  22050 n_layers=1 n_lines=4 path=5.250mm ns_cfl=1045
+  dx= 12.5 shape=(97, 49, 34) nvox= 161602 n_layers=1 n_lines=4 path=5.250mm ns_cfl=4180
+
+=== 护栏（5 项，全部应命中）===
+  dx=100µm：path=5.250mm t_exp=6.5625e-03s n_stable(cfl=1)=23 n_cfl(0.35)=66
+    [ok] params['n_steps']=22 不足：dt=曝光/n_steps 超过 SSP-RK2 稳定上限 2.871e-04s（dx=100.0µm, cfl=1）。覆盖 6.562e-03
+    [ok] 警告 1 条: params['n_steps']=23 低于 CFL 精度目标 66（cfl=0.35）：仍稳定但每步激光移动 228µm，移动热源被时间欠采样，峰值温度会偏低。建议 suggest_n_s
+/tmp/am_a0_final.py:168: UserWarning: 体素 dx=150.0µm 大于光束半径 r=100.0µm：横向仅约 1.3 个体素跨过光斑，能量守恒但**峰值温度与熔池尺寸不可信**（实测 dx=r 档峰值偏高 ~8%、熔宽偏低 ~45%）。定量熔池形态请取 dx≤r/2。
+  solve_enthalpy_thermal(geometry=coupon(150e-6), process=p100,
+    [ok] CFL 精度目标需要 n_steps>=18143，超出预算 max_steps=50（dx=6.0µm, 路径长=5.2mm, 曝光=6.562e-03s）。显式热解在此网格/行程上不可行：请粗化网格、缩短单次扫描行程
+    [ok] 非法模型名被拒
+  P3 => 4/5 命中
+
+=== P4 预热初值（激光≈0，只看 IC）===
+/tmp/am_a0_final.py:195: UserWarning: params['n_steps']=23 低于 CFL 精度目标 66（cfl=0.35）：仍稳定但每步激光移动 228µm，移动热源被时间欠采样，峰值温度会偏低。建议 suggest_n_steps() 或提高 n_steps。
+  th = solve_enthalpy_thermal(geometry=coupon(100e-6), process=plan(1e-9, R1, preheat=400.),
+/tmp/am_a0_final.py:198: UserWarning: params['n_steps']=23 低于 CFL 精度目标 66（cfl=0.35）：仍稳定但每步激光移动 228µm，移动热源被时间欠采样，峰值温度会偏低。建议 suggest_n_steps() 或提高 n_steps。
+  th0 = solve_enthalpy_thermal(geometry=coupon(100e-6),
+  preheat=400K → 实体均值 400.00K（P4 预测 398~402）；preheat=300K → 300.00K  => PASS
+
+=== J3 分辨率收敛（4 档 × 2 模型；判据在 100/50/25 三档上登记）===
+  [integrated] dx= 100.0 ns=   66   2.78s      0.0M vox·step/s | peak=  2589.4 nml=    46 Lx= 1.000 Ly= 0.300 vol=  0.0460mm³
+  [integrated] dx=  50.0 ns=  262   3.01s      0.3M vox·step/s | peak=  2670.3 nml=   550 Lx= 1.100 Ly= 0.500 vol=  0.0687mm³
+  [integrated] dx=  25.0 ns= 1045   2.03s     11.4M vox·step/s | peak=  2617.8 nml=  4575 Lx= 1.150 Ly= 0.550 vol=  0.0715mm³
+  [integrated] dx=  12.5 ns= 4180   3.62s    186.8M vox·step/s | peak=  2586.6 nml= 38149 Lx= 1.175 Ly= 0.575 vol=  0.0745mm³
+  [point     ] dx= 100.0 ns=   66   0.74s      0.0M vox·step/s | peak=  2532.4 nml=    69 Lx= 1.000 Ly= 0.300 vol=  0.0690mm³
+  [point     ] dx=  50.0 ns=  262   0.58s      1.5M vox·step/s | peak=  2415.5 nml=   640 Lx= 1.100 Ly= 0.400 vol=  0.0800mm³
+  [point     ] dx=  25.0 ns= 1045   0.64s     35.9M vox·step/s | peak=  2325.9 nml=  5267 Lx= 1.150 Ly= 0.425 vol=  0.0823mm³
+  [point     ] dx=  12.5 ns= 4180   0.88s    765.4M vox·step/s | peak=  2287.9 nml= 44445 Lx= 1.175 Ly= 0.450 vol=  0.0868mm³
+
+--- 登记判据（三档 100/50/25）---
+  [integrated] dx=100/50/25 peak=[2589.4248, 2670.2642, 2617.7783] 极差=  3.03% PASS
+  [integrated] dx=100/50/25 Lx  =[1.0, 1.1, 1.15] 极差= 13.04% FAIL
+  [integrated] dx=100/50/25 vol =[0.046, 0.0687, 0.0715] 极差= 35.65% FAIL
+  [integrated] 均熔化=[True, True, True] PASS
+  [point     ] dx=100/50/25 peak=[2532.4358, 2415.5432, 2325.9027] 极差=  8.16% FAIL
+  [point     ] dx=100/50/25 Lx  =[1.0, 1.1, 1.15] 极差= 13.04% FAIL
+  [point     ] dx=100/50/25 vol =[0.069, 0.08, 0.0823] 极差= 16.16% FAIL
+  [point     ] 均熔化=[True, True, True] PASS
+
+--- 附加证据（细三档 50/25/12.5）---
+  [integrated] dx=50/25/12.5 peak=[2670.2642, 2617.7783, 2586.564] 极差=  3.13% PASS
+  [integrated] dx=50/25/12.5 Lx  =[1.1, 1.15, 1.175] 极差=  6.38% FAIL
+  [integrated] dx=50/25/12.5 vol =[0.0687, 0.0715, 0.0745] 极差=  7.73% FAIL
+  [integrated] 均熔化=[True, True, True] PASS
+  [point     ] dx=50/25/12.5 peak=[2415.5432, 2325.9027, 2287.8968] 极差=  5.28% FAIL
+  [point     ] dx=50/25/12.5 Lx  =[1.1, 1.15, 1.175] 极差=  6.38% FAIL
+  [point     ] dx=50/25/12.5 vol =[0.08, 0.0823, 0.0868] 极差=  7.84% FAIL
+  [point     ] 均熔化=[True, True, True] PASS
+  [integrated] 峰值随加密单调下降=False (P6) 值=[2589.4, 2670.3, 2617.8, 2586.6]
+  [point     ] 峰值随加密单调下降=True (P6) 值=[2532.4, 2415.5, 2325.9, 2287.9]
+
+P5 打分：integrated peak 极差=3.03% (预测 3.4~3.6%) Lx=13.04% (预测 12~14%) vol=35.65% (预测 20~25%)
+完成。

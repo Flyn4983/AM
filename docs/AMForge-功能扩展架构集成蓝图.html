@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AMForge 功能扩展架构集成蓝图</title>
+<style>
+  :root{
+    --bg:#0b1726; --panel:#102236; --panel2:#0e1d30; --line:#2a4a6e;
+    --ink:#dce8f7; --muted:#8aa6c4; --accent:#39b6ff; --accent2:#7ee0c0;
+    --warn:#ffcf6b; --danger:#ff8a8a; --code:#0a1420; --chip:#16304b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.6;font-size:15px}
+  header{padding:28px 26px 18px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#0d1d31,#0b1726)}
+  header h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px}
+  header p{margin:2px 0;color:var(--muted);font-size:13.5px}
+  .wrap{display:flex;align-items:flex-start;gap:22px;padding:22px 26px 60px;max-width:1280px;margin:0 auto}
+  nav{position:sticky;top:14px;flex:0 0 232px;align-self:flex-start;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 12px;max-height:92vh;overflow:auto}
+  nav h3{margin:0 0 8px;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:4px 8px;border-radius:6px;font-size:13px}
+  nav a:hover{background:var(--chip);color:var(--ink)}
+  main{flex:1 1 auto;min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:20px 22px;margin-bottom:20px}
+  h2{margin:2px 0 12px;font-size:20px;color:#fff;border-left:4px solid var(--accent);padding-left:10px}
+  h3{margin:18px 0 8px;font-size:16px;color:var(--accent2)}
+  h4{margin:12px 0 6px;font-size:14px;color:var(--warn)}
+  p,li{color:var(--ink)}
+  code{background:var(--code);color:#b6e3ff;padding:1px 5px;border-radius:4px;font-size:13px;
+    font-family:"SFMono-Regular",Consolas,Menlo,monospace}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+    overflow:auto;font-size:12.5px;color:#cfe8ff;line-height:1.5}
+  pre .c{color:#6f8aa8}
+  table{border-collapse:collapse;width:100%;margin:10px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--accent2)}
+  .muted{color:var(--muted)}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+  .tag{display:inline-block;background:var(--chip);color:var(--accent);border-radius:20px;
+    padding:1px 10px;font-size:12px;margin:0 4px 4px 0}
+  .tag.w{background:#3a2e10;color:var(--warn)}
+  .tag.d{background:#3a1414;color:var(--danger)}
+  .tag.g{background:#0f3326;color:var(--accent2)}
+  .flow{width:100%;height:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px}
+  ul{margin:6px 0 6px 2px;padding-left:20px}
+  li{margin:3px 0}
+  .legend{font-size:12px;color:var(--muted);margin-top:6px}
+  .milestone{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .ms-id{flex:0 0 64px;font-weight:700;color:var(--accent);font-size:15px}
+  .check{list-style:none;padding-left:0}
+  .check li:before{content:"☐ ";color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>AMForge 功能扩展架构集成蓝图</h1>
+  <p>在现有「<b>求解器即模块 + DAG 自动布线 + 双注册表镜像 + 原生可微</b>」架构上，补齐 支撑结构 / 二次工艺 / 材料标定 / 监测闭环 四大能力。</p>
+  <p class="muted">规划基线：源码实测 <code>amforge.core.registry</code>（STAGES / SolverSpec / AdapterSpec）、<code>forge_adapter.py</code> 镜像机制、<code>contracts.py</code> 11 契约、<code>inverse</code> 优化内核、<code>digitaltwin.rom</code>。所有方案均落到真实扩展点，非凭空设计。</p>
+</header>
+
+<div class="wrap">
+<nav>
+  <h3>目录</h3>
+  <a href="#s0">0. 现状接入点</a>
+  <a href="#s1">1. 总体集成原则</a>
+  <a href="#s2">2. 模块A 支撑结构</a>
+  <a href="#s3">3. 模块B 二次工艺</a>
+  <a href="#s4">4. 模块C 材料标定</a>
+  <a href="#s5">5. 模块D 监测闭环</a>
+  <a href="#s6">6. 分阶段里程碑</a>
+  <a href="#s7">7. 一致性核对清单</a>
+  <a href="#s8">8. 风险与开放问题</a>
+</nav>
+
+<main>
+<!-- ============================ 0. 现状接入点 ============================ -->
+<section id="s0">
+  <h2>0. 现状接入点（规划依据）</h2>
+  <p>四个新模块都遵循同一套已验证的扩展机制，无需改动编排内核（<code>amforge.core.graph.Pipeline</code> 按 <code>consumes/produces</code> 契约自动反推依赖并布线）。</p>
+  <table>
+    <tr><th>机制</th><th>现状（实测）</th><th>新模块如何利用</th></tr>
+    <tr>
+      <td><code>STAGES</code></td>
+      <td>11 阶段 + <code>utility</code>：<code>geometry → process → powderbed → meltpool → thermal → microstructure → constitutive → buildup → assembly → structural → verdict</code></td>
+      <td>新增 <code>support</code>、<code>postprocess</code>、<code>monitor</code> 三阶段；<code>calibration</code> 不进流水线（离线工具）</td>
+    </tr>
+    <tr>
+      <td><code>SolverSpec</code> 字段</td>
+      <td><code>name, consumes(tuple), produces, stage, modality, differentiable, cost, defaults, doc</code></td>
+      <td>每个新求解器均显式声明 <code>differentiable</code>/<code>cost</code>/<code>modality</code></td>
+    </tr>
+    <tr>
+      <td>注册装饰器</td>
+      <td><code>@register_solver(...)</code> / <code>@register_adapter(...)</code>，自动 DAG 布线 + 签名校验</td>
+      <td>新能力一律登记为 SolverSpec/AdapterSpec</td>
+    </tr>
+    <tr>
+      <td>双注册表</td>
+      <td><code>amforge.core.registry._SOLVERS</code>（被 Pipeline 活路径消费）＋ <code>forge_adapter</code> 镜像进 <code>forgecore.registry.REGISTRY</code></td>
+      <td><b>每个新求解器必须在 <code>forge_adapter.py</code> 加一行镜像</b>，否则 forgecore 引擎看不到</td>
+    </tr>
+    <tr>
+      <td>契约表</td>
+      <td><code>contracts.py</code> 11 契约（PartGeometry…ServiceVerdict），经 <code>SLOT_OF</code> 映射为调用参数名</td>
+      <td>新增 <code>SupportStructure / SecondaryProcessResult / SensorData / MonitoringState / CalibrationReport</code>，<code>Material</code> 需从字符串升级为契约</td>
+    </tr>
+    <tr>
+      <td>可复用资产</td>
+      <td><code>inverse</code> 逆问题优化器（jax.grad+L-BFGS/Optax）、<code>digitaltwin.rom</code>（实时结构响应）、<code>asbuilt.thermomechanical_plastic</code>（塑性热-力耦合）、<code>diffmech.postprocess</code>（ParaView 导出）</td>
+      <td>标定复用 inverse 优化内核；监测复用 digitaltwin.rom；支撑/二次工艺复用 asbuilt 热-力耦合</td>
+    </tr>
+  </table>
+  <div class="card muted">关键约束：① 求解器必须是纯函数（给定 <code>params</code>+输入契约→输出契约），不得依赖全局可变状态或张量值 Python 分支；② 用户硬约束「仿真=真实数值方法、须配误差报告」——任何高保真/标定求解器都须配套 <code>CalibrationReport</code>；③ 多候选按 <code>cost</code> 选路，高保真须 <code>select=</code> 显式启用，默认链路不 OOM。</div>
+</section>
+
+<!-- ============================ 1. 原则 ============================ -->
+<section id="s1">
+  <h2>1. 总体集成原则（四条）</h2>
+  <p><span class="tag g">原则1</span> <b>一切皆契约 + 求解器</b>：新能力一律登记为 <code>SolverSpec</code> / <code>AdapterSpec</code>，吃/吐现有或新增契约，复用自动 DAG 布线，不写硬编码串联。</p>
+  <p><span class="tag g">原则2</span> <b>双注册表镜像</b>：新求解器在 <code>forge_adapter.py</code> 加一行镜像（cost 用 <code>_native_cost(name, default)</code> 单一事实源取，防字面量漂移——此前 process.constant/thermal.enthalpy 已踩过坑）。</p>
+  <p><span class="tag g">原则3</span> <b>默认代理 / 显式高保真</b>：沿用 <code>process.heuristic</code> 思路做规则代理（秒级、可微、默认走）；高保真档（如 <code>thermal.enthalpy</code>）须 <code>select=</code> 显式启用，默认链路不 OOM。</p>
+  <p><span class="tag w">原则4</span> <b>误差报告优先于新物理</b>：任何"真实物理"求解器（尤其标定与高保真）必须输出 <code>CalibrationReport</code>/验证套件，否则不宣称"可用"——这是从研究原型迈向可信工程软件的门槛。</p>
+</section>
+
+<!-- ============================ 2. A ============================ -->
+<section id="s2">
+  <h2>2. 模块A · 支撑结构生成与仿真</h2>
+  <p class="muted">商业软件（Simufact/ANSYS/3DXpert）的标配；当前 STAGES 无 support 阶段，是 SLM 变形/失败预测的最大缺口。</p>
+
+  <h3>2.1 接入点</h3>
+  <ul>
+    <li>新增 <code>STAGES</code> 阶段 <code>"support"</code>（位置：<code>geometry</code> 之后、<code>powderbed</code> 之前）。</li>
+    <li>新增契约 <code>SupportStructure</code>（<code>contracts.py</code>）：<code>support_sdf/mask (ndarray)</code>、<code>kind (str: block/line/cone/skin)</code>、<code>contact_area (f32)</code>、<code>volume_fraction (f32)</code>、<code>params</code>。</li>
+  </ul>
+
+  <h3>2.2 求解器（遵循 register_solver 统一签名）</h3>
+<pre><code><span class="c"># src/amforge/support.py</span>
+from amforge.core.registry import register_solver
+
+@register_solver("support.auto",
+    consumes=("PartGeometry",), produces="SupportStructure",
+    stage="support", modality=("SLM",), cost=1.0, differentiable=True,
+    doc="悬垂角阈值规则自动布点支撑")
+def support_auto(*, geometry, params):
+    ...  <span class="c"># 返回 SupportStructure</span>
+
+@register_solver("support.simulate",
+    consumes=("PartGeometry","SupportStructure","ProcessPlan"),
+    produces="AsBuiltPart", stage="support", modality=("SLM",),
+    cost=50.0, differentiable=True,
+    doc="把支撑 occupancy 并入逐层热-力耦合")
+def support_simulate(*, geometry, support, process, params):
+    <span class="c"># 复用 asbuilt.thermomechanical_plastic 的逐层激活，</span>
+    <span class="c"># 追加 support.mask 为约束/散热边界</span>
+    ...</code></pre>
+
+  <h3>2.3 DAG 边与复用</h3>
+  <ul>
+    <li><code>geometry → support.auto → SupportStructure</code></li>
+    <li><code>geometry + SupportStructure → powderbed</code>（支撑区也铺粉）</li>
+    <li><code>SupportStructure + AsBuiltPart → support.simulate</code>（修正成形）</li>
+    <li>复用：<code>asbuilt.thermomechanical_plastic</code> 的塑性热-力耦合内核，仅增加 occupancy/边界输入。</li>
+  </ul>
+
+  <h3>2.4 双注册表镜像 & GUI</h3>
+  <ul>
+    <li><code>forge_adapter.py</code> 加镜像：<code>support.auto</code>（代理默认）、<code>support.simulate</code>（高保真，<code>select={'support':'support.simulate'}</code>）。</li>
+    <li>GUI 前处理标签页加「生成支撑」按钮 + 类型/密度滑杆 + 预览（复用现有几何云图）。</li>
+  </ul>
+  <div class="card">两档策略：代理=<code>support.auto</code>（秒级、默认）；高保真=<code>support.simulate</code>（显式启用，需实验标定后宣称可用）。</div>
+</section>
+
+<!-- ============================ 3. B ============================ -->
+<section id="s3">
+  <h2>3. 模块B · 二次工艺仿真（热处理 / HIP / 切削）</h2>
+  <p class="muted">Simufact 标配；对残余应力重分布、孔隙闭合、最终尺寸影响巨大，目前链路在 <code>buildup/structural</code> 后直接断到 <code>verdict</code>，缺中间再处理。</p>
+
+  <h3>3.1 接入点</h3>
+  <ul>
+    <li>新增 <code>STAGES</code> 阶段 <code>"postprocess"</code>（位置：<code>structural</code> 之后、<code>verdict</code> 之前）。</li>
+    <li>新增契约 <code>SecondaryProcessResult</code>：包裹 <code>AsBuiltPart</code> + <code>treatment (str: HT/HIP/machining)</code> + <code>residual_relief_factor</code> + <code>density_after</code> + <code>geometry_after</code>。</li>
+  </ul>
+
+  <h3>3.2 求解器</h3>
+<pre><code><span class="c"># src/amforge/postprocess_secondary.py</span>
+@register_solver("postprocess.heat_treatment",
+    consumes=("AsBuiltPart",), produces="SecondaryProcessResult",
+    stage="postprocess", cost=5.0, differentiable=True,
+    doc="闭式应力松弛+再结晶（残余应力按温度/时间衰减，可微）")
+def ht_relax(*, asbuilt, params): ...
+
+@register_solver("postprocess.hip",
+    consumes=("AsBuiltPart",), produces="SecondaryProcessResult",
+    stage="postprocess", cost=5.0, differentiable=True,
+    doc="孔隙闭合：密度场→~1.0")
+def hip_densify(*, asbuilt, params): ...
+
+@register_solver("postprocess.machining",
+    consumes=("AsBuiltPart","PartGeometry"), produces="SecondaryProcessResult",
+    stage="postprocess", cost=2.0, differentiable=False,
+    doc="余料去除 + 最终形位偏差，喂给 verdict")
+def subtractive(*, asbuilt, geometry, params): ...</code></pre>
+
+  <h3>3.3 DAG 边与复用</h3>
+  <ul>
+    <li><code>buildup / structural → postprocess.* → verdict</code>（<code>verdict.service</code> 现有 <code>consumes=(structural, asbuilt, constitutive)</code> 追加 <code>secondary</code>）。</li>
+    <li>复用：直接站在 <code>asbuilt</code> 产出之上；HT 应力模型复用 <code>constitutive</code> 弹塑性参数。</li>
+  </ul>
+  <div class="card"><code>forge_adapter.py</code> 镜像三个求解器；GUI 后处理页加「二次工艺」卡片（选类型、看松弛后残余应力云图）。</div>
+</section>
+
+<!-- ============================ 4. C ============================ -->
+<section id="s4">
+  <h2>4. 模块C · 材料标定（最高优先级 · 最低风险 · 最强可信度杠杆）</h2>
+  <p class="muted">不进流水线，是「产线前」离线工具 + <code>CalibrationReport</code> 契约；直接满足用户「实打实真实物理 + 误差报告」硬约束，是把系统从研究原型推向可信工程软件的最快路径。</p>
+
+  <h3>4.1 接入点</h3>
+  <ul>
+    <li>新增契约 <code>Material</code>（集中物性：<code>k, ρ, cp, E, ν, σy, 吸收率 η, 相场参数</code>，目前以字符串 <code>"316L"</code> 传递，应升级为契约对象）。</li>
+    <li>新增契约 <code>CalibrationReport</code>（误差、parity 数据、置信区间）。</li>
+    <li>新增子包 <code>amforge.calibration</code>（不参与前向 DAG，产物 <code>Material</code> 经 <code>params['material']</code> 流入所有求解器）。</li>
+  </ul>
+
+  <h3>4.2 实现（复用 inverse 优化内核）</h3>
+<pre><code><span class="c"># src/amforge/calibration/__init__.py</span>
+@dataclass
+class CalibrationDataset:        <span class="c"># 实验记录</span>
+    process: list                 <span class="c"># 工艺参数</span>
+    measured: list                <span class="c"># 实测熔池尺寸/残余应力/硬度</span>
+
+def loss(theta, dataset):
+    <span class="c"># 优化对象是 Material 参数 theta，而非几何/工艺</span>
+    pred = simulate_with_material(theta, dataset.process)  <span class="c"># 复用 thermal/asbuilt 求解器</span>
+    return mean((pred - dataset.measured)**2)
+
+def fit(dataset, init_material):
+    <span class="c"># 复用 inverse 的 jax.grad + L-BFGS/Optax</span>
+    theta_star = optax_lbfgs(loss, init_material.to_theta())
+    return Material.from_theta(theta_star), CalibrationReport(dataset, theta_star)</code></pre>
+
+  <h3>4.3 复用 & 合规</h3>
+  <ul>
+    <li>优化内核：<code>inverse.optimize_*</code>（已验证的 jax.grad 梯度闭环）。</li>
+    <li>被标定黑盒：<code>thermal.enthalpy</code> / <code>asbuilt.thermomechanical_plastic</code> / <code>micro.phasefield</code>。</li>
+    <li>校验可视化：<code>diffmech.postprocess</code> 出 parity 图。</li>
+    <li><b>合规</b>：<code>CalibrationReport</code> 必须含 <code>误差≤X%</code> 实证 + 基准对标（建议 NIST 悬垂件/熔池尺寸公开数据集），否则不宣称高保真求解器可用。</li>
+  </ul>
+  <div class="card">GUI：标定标签页（导入实验 CSV → 跑 fit → 看 parity plot + 误差≤X%）。建议作为 <b>M1 首个落地</b>（投入小、可信度跃升最大）。</div>
+</section>
+
+<!-- ============================ 5. D ============================ -->
+<section id="s5">
+  <h2>5. 模块D · 监测闭环 / 数字孪生闭环（差异化旗舰）</h2>
+  <p class="muted">2025 研究前沿核心方向（缺陷率可 18.5%→5.2%）；系统已有 <code>digitaltwin.rom</code> 是最自然落点。</p>
+
+  <h3>5.1 接入点</h3>
+  <ul>
+    <li>新增 <code>STAGES</code> 阶段 <code>"monitor"</code>。</li>
+    <li>新增契约：<code>SensorData</code>（时序信号：光电/热成像/熔池影像）、<code>MonitoringState</code>（缺陷概率：未熔合/匙孔/孔隙）、<code>ClosedLoopPlan</code>（修正后 ProcessPlan）。</li>
+  </ul>
+
+  <h3>5.2 求解器 / 适配器</h3>
+<pre><code><span class="c"># src/amforge/monitoring.py</span>
+@register_adapter("RawSensorStream", "SensorData")
+def ingest(*, raw, params): ...            <span class="c"># 原始 CSV/流 → SensorData</span>
+
+@register_solver("monitor.detect",
+    consumes=("SensorData","ThermalHistory"), produces="MonitoringState",
+    stage="monitor", differentiable=False,
+    doc="NN/统计分类缺陷指示")
+def detect(*, sensor, thermal, params): ...
+
+@register_solver("monitor.correct",
+    consumes=("MonitoringState","ProcessPlan"), produces="ProcessPlan",
+    stage="monitor", differentiable=False,
+    doc="控制器输出修正工艺")
+def correct(*, monitor, process, params): ...</code></pre>
+
+  <h3>5.3 闭环编排层（关键新概念）</h3>
+  <ul>
+    <li><b>闭环不是单求解器</b>，而是外层迭代驱动：<code>amforge.closedloop.run_loop(geo, base_plan, monitor, n_iter)</code> 反复调用 <code>pipe.run</code>，实现 <code>ProcessPlan ⇄ MonitoringState</code> 反馈。</li>
+    <li>同时可把 <code>SensorData</code> 喂回模块C 做<b>在线重标定</b>（仿真↔监测双向校正）。</li>
+    <li>复用：<code>digitaltwin.rom</code>（轻量实时结构响应做在线预测）；<code>inverse</code> 优化器（控制器可用梯度/贝叶斯）。</li>
+  </ul>
+  <div class="card"><b>架构决策</b>：现有 <code>Pipeline</code> 是纯前向 DAG，闭环放在外层迭代驱动，<b>不改动 Pipeline 内核</b>，保持 DAG 纯洁。GUI：监测仪表盘标签（传感流回放 + 缺陷图叠加 + 工艺修正记录）。</div>
+</section>
+
+<!-- ============================ 6. 里程碑 ============================ -->
+<section id="s6">
+  <h2>6. 分阶段里程碑（呼应前次战略审视）</h2>
+  <div class="milestone"><div class="ms-id">M1</div><div><b>材料标定 ✅ 已落地</b><br/><span class="muted">模块C 全量：Material/AMMaterial 数据模型 + CalibrationReport 契约 + amforge.calibration（optax Adam + 网格搜索双引擎，支持 k_solid/rho_solid/cp_solid/latent_fusion 多键拟合）+ 实验基准套件（NIST 悬垂件深度/宽度对标）+ 标定标签页（导入实验 CSV → 跑 fit → 看 parity plot + 误差报告）。最快打开"实打实+误差报告"可信度。</span></div></div>
+  <div class="milestone"><div class="ms-id">M2</div><div><b>支撑结构 ✅ 已落地</b><br/><span class="muted">模块A：support STAGE + SupportStructure 契约 + support.auto（悬垂角规则代理默认，秒级）+ support.simulate（复用 asbuilt.thermomechanical_plastic 逐层热-力耦合，高保真，select 显式启用）+ forge_adapter 双注册表镜像 + GUI「生成支撑」面板。DAG 边「SupportStructure + AsBuiltPart → support.simulate 修正成形」已落地（支撑作约束/散热边界并入 FEM）。</span></div></div>
+  <div class="milestone"><div class="ms-id">M3</div><div><b>二次工艺 ✅ 已落地</b><br/><span class="muted">模块B：postprocess STAGE + SecondaryProcessResult 契约 + postprocess.passthrough（直通，cost=0.1，verdict 默认最低代价生产者）+ postprocess.heat_treatment（Arrhenius 应力松弛+再结晶，可微）/ postprocess.hip（孔隙幂律闭合→~1.0+高温应力释放，可微）/ postprocess.machining（余料去除几何修形，differentiable=False）四求解器，均站在 asbuilt 之上。verdict.service 现可选消费 secondary（残余应力按松弛、孔隙按密度修正），向后兼容。forge_adapter 双注册表镜像 + GUI 后处理页「二次工艺」卡片（选类型、看松弛后残余应力云图）+ 11 项测试全绿。DAG 边「buildup/structural → postprocess.* → verdict」已落地。</span></div></div>
+  <div class="milestone"><div class="ms-id">M4</div><div><b>监测闭环 ✅ 已落地</b><br/><span class="muted">模块D：monitor STAGE（differentiable=False）+ SensorData（多通道时序传感流）/MonitoringState（未熔合·匙孔·孔隙缺陷概率）/ClosedLoopPlan（修正后工艺）三契约 + ingest_raw_stream（ThermalHistory/字节流→SensorData，接口支持真实光电/热成像/熔池相机数据）+ monitor.detect（物理代理缺陷检测，标注清晰的占位，待真实标注传感数据再换 NN/统计分类）+ <b>monitor.correct 双控制器</b>：默认 <code>rule</code> 物理规则代理；<code>controller="inverse"</code> 为<b>实打实可微优化控制器</b>（复用 amforge.inverse 的 normalize_process + jax.value_and_grad + optax.adam + project_process_feasible 硬投影，以真实前向仿真预测热历史、最小化光滑缺陷代价，循环 run_loop 传入 geo）+ closedloop.run_loop（外层迭代驱动，反复喂回前向仿真，不改动 Pipeline 内核，保持 DAG 纯洁）+ 可选在线重标定回灌模块C（calibrate_material）。forge_adapter 双注册表镜像（monitor.detect cost=3.0 → monitoring 端口、monitor.correct cost=2.0 → closedloop 端口）+ GUI 第③标签「监测闭环仪表盘」（传感流回放 / 缺陷监测折线+柱状 / 工艺修正轨迹+日志，纯 matplotlib 2D、offscreen 可构造；控制器可选 inverse/rule）+ 14 项测试全绿（含 inverse 控制器确将缺陷代价压低）。研究平台→工程闭环的差异化旗舰已打通。</span></div></div>
+  <div class="card muted">每阶段必做：forge_adapter 镜像行 + 靶向回归锁 + （高保真/标定类）CalibrationReport。M1→M2→M3 是"可信度→可用性"渐进；M4 是"研究平台→工程闭环"的差异化旗舰。</div>
+</section>
+
+<!-- ============================ 7. 清单 ============================ -->
+<section id="s7">
+  <h2>7. 跨模块一致性核对清单（实施时逐条）</h2>
+  <ul class="check">
+    <li>新增契约注册进 <code>contracts.py</code> + <code>SLOT_OF</code> 映射</li>
+    <li>新 STAGE 加进 <code>STAGES</code> 元组</li>
+    <li><code>register_solver</code> 显式声明 <code>differentiable</code> / <code>cost</code> / <code>modality</code> / <code>defaults</code></li>
+    <li><code>forge_adapter.py</code> 镜像（用 <code>_native_cost</code> 取 cost，防漂移）</li>
+    <li>默认档走轻量代理；高保真档 <code>select=</code> 显式启用且默认链路不 OOM</li>
+    <li>高保真/标定求解器配套 <code>CalibrationReport</code></li>
+    <li>GUI 标签页/按钮落点</li>
+    <li>靶向测试锁（含双注册表一致性 <code>test_mirror_*</code>）</li>
+  </ul>
+</section>
+
+<!-- ============================ 8. 风险 ============================ -->
+<section id="s8">
+  <h2>8. 风险与开放问题</h2>
+  <h4>架构风险</h4>
+  <ul>
+    <li><b>闭环需外层迭代驱动</b>：不改 Pipeline 内核（保持 DAG 纯洁），但 run_loop 需管理状态与早停。</li>
+    <li><b>Material 从字符串升级为契约</b>：需同步改所有 solvers 的 <code>params</code> 取用，影响面较大，建议先加兼容层（字符串仍可用）。</li>
+  </ul>
+  <h4>物理可信度风险</h4>
+  <ul>
+    <li>支撑/二次工艺的"真实物理"求解器需实验验证，否则仅作代理可用——这与原则4一致。</li>
+  </ul>
+  <h4>性能风险</h4>
+  <ul>
+    <li>HIP/HT 大零件体素策略、闭环实时性需 HPC/多卡——当前无 HPC 故事（呼应前次审视"性能与规模"项）。</li>
+  </ul>
+  <p class="muted">开放问题：监测 detect 用 NN 还是统计分类？是否先接公开数据集（如 L-PBF 熔池图像）做离线验证再接实时流？建议先做离线 detect + 静态缺陷图，再迭代到在线闭环。</p>
+</section>
+
+</main>
+</div>
+</body>
+</html>
