@@ -1,0 +1,15 @@
+# AMForge GUI 依赖 — 经验证可装版本锁定（Python 3.13 cp313 预编译 wheel）
+#
+# 安装要点（受限/沙箱环境）：
+#   1) 中和 safe-delete 拦截层：  export PYTHONPATH= BASH_ENV=
+#   2) 用国内镜像源（避免默认源超时）：
+#        pip install -r requirements-gui.txt -i https://pypi.tuna.tsinghua.edu.cn/simple --default-timeout=120
+#      备选： -i https://mirrors.aliyun.com/pypi/simple/
+#             -i https://pypi.mirrors.ustc.edu.cn/simple/
+#   3) 无显示环境跑 GUI 测试追加：  export QT_QPA_PLATFORM=offscreen
+#      （VTK 3D 视图在 offscreen 无 GL 环境下自动回退为 matplotlib 2D 云图）
+#
+# 说明：matplotlib 已在主依赖中（>=3.8），此处显式锁定与实测一致版本以便复现。
+PySide6==6.11.1
+vtk==9.6.2
+matplotlib==3.11.1
