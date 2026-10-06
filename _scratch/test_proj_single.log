@@ -1,0 +1,39 @@
+F                                                                        [100%]
+================================== FAILURES ===================================
+_____________________ test_projection_removes_divergence ______________________
+
+    def test_projection_removes_divergence():
+        """投影必须把速度场压到（离散）无散；这是此前速度炸到 1e10 的根因。
+    
+        注意：必须用**真实结构**的 metal 场（基板/熔体金属 + 顶部气相层），
+        而不是全液态。全液态是近奇异纯 Neumann 系统（只有一个弱顶层 Dirichlet
+        钉），不是求解器实际工况；真实仿真的 metal 带气相、界面 Dirichlet 使系统
+        良态（见验证脚本 div_core 相对残差 ~6e-4）。
+        """
+        nx = ny = nz = 16
+        dx = 1e-5
+        z = jnp.arange(nz)
+        metal1d = 0.5 * (1.0 + jnp.tanh((0.6 * nz - z) / 0.7))   # 软掩膜：顶部气相
+        metal = jnp.broadcast_to(metal1d.reshape(1, 1, nz), (nx, ny, nz))
+        rho = jnp.broadcast_to(
+            jnp.where(metal1d > 0.5, 7000.0, 1.0).reshape(1, 1, nz), (nx, ny, nz)
+        )
+        rng = jax.random.split(jax.random.PRNGKey(0), 3)
+        u_star = jnp.stack(
+            [jax.random.normal(r, (nx, ny, nz)) * 0.1 for r in rng], axis=-1
+        ) * metal[..., None]
+    
+        # (a) 线性系统残差：与配置无关的强锁，证明 CG 确实把泊松方程解出来
+        Aop, Minv, rhs_of, correct = MP._pressure_system(rho, metal, dt=1e-6, dx=dx)
+        p = MP._cg(Aop, rhs_of(u_star), Minv, 40)
+        res = Aop(p) - rhs_of(u_star)
+        lin_rel = float(jnp.max(jnp.abs(res)) / (jnp.max(jnp.abs(rhs_of(u_star))) + 1e-30))
+>       assert lin_rel < 1e-6, f"CG 线性残差比 {lin_rel} 未收敛"
+E       AssertionError: CG 线性残差比 0.0001024326076245013 未收敛
+E       assert 0.0001024326076245013 < 1e-06
+
+tests\test_meltpool_vof.py:98: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_meltpool_vof.py::test_projection_removes_divergence - Asser...
+1 failed in 7.32s
+EXIT=1

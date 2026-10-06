@@ -1,0 +1,39 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\flyn4\.workbuddy\binaries\python\envs\amsim\Scripts\python.exe
+rootdir: C:\Users\flyn4\WorkBuddy\AM-workbuddy
+configfile: pyproject.toml
+collecting ... collected 85 items
+
+tests/test_meltpool_temperature_dependent.py::test_laser_source_power_conserving PASSED [  1%]
+tests/test_meltpool_temperature_dependent.py::test_laser_source_exponential_depth_decay PASSED [  2%]
+tests/test_meltpool_temperature_dependent.py::test_temperature_dependent_k_changes_result PASSED [  3%]
+tests/test_meltpool_temperature_dependent.py::test_meltpool_fdm_temperature_dependent_differentiable PASSED [  4%]
+tests/test_default_solver_numerical.py::test_amforge_default_meltpool_is_numerical PASSED [  5%]
+tests/test_default_solver_numerical.py::test_amforge_default_thermal_is_numerical PASSED [  7%]
+tests/test_default_solver_numerical.py::test_amforge_analytical_excluded_by_default_but_selectable PASSED [  8%]
+tests/test_default_solver_numerical.py::test_amforge_high_fidelity_vof_selectable_not_default PASSED [  9%]
+tests/test_default_solver_numerical.py::test_forgecore_default_prefers_numerical PASSED [ 10%]
+tests/test_default_solver_numerical.py::test_forgecore_analytical_selectable PASSED [ 11%]
+tests/test_default_solver_numerical.py::test_meltpool_fdm_runs_and_is_differentiable PASSED [ 12%]
+tests/test_meltpool_surrogate.py::test_center_temperature_matches_closed_form PASSED [ 14%]
+tests/test_meltpool_surrogate.py::test_quadrature_converges PASSED       [ 15%]
+tests/test_meltpool_surrogate.py::test_temperature_decays_away_from_source PASSED [ 16%]
+tests/test_meltpool_surrogate.py::test_smooth_max_unbiased_on_plateau PASSED [ 17%]
+tests/test_meltpool_surrogate.py::test_smooth_max_is_differentiable PASSED [ 18%]
+tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[Ti6Al4V-280W-1.20mps] PASSED [ 20%]
+tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[Ti6Al4V-220W-0.90mps] PASSED [ 21%]
+tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[316L-195W-0.80mps] PASSED [ 22%]
+tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[316L-100W-0.40mps] PASSED [ 23%]
+tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[IN718-285W-0.96mps] PASSED [ 24%]
+tests/test_meltpool_surrogate.py::test_temperature_capped_near_boiling PASSED [ 25%]
+tests/test_meltpool_surrogate.py::test_pool_grows_with_energy_density PASSED [ 27%]
+tests/test_meltpool_surrogate.py::test_no_depression_below_boiling PASSED [ 28%]
+tests/test_meltpool_surrogate.py::test_gradient_wrt_power_and_speed PASSED [ 29%]
+tests/test_meltpool_surrogate.py::test_jit_compiles PASSED               [ 30%]
+tests/test_meltpool_surrogate.py::test_vmap_over_process_window PASSED   [ 31%]
+tests/test_meltpool_surrogate.py::test_melt_length_scale_positive PASSED [ 32%]
+tests/test_e2e_chain.py::test_all_builtin_modules_imported PASSED        [ 34%]
+tests/test_e2e_chain.py::test_registry_has_full_chain_solvers PASSED     [ 35%]
+tests/test_e2e_chain.py::test_auto_pipeline_full_chain PASSED            [ 36%]
+tests/test_e2e_chain.py::test_all_contracts_reachable PASSED             [ 37%]
+tests/test_e2e_chain.py::test_pipeline_run_end_to_end 

@@ -1,0 +1,43 @@
+网格 44x32x30 dx=5.0um 域=220x160x150um
+基板 z=0..15  粉层 z=16..21  气相 z=22..29  (气相层数=8)
+
+=== 基准 (250W, 0.8m/s)  [21.2s] ===
+  T  finite=True max|.|=4.6350e+03 min=2.5000e+02
+  u  finite=True max|.|=5.1514e+00 min=-4.7972e+00
+  F  finite=True max|.|=1.0000e+00 min=0.0000e+00
+  p  finite=True max|.|=3.6409e+05 min=-1.5345e+05
+  peakT   = 4635 K  (T_liq=1723)
+  depth   = 19.89 um
+  width   = 109.37 um
+  length  = 94.66 um
+  keyhole = 31.52 um
+  vmax    = 15.215 m/s
+  precoil = 8.657e+05 Pa
+  t_end   = 4.297e-05 s (扫描距离 34.4 um)
+  div_core= 8.448e+02 1/s   (vmax/dx=1.370e+06)  相对=6.167e-04
+
+=== 匙孔正反馈：功率扫描 ===
+  P=  120W  peakT=  4635K depth=  0.00um keyhole= 13.29um precoil=8.50e+05Pa vmax=  13.86m/s
+  P=  250W  peakT=  4635K depth= 19.89um keyhole= 31.52um precoil=8.66e+05Pa vmax=  15.21m/s
+  P=  400W  peakT=  4635K depth= 39.83um keyhole= 46.95um precoil=8.65e+05Pa vmax=  13.66m/s
+
+=== Marangoni 真实生效性（关掉 dσ/dT 作对照）===
+  dσ/dT=真实  width=109.37um depth= 19.89um  W/D=  5.50 vmax=  15.21m/s
+  dσ/dT=0    width=129.58um depth= 19.93um  W/D=  6.50 vmax=  13.13m/s
+  dsigma_dT(316L) = -4.300e-04 N/(m·K)
+
+=== 可微性 ===
+Traceback (most recent call last):
+  File "C:\Users\flyn4\WorkBuddy\AM-workbuddy\_scratch\vof_validate.py", line 95, in <module>
+    print(f"  d({nm})/dP = {float(g):.4e} m/W  finite={bool(jnp.isfinite(g))} "
+                            ~~~~~^^^
+  File "C:\Users\flyn4\.workbuddy\binaries\python\envs\amsim\Lib\site-packages\jax\_src\array.py", line 300, in __float__
+    return self._value.__float__()
+           ^^^^^^^^^^^
+  File "C:\Users\flyn4\.workbuddy\binaries\python\envs\amsim\Lib\site-packages\jax\_src\profiler.py", line 420, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\flyn4\.workbuddy\binaries\python\envs\amsim\Lib\site-packages\jax\_src\array.py", line 642, in _value
+    npy_value, did_copy = self._single_device_array_to_np_array_did_copy()
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+jax.errors.JaxRuntimeError: INTERNAL: Error dispatching computation: Error dispatching computation: Error dispatching computation: Error dispatching computation: Out of memory allocating 135168000 bytes.
+EXIT=1

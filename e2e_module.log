@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\flyn4\.workbuddy\binaries\python\envs\amsim\Scripts\python.exe
+rootdir: C:\Users\flyn4\WorkBuddy\AM-workbuddy
+configfile: pyproject.toml
+collecting ... collected 9 items
+
+tests/test_e2e_chain.py::test_all_builtin_modules_imported PASSED        [ 11%]
+tests/test_e2e_chain.py::test_registry_has_full_chain_solvers PASSED     [ 22%]
+tests/test_e2e_chain.py::test_auto_pipeline_full_chain PASSED            [ 33%]
+tests/test_e2e_chain.py::test_all_contracts_reachable PASSED             [ 44%]
+tests/test_e2e_chain.py::test_pipeline_run_end_to_end PASSED             [ 55%]
+tests/test_e2e_chain.py::test_loss_gradient_has_no_nan PASSED            [ 66%]
+tests/test_e2e_chain.py::test_pipeline_function_gradient_has_no_nan PASSED [ 77%]
+tests/test_e2e_chain.py::test_inverse_training_converges 

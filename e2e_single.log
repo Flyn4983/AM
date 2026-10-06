@@ -1,0 +1,9 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.14, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\flyn4\.workbuddy\binaries\python\envs\amsim\Scripts\python.exe
+rootdir: C:\Users\flyn4\WorkBuddy\AM-workbuddy
+configfile: pyproject.toml
+collecting ... collected 1 item
+
+tests/test_e2e_chain.py::test_pipeline_run_end_to_end PASSED             [100%]
+
+============================= 1 passed in 23.73s ==============================

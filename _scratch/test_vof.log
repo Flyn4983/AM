@@ -1,0 +1,27 @@
+.F......                                                                 [100%]
+================================== FAILURES ===================================
+_____________________ test_projection_removes_divergence ______________________
+
+    def test_projection_removes_divergence():
+        """投影必须把速度场压到（离散）无散；这是此前速度炸到 1e10 的根因。"""
+        nx = ny = nz = 14
+        dx = 1e-5
+        rng = jax.random.split(jax.random.PRNGKey(0), 3)
+        rho = jnp.ones((nx, ny, nz))
+        metal = jnp.ones((nx, ny, nz))          # 全液态：纯 Neumann + 顶 Dirichlet 良态
+        u_star = jnp.stack(
+            [jax.random.normal(r, (nx, ny, nz)) * 0.1 for r in rng], axis=-1
+        )
+        div0 = MP._div_face(u_star, dx)
+        u, p = MP._project(u_star, rho, metal, dt=1e-6, dx=dx, n_iters=40)
+        div1 = MP._div_face(u, dx)
+        rel = float(jnp.max(jnp.abs(div1)) / (jnp.max(jnp.abs(div0)) + 1e-30))
+>       assert rel < 1e-3, f"投影后残余散度比 {rel} 未收敛"
+E       AssertionError: 投影后残余散度比 0.14710052444418042 未收敛
+E       assert 0.14710052444418042 < 0.001
+
+tests\test_meltpool_vof.py:86: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_meltpool_vof.py::test_projection_removes_divergence - Asser...
+1 failed, 7 passed in 106.86s (0:01:46)
+EXIT=1

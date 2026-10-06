@@ -1,0 +1,18 @@
+=== field finiteness ===
+  T[K]         finite=True  max|·|=4.6350e+03  min=2.5000e+02
+  u[m/s]       finite=True  max|·|=2.0455e+01  min=-6.8582e+00
+  F            finite=True  max|·|=1.0000e+00  min=0.0000e+00
+  p[Pa]        finite=True  max|·|=3.6924e+05  min=-1.2765e+05
+=== diagnostics ===  peakT=4635K (T_sol=1658, T_liq=1723)
+  depth   = 0.0 um
+  width   = 69.6 um
+  length  = 97.0 um
+  keyhole = 18.3 um
+  vmax    = 45.215 m/s
+  precoil = 8.46e+05 Pa
+  time    = 3.06e-05 s
+  MELTED  = True
+=== differentiability (grad of depth vs power) ===
+  d(depth)/dP = 5.522e+11 m/(W)  finite=True
+SMOKE DONE
+EXIT=0

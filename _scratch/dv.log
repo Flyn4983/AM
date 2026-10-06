@@ -1,0 +1,12 @@
+clamp=0.0  nsteps=300  n_pressure_iters=40
+step    0 t=2.360e-07 Tpk=    373 flmax=0.000 vmax=6.6787e-07 pmax=1.9740e+00 div_all=1.170e-01 div_core=2.080e-02 kh=  0.00um
+step    1 t=4.720e-07 Tpk=    373 flmax=0.000 vmax=6.1549e-07 pmax=1.4108e+00 div_all=1.397e-01 div_core=1.481e-02 kh=  0.00um
+step    2 t=7.081e-07 Tpk=    373 flmax=0.000 vmax=1.8515e-06 pmax=1.6267e+00 div_all=2.627e-01 div_core=1.712e-02 kh=  0.00um
+step   25 t=6.120e-06 Tpk=    674 flmax=0.000 vmax=1.2680e+01 pmax=6.9813e+04 div_all=6.646e+05 div_core=3.572e+02 kh=  1.10um
+step   50 t=9.018e-06 Tpk=   4635 flmax=1.000 vmax=1.6573e+01 pmax=4.0855e+05 div_all=1.388e+06 div_core=8.607e+00 kh=  5.80um
+step   75 t=1.049e-05 Tpk=   4635 flmax=1.000 vmax=2.3423e+01 pmax=4.2499e+05 div_all=1.436e+06 div_core=6.760e+00 kh=  6.90um
+step  100 t=1.175e-05 Tpk=   4635 flmax=1.000 vmax=2.5747e+01 pmax=3.8115e+05 div_all=1.476e+06 div_core=6.860e+00 kh=  7.12um
+step  125 t=1.270e-05 Tpk=   4635 flmax=1.000 vmax=4.0355e+01 pmax=3.9821e+05 div_all=6.948e+05 div_core=4.636e+00 kh=  7.33um
+step  150 t=1.359e-05 Tpk=   4635 flmax=1.000 vmax=2.7437e+01 pmax=4.8242e+05 div_all=9.774e+05 div_core=5.995e+00 kh=  7.67um
+step  175 t=1.457e-05 Tpk=   4635 flmax=1.000 vmax=3.8929e+01 pmax=3.9082e+05 div_all=9.807e+05 div_core=4.248e+00 kh=  8.39um
+step  200 t=1.533e-05 Tpk=   4635 flmax=1.000 vmax=3.4729e+01 pmax=4.0120e+05 div_all=1.152e+06 div_core=4.165e+00 kh=  9.00um

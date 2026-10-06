@@ -1,0 +1,48 @@
+FF...................................................................... [ 84%]
+.............                                                            [100%]
+================================== FAILURES ===================================
+_____________________ test_laser_source_power_conserving ______________________
+
+    def test_laser_source_power_conserving():
+        """∫q dV = A_eff·P（总吸收功率守恒），且表面最强、随深度非负。"""
+        n = 160
+        # 高分辨盒：rb、δ 远小于盒且远大于体素，保证高斯/指数被充分采样
+        # （求解器内对亚栅格光束会 r_eff=max(rb,dx) 限幅，此处用已分辨网格验证解析式）。
+        rb, delta = 300e-6, 200e-6
+        half = 3.0e-3
+        xs = jnp.linspace(-half, half, n)
+        ys = jnp.linspace(-half, half, n)
+        zs = jnp.linspace(0.0, -2.5e-3, n)
+        coords = jnp.stack(jnp.meshgrid(xs, ys, zs, indexing="ij"), axis=-1)
+        dxy = float(xs[1] - xs[0])
+        dz = abs(float(zs[1] - zs[0]))
+        dv = dxy * dxy * dz
+    
+        A_eff, P = 0.4, 250.0
+>       src = _laser_source(coords, 0.0, rb=rb, A_eff=A_eff, P=P,
+                            absorption_depth=delta, dx=dxy)
+E       TypeError: _laser_source() got an unexpected keyword argument 'rb'
+
+tests\test_meltpool_temperature_dependent.py:53: TypeError
+__________________ test_laser_source_exponential_depth_decay __________________
+
+    def test_laser_source_exponential_depth_decay():
+        """深度方向应为指数衰减（自相似：2δ 处/δ 处 ≈ (δ 处/表面)²）。"""
+        n = 60
+        dz = 20e-6                       # 体素远小于吸收深度，保证可分辨
+        xs = jnp.linspace(-1.0e-3, 1.0e-3, 8)
+        ys = jnp.linspace(-1.0e-3, 1.0e-3, 8)
+        zs = -jnp.arange(n) * dz         # 0, -dz, -2dz, ...（z 向下为负）
+        coords = jnp.stack(jnp.meshgrid(xs, ys, zs, indexing="ij"), axis=-1)
+        delta = 200e-6                   # = 10 体素
+    
+>       src = _laser_source(coords, 0.0, rb=50e-6, A_eff=0.4, P=250.0,
+                            absorption_depth=delta, dx=dz)
+E       TypeError: _laser_source() got an unexpected keyword argument 'rb'
+
+tests\test_meltpool_temperature_dependent.py:75: TypeError
+=========================== short test summary info ===========================
+FAILED tests/test_meltpool_temperature_dependent.py::test_laser_source_power_conserving
+FAILED tests/test_meltpool_temperature_dependent.py::test_laser_source_exponential_depth_decay
+2 failed, 83 passed in 455.69s (0:07:35)
+RC=1
