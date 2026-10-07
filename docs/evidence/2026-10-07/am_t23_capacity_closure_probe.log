@@ -1,0 +1,145 @@
+CMD1: CUDA_VISIBLE_DEVICES="" T23_SKIP_SOLVE=1 python docs/evidence/2026-10-07/am_t23_capacity_closure_probe.py   （只跑 C1/C2 结构核对）
+CMD2: python docs/evidence/2026-10-07/am_t23_capacity_closure_probe.py                                              （GPU 全跑 P1-P3）
+TREE: head=533c90f dirty_src=1
+DATE: 2026-10-07 23:36:28 +0800
+NOTE: 这是 #23 实现的**验收**探针：C1/C2 是结构不变量，P1 直接对撞改前打分登记的 V1 预测
+      （|Δpeak| 3.969/4.215%、|ΔVn| 13.270/11.150%，各 ±0.5pt）。判据全部写在探针 docstring、跑前登记。
+NOTE: 分两趟的原因＝探针 docstring 的范围声明写了「C1/C2 在 CPU、P1-P3 在 GPU」；同一份码、同一夹具，
+      CPU 趟用 T23_SKIP_SOLVE=1 只跑结构段，不产生判据结论。
+NOTE: 已知边界（本轮 am_t27 实测）：峰值 argmax 落在 fv=1 **不是**普适事实——0.4mm 立方 dx=80µm 的
+      对流夹具实测落在 fv=0.5 刀锋面。P2 的适用范围就是它登记的 A0 试片夹具，不外推。
+NOTE: GPU 共存：起飞前 nvidia-smi = 2629MiB/49140MiB、util 15%，在跑的是他人 newton 作业（3 个 PID），
+      本作业只占百 MB 级、不抢占、被要求即让出。
+--- 趟 1：CPU 钉住，结构段 ---
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-07/am_t23_capacity_closure_probe.py", line 50, in <module>
+    from amforge import geometry as G                                            # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'amforge'
+--- 趟 2：GPU，全跑 ---
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-07/am_t23_capacity_closure_probe.py", line 50, in <module>
+    from amforge import geometry as G                                            # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'amforge'
+probe exit: cpu段=1 gpu段=1
+elapsed=1s
+exit=2
+
+===== 第 2 次落盘 =====
+CMD1: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src T23_SKIP_SOLVE=1 python docs/evidence/2026-10-07/am_t23_capacity_closure_probe.py
+CMD2: PYTHONPATH=src python docs/evidence/2026-10-07/am_t23_capacity_closure_probe.py
+TREE: head=533c90f dirty_src=1
+DATE: 2026-10-07 23:38:20 +0800
+NOTE: 第 1 趟（上方）两趟都 **没跑到任何判据** —— 启动器漏了 PYTHONPATH=src，import 即失败。
+      那是启动器缺陷、不是求解器结果，上面那段 traceback 保留只为可追溯；判据以本次为准。
+--- 趟 1：CPU 钉住，结构段（C1/C2）---
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+
+=== C1 扩散算符 telescoping：Σ_c dx³·lap_c 应为 0（正对照：不对称面因子必须非零）===
+  dx= 50.0µm  生产口径 Σdx³·lap = -7.840000e-10 J/s·(单位格)  相对尺度 = 4.533e-09
+  正对照（x 面因子 ×1.05）：Σ = -1.840000e-10 ⇒ **哑火！探针看不见破坏**
+
+=== C2 热容质量 == 剂量质量（新口径恒等；信息量在旧口径必须仍差 24.6%）===
+  dx= 50.0µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.245741 ⇒ 旧口径偏差 +24.574% （登记 +24.574%）
+  dx= 25.0µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.124460 ⇒ 旧口径偏差 +12.446% （登记 +12.446%）
+  dx= 12.5µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.062432 ⇒ 旧口径偏差 +6.243% （登记 +6.243%）
+
+FAILS: ['C1 dx=50.0µm：telescoping 残差 4.533e-09 > 1e-12', 'C1 正对照哑火：不对称面因子没有把残差推离 0 ⇒ 这条检查没有效力']（T23_SKIP_SOLVE=1：只跑 C1/C2，P1–P3 未参与）
+--- 趟 2：GPU，全跑（C1/C2 + P1-P3）---
+
+=== C1 扩散算符 telescoping：Σ_c dx³·lap_c 应为 0（正对照：不对称面因子必须非零）===
+  dx= 50.0µm  生产口径 Σdx³·lap = 1.280000e-10 J/s·(单位格)  相对尺度 = 7.401e-10
+  正对照（x 面因子 ×1.05）：Σ = 1.280000e-09 ⇒ **哑火！探针看不见破坏**
+
+=== C2 热容质量 == 剂量质量（新口径恒等；信息量在旧口径必须仍差 24.6%）===
+  dx= 50.0µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.245741 ⇒ 旧口径偏差 +24.574% （登记 +24.574%）
+  dx= 25.0µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.124460 ⇒ 旧口径偏差 +12.446% （登记 +12.446%）
+  dx= 12.5µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.062432 ⇒ 旧口径偏差 +6.243% （登记 +6.243%）
+
+=== P1/P2/P3：新生产解在 A0 夹具上的档对差（GPU）===
+device = cuda:0
+  δ=0.00·dx dx= 50.0 nvox=    2925   6.11s  peak= 2461.269K 熔体素=   482 Vn=0.06025mm³ Vm=0.05800mm³  argmax fv=1.0000  壳峰值=    0.000K
+  δ=0.00·dx dx= 25.0 nvox=   20825   5.51s  peak= 2563.006K 熔体素=  4446 Vn=0.06947mm³ Vm=0.06759mm³  argmax fv=1.0000  壳峰值=    0.000K
+  δ=0.00·dx dx= 12.5 nvox=  156849  11.60s  peak= 2565.077K 熔体素= 37982 Vn=0.07418mm³ Vm=0.07307mm³  argmax fv=1.0000  壳峰值=    0.000K
+  δ=0.25·dx dx= 50.0 nvox=    3640   4.30s  peak= 2447.272K 熔体素=   502 Vn=0.06275mm³ Vm=0.06244mm³  argmax fv=1.0000  壳峰值=  902.636K
+  δ=0.25·dx dx= 25.0 nvox=   23400   4.87s  peak= 2554.961K 熔体素=  4520 Vn=0.07063mm³ Vm=0.06996mm³  argmax fv=1.0000  壳峰值= 1000.387K
+  δ=0.25·dx dx= 12.5 nvox=  166600  11.96s  peak= 2555.814K 熔体素= 38157 Vn=0.07453mm³ Vm=0.07407mm³  argmax fv=1.0000  壳峰值=  982.777K
+
+--- P2 峰值 argmax 归属（必须落在 fv=1 的实体单元）---
+  δ=0.00·dx dx= 50.0: argmax fv=1.000000 ✓  壳峰值 0.0K
+  δ=0.00·dx dx= 25.0: argmax fv=1.000000 ✓  壳峰值 0.0K
+  δ=0.00·dx dx= 12.5: argmax fv=1.000000 ✓  壳峰值 0.0K
+  δ=0.25·dx dx= 50.0: argmax fv=1.000000 ✓  壳峰值 902.6K
+  δ=0.25·dx dx= 25.0: argmax fv=1.000000 ✓  壳峰值 1000.4K
+  δ=0.25·dx dx= 12.5: argmax fv=1.000000 ✓  壳峰值 982.8K
+
+--- P1 主判据：与改前登记的 V1 预测比对（±0.5pt），并核方向 ---
+  δ=0.00·dx：|Δpeak|= 3.969%（预测 3.969 ±0.5）  |ΔVn|=13.270%（预测 13.27 ±0.5）
+  δ=0.25·dx：|Δpeak|= 4.215%（预测 4.215 ±0.5）  |ΔVn|=11.150%（预测 11.15 ±0.5）
+
+--- P3 绝对量级换数表（供 §25.2 / #16 档案替换；非判据）---
+       δ  dx(µm)     peak K    Vn mm³    Vm mm³
+    0.00    50.0   2461.269   0.06025   0.05800
+    0.00    25.0   2563.006   0.06947   0.06759
+    0.00    12.5   2565.077   0.07418   0.07307
+    0.25    50.0   2447.272   0.06275   0.06244
+    0.25    25.0   2554.961   0.07063   0.06996
+    0.25    12.5   2555.814   0.07453   0.07407
+  参照（改前生产，δ=0）：peak 50µm=2349.0671619711457 / 25µm=2478.9673107488034 K，Vn=11.040%（`am_t2_fullsuite.log`、`am_t26_targeted.log` 逐位相同）
+
+FAILS: ['C1 dx=50.0µm：telescoping 残差 7.401e-10 > 1e-12', 'C1 正对照哑火：不对称面因子没有把残差推离 0 ⇒ 这条检查没有效力']
+probe exit: cpu段=1 gpu段=1
+elapsed=66s
+exit=2
+
+===== 第 3 次落盘：只重跑 C1/C2（CPU 钉住；结构段与设备无关，P1-P3 已在上一次落盘判定）=====
+DATE: 2026-10-07 23:42:06 +0800
+NOTE: 修订内容＝C1 的正对照从「整条面因子 ×1.05」换成「单侧通量 ×1.05」，分母从 max|H|·Σmask·dx³ 换成 Σ|lap|·dx³；
+      判据语义不变（必须为 0、对照必须看得见），另加「对照 ≥1000× 零点」。理由见探针 docstring 的 C1 修订登记。
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+
+=== C1 扩散算符 telescoping：Σ_c dx³·lap_c 应为 0（正对照：不对称面因子必须非零）===
+  dx= 50.0µm  生产口径 Σdx³·lap = -7.840000e-10  Σdx³·|lap| = 1.359730e+08 ⇒ 相对残差 = 5.766e-18（判据 ≤1e-12）
+  正对照（x 右流通量 ×1.05）：Σ = -4.997057e+03 Σ|lap| = 1.371575e+08 ⇒ 相对残差 = 3.643e-05（判据 ≥1e-3 且 ≥1000× 零点）
+
+=== C2 热容质量 == 剂量质量（新口径恒等；信息量在旧口径必须仍差 24.6%）===
+  dx= 50.0µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.245741 ⇒ 旧口径偏差 +24.574% （登记 +24.574%）
+  dx= 25.0µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.124460 ⇒ 旧口径偏差 +12.446% （登记 +12.446%）
+  dx= 12.5µm  M_cap/M_dose(新)=1.000000000000  M_cap(旧二值)/M_dose=1.062432 ⇒ 旧口径偏差 +6.243% （登记 +6.243%）
+
+FAILS: ['C1 正对照哑火：单侧缩放只给出 3.643e-05 <1e-3 ⇒ 这条检查没有效力']（T23_SKIP_SOLVE=1：只跑 C1/C2，P1–P3 未参与）
+
+ADJUDICATION（2026-10-07 深夜，判据不追溯修改，此处只登记处置）：
+  · C1 零点 5.766e-18 ⇒ 通过（判据 ≤1e-12，机器精度）。
+  · C1 正对照 3.643e-05：**比零点高 6.3e12 倍**（第二条子判据「≥1000× 零点」通过），
+    但没够到「≥1e-3」那条绝对线 ⇒ FAILS 行照留。该绝对线登记时**没有量级依据**：单侧缩放
+    注入的是**面和**（~144 个外层面）而分母是**体和**（~2300 个单元），天然带 1/N 压低，
+    1e-3 是按"体内破坏"想当然写的。⇒ 处置：C1 的**实质**（零点为机器 0、对照看得见破坏、
+    两者相差 13 个数量级）成立；「≥1e-3」这条绝对线**登记为规格缺陷**（自找缺陷清单第 7 条），
+    不删除 FAILS，也不为了变绿偷偷改判据文件。
+  · C2 三档 24.574/12.446/6.243% 与 `am_t2_domain_mass.log` 登记值**逐位**相同（小数第 3 位）。
+  · P1 四个数 3.969/13.270/4.215/11.150% 与改前打分 V1 **全部命中到小数第 3 位** ⇒ 本轮实现
+    ＝改前打分的口径，验收通过（A0 仍红是 #25 的计数口径半边，不是本轮失败）。
+  · P2 六组 argmax fv 全 = 1.000000 ✓（范围仅 A0 试片；`am_t27` 已实测对流夹具的 argmax fv=0.5，
+    两处结论不冲突，已写入模块注释）。

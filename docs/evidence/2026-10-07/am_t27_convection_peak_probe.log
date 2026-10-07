@@ -1,0 +1,62 @@
+CMD: CUDA_VISIBLE_DEVICES="" /tmp/amvenv/bin/python docs/evidence/2026-10-07/am_t27_convection_peak_probe.py
+TREE: head=533c90f dirty_src=1
+DATE: 2026-10-07 23:32:04 +0800
+NOTE: 判据 U0a/U0b/U0c/U1a/U1b/U1c/U2/U3 全部写在探针 docstring 里、跑前登记，此处不复述。
+NOTE: 为什么钉 CPU 而不用 GPU：U0b 的锚点是本轮 pytest（CPU 钉住）打印的逐位浮点，
+      跨设备比较无效；本探针只做归因，不做性能测量（性能一律 RTX A6000）。
+NOTE: 两副口径 = /tmp/am_t27_old_src（HEAD 533c90f 的 thermal_enthalpy.py 副本，不含 cap_w）
+      与工作树（#23 实现）；封顶开关 = evap_coeff 3e11 vs 1e-6。四组各起独立子进程，父进程只判据。
+NOTE: 触发本轮的事实：A0 assert1 转绿、assert2 = 13.270%（=改前打分 V1 登记值，预测命中）；
+      test_boundary.py:184「h=20000 应压低峰值」2908.771 vs 2937.061（0.96%）是新红灯。
+device = ''（父进程只做判据）
+[old/on] te=/tmp/am_t27_old_src/amforge/thermal_enthalpy.py grid=[8, 8, 8] n_solid=216 peak0=2943.778186 argmax_fv=0.500 >2890K=True n_evap=35 Vn=0.110592mm3 t=9.5s
+        h=    200: peak=2944.5976 (+0.028%) Δmean=   -8.14K Vn=0.110592mm3 (  +0.00%) argmax_fv=0.500 n_evap=33 finite=True
+        h=   2000: peak=2946.5875 (+0.095%) Δmean=  -81.58K Vn=0.110592mm3 (  +0.00%) argmax_fv=0.500 n_evap=25 finite=True
+        h=  20000: peak=2785.0627 (-5.392%) Δmean= -573.67K Vn=0.054272mm3 ( -50.93%) argmax_fv=1.000 n_evap=0 finite=True
+[old/off] te=/tmp/am_t27_old_src/amforge/thermal_enthalpy.py grid=[8, 8, 8] n_solid=216 peak0=3351.744217 argmax_fv=1.000 >2890K=True n_evap=43 Vn=0.110592mm3 t=9.3s
+        h=    200: peak=3343.7173 (-0.239%) Δmean=  -10.88K Vn=0.110592mm3 (  +0.00%) argmax_fv=1.000 n_evap=43 finite=True
+        h=   2000: peak=3270.8323 (-2.414%) Δmean= -106.29K Vn=0.110592mm3 (  +0.00%) argmax_fv=1.000 n_evap=35 finite=True
+        h=  20000: peak=2785.0627 (-16.907%) Δmean= -639.82K Vn=0.054272mm3 ( -50.93%) argmax_fv=1.000 n_evap=0 finite=True
+[new/on] te=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py grid=[8, 8, 8] n_solid=216 peak0=2937.060997 argmax_fv=0.500 >2890K=True n_evap=78 Vn=0.110592mm3 t=9.5s
+        h=    200: peak=2938.2872 (+0.042%) Δmean=   -7.27K Vn=0.110592mm3 (  +0.00%) argmax_fv=0.500 n_evap=81 finite=True
+        h=   2000: peak=2944.7352 (+0.261%) Δmean=  -71.38K Vn=0.110592mm3 (  +0.00%) argmax_fv=0.500 n_evap=67 finite=True
+        h=  20000: peak=2908.7715 (-0.963%) Δmean= -755.93K Vn=0.081408mm3 ( -26.39%) argmax_fv=0.500 n_evap=4 finite=True
+[new/off] te=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py grid=[8, 8, 8] n_solid=216 peak0=4979.165553 argmax_fv=0.500 >2890K=True n_evap=216 Vn=0.110592mm3 t=9.4s
+        h=    200: peak=4951.5576 (-0.554%) Δmean=  -25.52K Vn=0.110592mm3 (  +0.00%) argmax_fv=0.500 n_evap=216 finite=True
+        h=   2000: peak=4714.9596 (-5.306%) Δmean= -244.29K Vn=0.110592mm3 (  +0.00%) argmax_fv=0.500 n_evap=216 finite=True
+        h=  20000: peak=3217.2432 (-35.386%) Δmean=-1666.45K Vn=0.082944mm3 ( -25.00%) argmax_fv=0.500 n_evap=33 finite=True
+
+=== U0c 出处对照（父进程硬校：两副口径真的来自两份源码）===
+  old 包路径            ✓
+  new 包路径            ✓
+  old 源码无 cap_w      ✓
+  new 源码有 cap_w      ✓
+  两文件仅差 #23          ✓
+  （old 侧 floor_now=1.0 为探针赋值，老 rhs 不读该名）
+
+=== U0a：old 口径必须复现测试 docstring 的改前表（±0.2K / ±0.05pt）===
+  h=    200: Δmean 实测    -8.14K vs 登记     -8.1 ✓   Δpeak 实测  +0.028% vs 登记   +0.03% ✓
+  h=   2000: Δmean 实测   -81.58K vs 登记    -81.6 ✓   Δpeak 实测  +0.095% vs 登记   +0.10% ✓
+  h=  20000: Δmean 实测  -573.67K vs 登记   -573.7 ✓   Δpeak 实测  -5.392% vs 登记   -5.39% ✓
+
+=== U0b：new 口径必须逐位复现 pytest 打印的两个锚点 ===
+  peak0              探针 2937.060997302282 vs pytest 2937.060997302282 ⇒ 逐位相同 ✓
+  peaks[h=20000]     探针 2908.771450618092 vs pytest 2908.771450618092 ⇒ 逐位相同 ✓
+
+=== U1 机制判据 ===
+  U1a 封顶在场（new/peak0）：peak=2937.0610 > 2890 True 且 argmax_fv=0.500==1.0 False ⇒ 不成立
+  U1b 封顶关闭后（off 组，h=20000 峰值 Δ）：old -16.907%  new -35.386% ⇒ new 更敏感 =是（判据：|new| > |old|，即对流在 new 口径下**更强**）
+  U1c 单变量（口径间差 new−old，h=20000 峰值 Δ）：on 组  +4.428pt  off 组 -18.479pt ⇒ 异号 =是（封顶开关才是那几 pt 的来源）
+
+=== U2 能量守护不许退化 ===
+  new 的 Δmean = -7.27, -71.38, -755.93 K （old -8.14, -81.58, -573.67）⇒ 单调下降 True，|Δ(h=20000)| 不小于一 True
+
+=== U3 处置：候选替换守护必须在**两副口径**同时成立 ===
+  (i) peaks 单调 False   (ii) Vn 降幅 h=20000 vs h=0 = +50.926% ≥10% True  [old]
+  (i) peaks 单调 False   (ii) Vn 降幅 h=20000 vs h=0 = +26.389% ≥10% True  [new]
+  ⇒ 候选守护在某一副口径上不成立 ⇒ **照数抠门槛**，作废；测试一字不动。
+
+FAILS: ['U1a: new 峰值不在蒸发封顶窗内或 argmax 落在非实体单元']
+pytest-free probe exit=1
+elapsed=38s
+exit=1

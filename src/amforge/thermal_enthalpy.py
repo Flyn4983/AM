@@ -51,6 +51,10 @@
   SSP-RK2 绝对上限直接报错（发散不会被蒸发封顶伪装成可行结果）。
 * 实体表面**绝热**由跨界面通量置零实现（``_div_alpha_grad(..., mask=)``），
   空白体素不再充当恒温焓库；源/冷却/蒸发封顶按**线性 cut-cell 份额 fv** 加权，
+  再整条右端项除以热容权重 ``cap_w = max(fv, CUT_CAPACITY_FLOOR)``——等价于把 ``H``
+  读作**单位材料体积**焓：移走的**能量**逐项与旧口径相同（实体内 fv=1 ⇒ cap_w=1 ⇒ 逐位
+  不变），差别只在切割单元不再背整格热容。刀锋层（fv=0.5）的封顶与冷却项因此**刚度翻倍**，
+  峰值可能被封顶钳住而对表面对流不敏感（实测见 ``am_t27_convection_peak_probe.log``）。
   界面沉积份额是 O(dx²) 而非 O(dx)。
 * 扫描配方（层数/道数/路径长）取自「含材料体素」足迹 ``sdf<dx/2``，与设计几何
   对齐，不随体素对齐抖动（见 :func:`_footprint`）。
@@ -77,6 +81,22 @@ from amforge.core.contracts import (
 )
 from amforge.core.registry import register_solver
 from amforge.materials import get_material
+
+
+# ---------------------------------------------------------------------------
+# cut-cell 热容（#23）
+# ---------------------------------------------------------------------------
+#: 焓态量 `H` 是**单位材料体积**的焓（体素内实有材料的热容＝`fv·dx³`），故扩散项要除回
+#: `fv`；`fv→0` 的单元必须兜底，否则除零。下限取 **0.5** 而非更小：实测
+#: `fv ≥ 0.5 ⟺ sdf ≤ 0`（`am_t23_floor_shell_probe.log` P1，1154/4610 个 `fv≤0.5` 的实体
+#: 单元全部出现在 δ=0 刀锋层，δ=0.25·dx 档为 **0** 个）⇒ 该下限**永不在实体内部生效**，
+#: 只兜底掩膜外的切割壳与空白单元，因此它不是标定旋钮、也不作为 `params` 暴露。
+#:
+#: 稳定性推论（不抬 n_steps 的依据）：`lap/fv` 把最坏单元的有效扩散数放大 `1/fv_min`，
+#: 而实体内 `fv_min = 0.5` ⇒ 缺省 `cfl=0.35` 下最坏有效数 = `0.35/0.5 = 0.7 ≤ 1`
+#: （SSP-RK2 绝对上限），故**不改变**已登记的时间步数与吞吐分母；越界由
+#: :func:`solve_enthalpy_thermal` 里的显式校核报错，而不是静默发散。
+CUT_CAPACITY_FLOOR = 0.5
 
 
 # ---------------------------------------------------------------------------
@@ -587,6 +607,13 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
     # 几何误差降到 O(dx²)——否则同一物理工况在不同网格上沉积的总剂量本身漂移。
     # 口径定义在全平台唯一出处 contracts.solid_weight（体积/面积一律用它）。
     fv = solid_weight(geometry.sdf, dx)
+    # cut-cell 热容权重（#23）：H 是**单位材料体积**焓 ⇒ 整条右端项除以实体份额。
+    # 分子里的源/冷却/蒸发已按 fv 加权（见下方 rhs），所以除完之后：
+    #   实体内（fv=1）  ＝ 改前逐位相同；
+    #   刀锋层（fv=0.5）＝ 扩散 ÷0.5、净源项 = fv·q/fv = q（**注入能量不变**，只是
+    #     不再让半块材料带整块体素的热容）；
+    #   切割壳（0<fv<0.5）由下限兜底，见 CUT_CAPACITY_FLOOR 的推论注释。
+    cap_w = jnp.maximum(fv, CUT_CAPACITY_FLOOR)
     coords = geometry.coords()                          # (..., dim)
 
     # 工艺量（保持可微：以 tracer 形式进入热源位置/功率）
@@ -643,6 +670,17 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
     cfl = float(p.get("cfl", 0.35))
     dt_rk2 = _stability_limit_dx2(dx, geometry.dim, alpha0, 1.0)   # SSP-RK2 绝对上限
     dt_target = dt_rk2 * cfl                                       # 精度目标
+    # #23 的稳定性推论校核：`lap/cap_w` 把最坏单元的有效扩散数放大 `1/fv_min`（实体内），
+    # 而实体内 `fv_min = 0.5`（刀锋层）⇒ 缺省 `cfl=0.35` 下最坏有效数 `0.35/0.5 = 0.7 ≤ 1`
+    # ⇒ **不抬 n_steps**、已登记的步数与吞吐分母不变。调用方若把 cfl 抬到让有效数 >1，
+    # 那就是静默发散（会被蒸发封顶伪装成可行结果），此处直接报错。
+    _fv_min_solid = jnp.min(jnp.where(mask > 0.5, fv, 1.0))
+    cfl_eff = _concrete(cfl / jnp.maximum(_fv_min_solid, CUT_CAPACITY_FLOOR))
+    if cfl_eff is not None and cfl_eff > 1.0:
+        raise ValueError(
+            f"cfl={cfl} 在 cut-cell 热容下等效扩散数 {cfl_eff:.3f} 超过 SSP-RK2 绝对上限 1.0："
+            f"实体内最坏份额 fv_min={_concrete(_fv_min_solid):.3f}（刀锋层=0.5）。"
+            f"请把 cfl 降到 ≤ {1.0 * _concrete(_fv_min_solid):.3f}，或提高 params['n_steps']。")
 
     # 曝光时长是**物理量**：t_exposure = 扫描路径长 / 扫描速度（层间 recoat 停留
     # 时间的冷却尚未建模，见 docs 缺口清单）。dt = t_exposure/n_steps，于是 n_steps
@@ -795,15 +833,26 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
         Q = _source_at(t) * fv
         # 蒸发封顶：仅在 T→T_boil 时介入，把峰值钳制在蒸气化上限（不影响熔化）
         evap = _evap_sink(T, T_evap_lo, T_boil, c_evap) * fv
+        # —— #23：整条右端项除以 cut-cell 热容权重 cap_w（推导见 CUT_CAPACITY_FLOOR）。
+        # 物理内容：`fv·dx³·dH/dt = dx³·lap + fv·dx³·(q − loss)`，即**热容按实有材料计**、
+        # 而**注入剂量不变**（改前的错处是左边用了整格热容：δ=0 档计算域质量比剂量多
+        # +24.574/+12.446/+6.243% @ dx=50/25/12.5µm，`am_t2_domain_mass.log`）。
+        # 空白单元（fv=0）分子恒为 0（面全闭 ⇒ lap=0；fv·项=0），除以 0.5 仍是 0，不产生 NaN。
+        # 切割壳（0<fv<0.5）被二值面掩膜隔断扩散，其壳体温度不由本项的物理决定——
+        # 已知近似，登记见模块 docstring 与开发日志。峰值落点**不是**普适的 fv=1：A0 试片
+        # 实测 argmax 落在 fv=1 的实体单元（`am_t23_floor_shell_probe.log` L1），而 0.4mm
+        # 立方 / dx=80µm 的对流夹具实测落在 **fv=0.5 的刀锋面**——那里封顶项被 cap_w 放大
+        # 2 倍，于是峰值由封顶刚度决定、表面对流压不动它（`am_t27_convection_peak_probe.log`）。
         if bcs is None:
-            # 原行为：全局弱对流冷却（维持既有测试逐位一致）
+            # 全局弱对流冷却仍按 fv 加权：除完 cap_w 后 fv·cool/fv = cool，移走的**能量**与
+            # 改前逐项相同，只是不再让半块材料背整格热容（实体内 fv=1 处逐位不变）。
             cool = hcool * (T - T_amb) * fv
-            return lap + Q - cool - evap
+            return (lap + Q - cool - evap) / cap_w
         # 显式 BC：被覆盖处移除全局弱冷却，再叠加对流/热流附加项
         extra_bc, covered, _dir = boundary_terms(
             geometry, bcs, T=T, dx=dx, T_amb=T_amb, hcool=hcool, masks=bc_masks)
         base_cool = hcool * (T - T_amb) * fv * (1.0 - covered)
-        return lap + Q - base_cool - evap + extra_bc
+        return (lap + Q - base_cool - evap + extra_bc) / cap_w
 
     def step(carry, t):
         H, peak, cool_rate, t_above = carry
