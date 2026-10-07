@@ -26,6 +26,7 @@ import warnings
 
 import numpy as np
 
+from amforge.core.contracts import SDF_SOLID_TOL
 from amforge.gui import preproc as P
 from amforge.boundary import (
     BoundaryCondition, BoundaryCollection, InitialCondition, face_mask,
@@ -98,7 +99,7 @@ class Part3DView(QWidget):
         # 清掉旧 actor
         self.renderer.RemoveAllViewProps()
         sdf = np.asarray(part.sdf)
-        occ = (sdf < 0).astype(np.uint8)
+        occ = (sdf < SDF_SOLID_TOL).astype(np.uint8)   # 与求解器同口径（#19）
         nx, ny, nz = occ.shape
         img = vtk.vtkImageData()
         img.SetDimensions(nx, ny, nz)

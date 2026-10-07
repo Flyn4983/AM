@@ -68,7 +68,13 @@ import jax
 import jax.numpy as jnp
 from jax.scipy.special import erf
 
-from amforge.core.contracts import PartGeometry, ProcessPlan, ThermalHistory
+from amforge.core.contracts import (
+    PartGeometry,
+    ProcessPlan,
+    ThermalHistory,
+    solid_mask,
+    solid_weight,
+)
 from amforge.core.registry import register_solver
 from amforge.materials import get_material
 
@@ -322,11 +328,12 @@ def _concrete(value):
 def _footprint(geometry):
     """「含材料的体素」掩膜：``sdf < dx/2``（等价于线性 cut-cell 份额 fv>0）。
 
-    专供**扫描足迹/路径长**推导，不用严格的 ``sdf < 0``：后者会把体素中心恰好
-    落在设计边界面（``sdf == 0``）上的一圈剔掉，于是同一零件在不同 dx 下对齐
-    情况不同 → 层数/道数/路径长随网格抖动（实测试片四档 path=3.267/4.775/
-    5.012/5.131mm，极差 36%）。工艺配方是**设计几何**的属性，不该由体素对齐
-    决定；扩散算符仍严格用 ``sdf < 0`` 的实体掩膜，两者用途不同。
+    专供**扫描足迹/路径长**推导，不用严格的实体掩膜 ``solid_mask``（``sdf < 0`` 加
+    ulp 容差）：后者会把体素中心恰好落在设计边界面（``sdf == 0``）上的一圈剔掉，
+    于是同一零件在不同 dx 下对齐情况不同 → 层数/道数/路径长随网格抖动（实测试片
+    四档 path=3.267/4.775/5.012/5.131mm，极差 36%）。工艺配方是**设计几何**的属性，
+    不该由体素对齐决定；扩散算符用 ``solid_mask`` 判实体、源项用线性 cut 份额
+    ``solid_weight`` 加权（即本掩膜 == ``solid_weight(...) > 0``），两者用途不同。
     """
     dx = jnp.asarray(geometry.spacing, dtype=jnp.float64)
     return jnp.asarray(geometry.sdf, dtype=jnp.float64) < 0.5 * dx
@@ -574,11 +581,12 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
 
     spacing = jnp.asarray(geometry.spacing, dtype=jnp.float64)  # tracer 安全
     dx = spacing
-    mask = (geometry.sdf < 0.0).astype(jnp.float64)    # 仅在实体内部加热
+    mask = solid_mask(geometry.sdf).astype(jnp.float64)  # 仅在实体内部加热
     # 线性化固相体积分数（cut-cell 份额）：|SDF|≤dx/2 的表面体素按被平面切出的
     # 份额计。用它加权**源项**（而非二值 mask）可把"界面沉积份额"从 O(dx) 一阶
     # 几何误差降到 O(dx²)——否则同一物理工况在不同网格上沉积的总剂量本身漂移。
-    fv = jnp.clip(0.5 - jnp.asarray(geometry.sdf, dtype=jnp.float64) / dx, 0.0, 1.0)
+    # 口径定义在全平台唯一出处 contracts.solid_weight（体积/面积一律用它）。
+    fv = solid_weight(geometry.sdf, dx)
     coords = geometry.coords()                          # (..., dim)
 
     # 工艺量（保持可微：以 tracer 形式进入热源位置/功率）
@@ -730,17 +738,22 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
             f"不得用于标定或形态判据；标定档请用缺省 resolution_policy='strict'。",
             stacklevel=2)
     if r_c is not None and dx_c is not None and dx_c > r_c:
-        # 实测（2026-10-06 A0 J3，试片 1.2×0.6×0.4mm、600W/0.8m·s⁻¹/r=100µm）：
-        # dx=r 档横向仅 2 个体素跨过 1/e² 光斑，与 dx=r/4 档相比峰值只低 1.1%
-        # （2589.4K vs 2617.8K，且两档都已撞上蒸发封顶），但**熔池形态**崩塌：
-        # 熔宽低 45%（0.300 vs 0.550mm）、熔体积低 36%（0.0460 vs 0.0715mm³）。
+        # 实测（2026-10-07 在 #19 口径下重跑四档，同夹具 1.2×0.6×0.4mm、
+        # 600W/0.8m·s⁻¹/r=100µm、integrated 源，
+        # docs/evidence/2026-10-07/am_t2_a0_conv_rerun.log）：dx=r 档横向仅 2 个体素跨过
+        # 1/e² 光斑，相对最细档 dx=r/8=12.5µm 峰值低 15.6%（2125.6 vs 2518.0K）、
+        # 熔宽低 46.7%（Ly 0.300 vs 0.563mm）、熔体积小 52.8%（0.0320 vs 0.0678mm³）；
+        # point 源的同对比是 35.1% / 56.9%。⇒ 峰值与形态都不可用于标定。
+        # ⚠ 2026-10-06 旧表在此处写的是"峰值只低 1.1%、熔宽低 45%、熔体积小 36%"，那是
+        #   #19 之前 `sdf<0` 严格掩膜下的数（该口径连四档峰值本身都带 O(dx) 的域热容误差，
+        #   见 §26.16 与任务 #23），已按新口径重测替换。
         # 能量守恒不受影响（Σfrac=1 与 dx 无关），故只警告不报错；但取熔池形态
         # 或峰值做标定/判据时必须 dx≤r/2。
         warnings.warn(
             f"体素 dx={dx_c*1e6:.1f}µm 大于光束半径 r={r_c*1e6:.1f}µm：横向仅约 "
             f"{2*r_c/dx_c:.1f} 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**"
-            f"（实测 dx=r 档熔宽偏低 ~45%、熔体积偏低 ~36%）。定量熔池形态请取 "
-            f"dx≤r/2。",
+            f"（实测 dx=r 相对 dx=r/8 档：熔宽偏低 46.7%、熔体积偏低 52.8%）。"
+            f"定量熔池形态请取 dx≤r/2。",
             stacklevel=2)
 
     # 初值场：bcs 显式给了 IC 时用 BC 的 IC；否则用**工艺预热温度**（此前

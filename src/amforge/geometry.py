@@ -609,8 +609,9 @@ def printability_report(
         "n_layers": int(n_layers),
         "overhang_fraction": float(overhang_fraction(part, angle_threshold=angle_threshold)),
         "thin_wall_fraction": float(
-            jnp.sum(thin_wall_field(part, min_thickness=min_thickness))
-            / jnp.maximum(jnp.sum(part.soft_occupancy()), 1e-12)
+            jnp.sum(thin_wall_field(part, min_thickness=min_thickness)
+                    * part.solid_fraction())
+            / jnp.maximum(jnp.sum(part.solid_fraction()), 1e-12)
         ),
         "min_thickness_um": float(min_thickness * 1e6),
     }

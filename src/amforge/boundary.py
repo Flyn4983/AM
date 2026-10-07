@@ -37,7 +37,7 @@ from pathlib import Path
 import jax.numpy as jnp
 
 from amforge import geometry as G
-from amforge.core.contracts import PartGeometry
+from amforge.core.contracts import PartGeometry, solid_mask
 from amforge.thermal_enthalpy import enthalpy_of_temperature
 
 # 轴向单位向量（按 dim 截断后取前 dim 分量）
@@ -150,7 +150,7 @@ def face_mask(part: PartGeometry, face: str, *,
     sdf = part.sdf
     sp = float(part.spacing)
     band = jnp.exp(-(sdf / (band_voxels * sp)) ** 2)   # 界面带权重（平滑）
-    surf = (sdf < 0.0).astype(jnp.float64) * band      # 实体表面体素
+    surf = solid_mask(sdf).astype(jnp.float64) * band   # 实体表面体素
     if face == "all":
         return surf
     vec = jnp.asarray(_AXIS[face][: part.dim], dtype=jnp.float64)
@@ -213,7 +213,7 @@ def initial_enthalpy_field(part: PartGeometry, bcs: BoundaryCollection, *,
         H_pre = enthalpy_of_temperature(
             jnp.asarray(float(bcs.ic.value)), rho=rho, cp=cp, L=L,
             T_amb=T_amb, T_sol=T_sol, T_liq=T_liq)
-        H0 = jnp.where((part.sdf < 0.0).astype(jnp.float64) > 0.5, H_pre, H0)
+        H0 = jnp.where(solid_mask(part.sdf) > 0.5, H_pre, H0)
     return H0
 
 

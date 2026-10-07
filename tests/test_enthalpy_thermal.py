@@ -16,7 +16,7 @@ import pytest
 jax.config.update("jax_enable_x64", True)
 
 from amforge.geometry import from_sdf_fn
-from amforge.core.contracts import ProcessPlan
+from amforge.core.contracts import ProcessPlan, solid_mask
 from amforge.materials import get_material
 from amforge.thermal_enthalpy import (
     liquid_fraction, d_liquid_fraction, temperature_of_enthalpy,
@@ -299,23 +299,47 @@ def test_preheat_temperature_enters_initial_condition():
 def test_meltpool_converges_across_beam_resolving_grids():
     """A0 的核心可验证承诺：**能分辨光斑的两档网格**给出同一熔池。
 
-    旧缺陷是"越加密越冷、全案不熔化"（dt 被 n_steps·dx² 改写）。修复后实测
-    （2026-10-06 A0 J3，试片 1.2×0.6×0.4mm、600W/0.8m·s⁻¹/r=100µm/η=0.45、
-    integrated 源、步数由 CFL 自动推导，/tmp/am_a0_final3.log）：
-      dx=100µm(=r)   ns=   66 → 峰值 2589.4K 熔化 46   体素 / 0.0460mm³ Ly=0.300
-      dx= 50µm(=r/2) ns=  262 → 峰值 2670.3K 熔化 550  体素 / 0.0687mm³ Ly=0.500
-      dx= 25µm(=r/4) ns= 1045 → 峰值 2617.8K 熔化 4575 体素 / 0.0715mm³ Ly=0.550
-      dx= 12.5(r/8)  ns= 4180 → 峰值 2586.6K 熔化 38149体素 / 0.0745mm³ Ly=0.575
-    本测试守住 50↔25 这一对：峰值差 1.96%、熔体积差 3.92%（均在 5% 内）、两档
-    均熔化、加密不显著变冷。
+    判据（5%）**不放宽**；本测试自 #19 起为**已知红灯**，下面是它红的确切数字与归属，
+    不是解释性辩护。取数条件：试片 1.2×0.6×0.4mm、600W/0.8m·s⁻¹/r=100µm/η=0.45、
+    integrated 源、步数由 CFL 自动推导、CPU 钉住（CUDA_VISIBLE_DEVICES=""）。
+    证据：docs/evidence/2026-10-07/am_t2_a0_test_mirror.log、am_t2_a0_observable.log、
+    am_t2_a0_alignment.log、am_t2_domain_mass.log（HEAD af9fc89 + #19 工作树）。
 
-    照实记录的**残余缺口**：峰值随网格已收敛（50/25/12.5 三档极差 3.13%），但
-    阈值定义的熔池几何仍在以约 4%/加倍 的速度漂移（Lx 极差 6.38%、vol 7.73%），
-    未达登记判据的 5%。这不是能量剂量问题（J1/J2 到 1e-14），而是「T>T_liq 体素
-    计数」这种阈值测度对峰值幅度的一阶敏感 + 界面体素量化：熔体边界在 exp(−2ρ²/r²)
-    上一小段相对变化即放大为宽度变化。要闭合需 A3 的外部基准数据或 Richardson 外推。
-    dx=100µm(=r) 档不在本判据内——求解器对它发「熔池形态不可信」警告，实测熔宽
-    低 45%、熔体积小 36%（属真实空间欠分辨，非离散漏能）。
+    (1) 本测试自己的口径（δ=0：试片表面恰落在节点上，即 `_coupon` 的刀锋对齐）
+          dx=50µm   峰值 2349.07K  熔体积 0.05187mm³(415 体素)
+          dx=25µm   峰值 2478.97K  熔体积 0.05831mm³(3732 体素)
+          dx=12.5µm 峰值 2517.98K  熔体积 0.06778mm³
+        ⇒ 断言 1 峰值差 5.24%（超出判据 0.24 个百分点，pytest 在此即中止）；断言 2 单独评估为
+          熔体积差 11.04%（取自镜像探针 `am_t2_a0_test_mirror.log`，同口径同对齐）⇒ 两条**同红**。
+        加密不变冷（断言 3）仍通过。
+        2026-10-06 登记的旧数（峰值 2670.3/2617.8K、差 1.96%；体积 0.0687/0.0715mm³、差 3.92%）
+        是**旧严格掩膜 `sdf<0`** 下的数，已不可复现；旧绿里含一份口径补偿误差，见 (3)。
+
+    (2) 换指标被跑前登记的 O1 判据否掉（`am_t2_a0_observable.py:90-125`：观测量入选
+        ⇔ 对**每一种 δ** 且**每一对相邻档**都 <5%，不许挑对齐、不许挑档对）：
+             观测量     50↔25(δ∈{0,.25})  25↔12.5(δ∈{0,.25})  50↔25(δ=0.5)
+             峰值 T            5.24%              1.55%            5.15%
+             Vm(fv 加权)      10.70%             13.49%            1.13%
+             Vn(体素计数)     11.04%             13.97%            1.13%
+             ΔH(焓升)          9.74%              5.32%            4.66%
+        ⇒ **四项全不入选**：本轮没有可靠的网格收敛观测量，A0 保持红灯，不换指标。
+
+    (3) 已量化的一阶成因（同一轮实测，不是推测）：#19 把实体掩膜改成容差 `sdf<1e-12` 后，
+        δ=0 的刀锋面被**整层计入**计算域，而 `thermal_enthalpy` 给部分填充体素配的是
+        **满体素热容**（右端项 `fv·dH/dt = lap + fv·Q − fv·cool` 里 `lap` 未除回 fv）。
+        于是域热容 / 设计体积 = 1.2695×(50µm) / 1.1298×(25µm) / 1.0637×(12.5µm)，而剂量
+        Σfv·dx³ 只有 1.0191 / 1.0048 / 1.0012×——**粗网格凭空多出 24.6%/12.4%/6.2% 的热容**
+        （O(dx)、随加密单调消失；旧 `sdf<0` 是另一侧的 0.8785/0.9384/0.9690×，两错反向，
+        所以旧档对差被补偿成"看似收敛"）。修法与前置条件登记为任务 **#23**（cut-cell 热容按
+        fv 加权 + 计算域取 fv>0 + 重验 CFL/Σfrac 守恒），它是 #10/A3 峰值与熔池形态对比的
+        可信度前置。
+        ⚠ 照实记边界：这只解释 δ=0 一侧；熔体积 Vm/Vn 在**每一种 δ** 下都超 5%（δ=0.25 的
+        50↔25 仍 9.8%），说明还至少有一个机制未被 #23 覆盖，不得宣称 #23 会转绿。
+
+    (4) 对齐抖动量级（同档、三种 δ 的极差，`am_t2_a0_alignment.log`）：峰值 3.46%(50µm)/
+        3.36%(25µm)，即与档对差同量级 ⇒ 当前噪声地板不足以把"1.55% vs 5.24%"读成收敛结论。
+
+    dx=100µm(=r) 档不在本判据内：求解器对它发「熔池形态不可信」警告（真实空间欠分辨）。
     """
     ext = (1.2e-3, 0.6e-3, 0.4e-3)
     pl = _coupon_plan(ext)
@@ -325,7 +349,9 @@ def test_meltpool_converges_across_beam_resolving_grids():
         g = _coupon(dx, ext)
         th = solve_enthalpy_thermal(geometry=g, process=pl,
                                     params={"material": "316L"})
-        melted = (th.peak_temperature > get_material("316L").T_liquidus) & (g.sdf < 0)
+        # 口径：#19 后统一用 solid_mask（实测对本观测量：50µm 档 0 个体素、25µm 档 28 个体素
+        # =+0.76% 的差异；全域异或 901/3529 体素为阳性对照，见 am_t2_a0_test_mirror.log）
+        melted = (th.peak_temperature > get_material("316L").T_liquidus) & (solid_mask(g.sdf) > 0.5)
         n = int(jnp.sum(melted))
         assert n > 0, f"dx={dx_um}µm 应发生熔化（历史缺陷：加密反而不熔）"
         out.append((float(jnp.max(th.peak_temperature)), n * dx ** 3 * 1e9))

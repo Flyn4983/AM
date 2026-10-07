@@ -40,7 +40,7 @@ from amforge.nsga2 import nsga2_minimize, NSGA2Config
 from amforge.core.contracts import (
     PartGeometry, ProcessPlan, MeltPoolResult, ThermalHistory,
     MicrostructureResult, ConstitutiveField, AsBuiltPart, StructuralResult,
-    ServiceVerdict,
+    ServiceVerdict, solid_weight,
 )
 from amforge.core.registry import register_solver
 from amforge.materials import get_material
@@ -413,23 +413,25 @@ def _dimensional_loss(out: dict, geometry: PartGeometry, material: str,
 
     mat = get_material(material)
     spacing = float(geometry.spacing)
-    solid = (geometry.sdf < 0.0).astype(jnp.float64)
+    # 本函数里的 w_vol 是**体积/面积平均权重**，一律用线性 cut 份额（唯一口径
+    # contracts.solid_weight，见 #19）；不再用二值实体掩膜——掩膜在界面上偏置 O(dx)。
+    w_vol = solid_weight(geometry.sdf, spacing)
     cell_vol = spacing ** geometry.dim
 
     # (1) 几何偏差：变形 SDF 与理想 SDF 的偏差（归一化到体素尺寸）
     sdf_def = out["asbuilt"].sdf
-    geom_dev = jnp.mean(jnp.abs(sdf_def - geometry.sdf) * solid) / spacing
+    geom_dev = jnp.mean(jnp.abs(sdf_def - geometry.sdf) * w_vol) / spacing
 
     # (2) 残余应力：体平均 von Mises / 屈服强度
     rvm = out["asbuilt"].von_mises_residual()
-    stress_term = jnp.sum(rvm * solid) * cell_vol / \
-        jnp.maximum(jnp.sum(solid) * cell_vol, 1e-30) / mat.sigma_y
+    stress_term = jnp.sum(rvm * w_vol) * cell_vol / \
+        jnp.maximum(jnp.sum(w_vol) * cell_vol, 1e-30) / mat.sigma_y
 
     # (3) 残余应变：体平均等效应变（sqrt 加护垫避免零应变处梯度爆炸）
     strain_vec = out["asbuilt"].residual_strain
     strain_mag = jnp.sqrt(jnp.sum(strain_vec ** 2, axis=-1) + 1e-30)
-    strain_term = jnp.sum(strain_mag * solid) * cell_vol / \
-        jnp.maximum(jnp.sum(solid) * cell_vol, 1e-30)
+    strain_term = jnp.sum(strain_mag * w_vol) * cell_vol / \
+        jnp.maximum(jnp.sum(w_vol) * cell_vol, 1e-30)
 
     # (4) 缺陷：熔池综合缺陷评分
     defect_term = out["meltpool"].defect_score()
@@ -1041,14 +1043,17 @@ def _joint_forward(target, u, z, *, material, params, asbuilt_solver,
     return out
 
 
-def _geom_stress_tv(out, target, solid, cell_vol, mat, spacing, eps, u):
+def _geom_stress_tv(out, target, w_vol, cell_vol, mat, spacing, eps, u):
     """从一次物理前向输出抽取 (geom_dev, residual_stress, TV)，供联合优化/
-    Pareto 扫描共用。三者均已量纲归一化到 O(1)，且梯度对 ``u``、``z`` 连通。"""
+    Pareto 扫描共用。三者均已量纲归一化到 O(1)，且梯度对 ``u``、``z`` 连通。
+
+    ``w_vol`` 是体积/面积平均权重（线性 cut 份额，见 :func:`solid_weight`）。
+    """
     sdf_def = out["asbuilt"].sdf
-    geom_dev = jnp.mean(jnp.abs(sdf_def - target.sdf) * solid) / spacing
+    geom_dev = jnp.mean(jnp.abs(sdf_def - target.sdf) * w_vol) / spacing
     rvm = out["asbuilt"].von_mises_residual()
-    stress = jnp.sum(rvm * solid) * cell_vol / \
-        jnp.maximum(jnp.sum(solid) * cell_vol, 1e-30) / mat.sigma_y
+    stress = jnp.sum(rvm * w_vol) * cell_vol / \
+        jnp.maximum(jnp.sum(w_vol) * cell_vol, 1e-30) / mat.sigma_y
     # 光滑正则：sqrt(Σg² + ε)，避免平场 0/0 梯度 NaN（Pattern D）
     gu = jnp.stack(jnp.gradient(u), axis=-1)
     tv = jnp.mean(jnp.sqrt(jnp.sum(gu ** 2, axis=-1) + 1e-12))
@@ -1159,14 +1164,14 @@ def optimize_geometry_process(target: PartGeometry, *,
                               modality="SLM", service_stress=service_stress,
                               thermal_solver=thermal_solver)
 
-    solid = (target.sdf < 0.0).astype(jnp.float64)
+    w_vol = solid_weight(target.sdf, spacing)   # 体积平均权重 = 线性 cut 份额（#19）
     cell_vol = spacing ** target.dim
 
     def joint_loss(pj):
         out = _forward(pj["u"], pj["z"])
         base = _dimensional_loss(out, target, material, weights=w)
         geom_dev, stress, tv = _geom_stress_tv(
-            out, target, solid, cell_vol, mat, spacing, eps, pj["u"])
+            out, target, w_vol, cell_vol, mat, spacing, eps, pj["u"])
         # 工艺杠杆物理约束罚项（energy-density / 搭接 / 层间 / 匙孔）
         pen, _ = process_constraint_penalty(
             pj["z"], material=material, n_layers=nl, modality="SLM", params=params)
@@ -1218,7 +1223,7 @@ def _run_lambda_point(target, lam, u0, z0, *, material, params, asbuilt_solver,
                       thermal_solver="enthalpy",
                       p, spacing, eps, nl, modality, smoothness, constraint_weight,
                       n_steps, learning_rate, lr_shape, lr_process, hard_project,
-                      solid, cell_vol, mat, verbose):
+                      w_vol, cell_vol, mat, verbose):
     """单点 λ-标量化联合优化（供 legacy 'lambda' 路径与 NSGA-II 播种复用）。
 
     对给定 ``λ`` 跑 ``n_steps`` 步 Adam（形状 ``u`` + 工艺 ``z`` 同步更新），
@@ -1243,7 +1248,7 @@ def _run_lambda_point(target, lam, u0, z0, *, material, params, asbuilt_solver,
             modality=modality, service_stress=150e6,
             thermal_solver=thermal_solver)
         gd, st, tv = _geom_stress_tv(
-            out, target, solid, cell_vol, mat, spacing, eps, pj["u"])
+            out, target, w_vol, cell_vol, mat, spacing, eps, pj["u"])
         pen, _ = process_constraint_penalty(
             pj["z"], material=material, n_layers=nl, modality=modality,
             params=params)
@@ -1290,7 +1295,7 @@ def _nsga_seed_population(target, *, material, process_init, lambdas,
     spacing = float(target.spacing)
     eps = spacing
     u0 = jnp.zeros(target.shape, dtype=jnp.float64)
-    solid = (target.sdf < 0.0).astype(jnp.float64)
+    w_vol = solid_weight(target.sdf, spacing)   # 体积平均权重 = 线性 cut 份额（#19）
     cell_vol = spacing ** target.dim
     mat = get_material(material)
     d_u = int(np.prod(target.shape))
@@ -1304,7 +1309,7 @@ def _nsga_seed_population(target, *, material, process_init, lambdas,
             modality=modality, smoothness=smoothness,
             constraint_weight=constraint_weight, n_steps=n_steps,
             learning_rate=learning_rate, lr_shape=lr_shape, lr_process=lr_process,
-            hard_project=hard_project, solid=solid, cell_vol=cell_vol, mat=mat,
+            hard_project=hard_project, w_vol=w_vol, cell_vol=cell_vol, mat=mat,
             verbose=False, thermal_solver=thermal_solver)
         seeds.append(np.concatenate([
             np.asarray(r["u"], dtype=np.float64).ravel(),
@@ -1392,7 +1397,7 @@ def pareto_optimize_geometry_process(target: PartGeometry, *,
     else:
         u0 = jnp.asarray(init_delta, dtype=jnp.float64) / spacing
 
-    solid = (target.sdf < 0.0).astype(jnp.float64)
+    w_vol = solid_weight(target.sdf, spacing)   # 体积平均权重 = 线性 cut 份额（#19）
     cell_vol = spacing ** target.dim
 
     # ------------------------------------------------------------------
@@ -1414,7 +1419,7 @@ def pareto_optimize_geometry_process(target: PartGeometry, *,
                 modality=modality, smoothness=smoothness,
                 constraint_weight=constraint_weight, n_steps=n_steps,
                 learning_rate=learning_rate, lr_shape=lr_shape,
-                lr_process=lr_process, hard_project=hard_project, solid=solid,
+                lr_process=lr_process, hard_project=hard_project, w_vol=w_vol,
                 cell_vol=cell_vol, mat=mat, verbose=verbose,
                 thermal_solver=thermal_solver)
             out = _joint_forward(
@@ -1505,7 +1510,7 @@ def pareto_optimize_geometry_process(target: PartGeometry, *,
             modality=modality, service_stress=150e6,
             thermal_solver=thermal_solver)
         gd, st, tv = _geom_stress_tv(
-            out, target, solid, cell_vol, mat, spacing, eps, u_flat)
+            out, target, w_vol, cell_vol, mat, spacing, eps, u_flat)
         return jnp.array([float(gd), float(st)], dtype=jnp.float64)
 
     cfg = NSGA2Config(pop_size=int(pop_size), n_gen=int(n_gen), eta_c=float(eta_c),
@@ -1538,7 +1543,7 @@ def pareto_optimize_geometry_process(target: PartGeometry, *,
                                origin=target.origin, spacing=spacing,
                                dim=target.dim, name="nominal")
         gd, st, tv = _geom_stress_tv(
-            out, target, solid, cell_vol, mat, spacing, eps, u_flat)
+            out, target, w_vol, cell_vol, mat, spacing, eps, u_flat)
         pen, _ = process_constraint_penalty(
             z, material=material, n_layers=nl, modality=modality, params=params)
         plans.append(final_plan)

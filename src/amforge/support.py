@@ -43,6 +43,7 @@ from amforge.core.contracts import (
     PartGeometry,
     ProcessPlan,
     SupportStructure,
+    solid_mask,
 )
 from amforge.core.registry import register_solver
 
@@ -51,8 +52,8 @@ from amforge.core.registry import register_solver
 # 辅助：栅格/列运算
 # ---------------------------------------------------------------------------
 def _part_occupancy(geometry: PartGeometry) -> jnp.ndarray:
-    """硬占位（0/1），负 SDF 即实体。"""
-    return (geometry.sdf < 0.0).astype(jnp.float64)
+    """硬占位（0/1），带 ulp 级容差（``sdf == 0`` 的刀锋集不随 dx 拼写翻面）。"""
+    return solid_mask(geometry.sdf).astype(jnp.float64)
 
 
 def _column_bottom(part: jnp.ndarray) -> jnp.ndarray:
@@ -108,9 +109,18 @@ def support_auto(*, geometry: PartGeometry, params=None) -> SupportStructure:
 
     bottom = _column_bottom(part)                       # (..., 1)
     has_part = (bottom < nz)                             # 该列是否存在零件
-    # 该列零件底面到基板的空域层数（bottom=1 表示第一层体素就贴板，视为「落在基板上」；
-    # bottom>=2 表示零件与基板之间存在 ≥1 个体素间隙 → 需要支撑填充该间隙）。
-    needs = has_part & (bottom >= 2)
+    # 判据是物理的：**该列最低实体体素不在基板层（bottom==0）⇒ 零件与基板之间有空隙，
+    # 需要支撑填充**。旧写法 `bottom >= 2` 是把"#19 前的严格 `sdf<0` 会把设计边界面
+    # 那一整层剔掉"烤进了阈值——严格掩膜下底面正好落在体素中心上的零件 bottom 凭空 +1。
+    # 2×2 实测（刀锋档夹具：底面=z0 的贴板件 / 离板 1 体素的悬空件，
+    # docs/evidence/2026-10-07/am_t2_support_threshold.log）needs 列数：
+    #   贴板件   (新掩膜,>=1)=0  (旧,>=1)=**4 假支撑**  (旧,>=2)=0  (新,>=2)=0
+    #   悬空件   (新掩膜,>=1)=4  (旧,>=1)=4             (旧,>=2)=4  (新,>=2)=**0 漏判**
+    # ⇒ 掩膜与阈值是**一对**：正确的两种自洽组合是 (旧掩膜,>=2) 与 (新掩膜,>=1)，
+    #   交叉组合一个造假支撑、一个漏判 1 体素间隙的悬空件。**回退必须同批**，
+    #   单独改任一侧都会破坏 tests/test_support.py 的这两条。
+    # 出厂组合实测：贴板件 volume_fraction=0.000000/contact_area=0，悬空件 0.018519。
+    needs = has_part & (bottom >= 1)
     # 在「含零件且有间隙」的列中，填充零件底面之下、且与零件不重叠的空域
     under = needs & (zs < bottom) & (part < 0.5)
 

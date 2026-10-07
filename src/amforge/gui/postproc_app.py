@@ -28,6 +28,7 @@ import warnings
 
 import numpy as np
 
+from amforge.core.contracts import SDF_SOLID_TOL
 from amforge.gui import preproc as P
 from amforge.gui import postproc as PP
 
@@ -332,10 +333,10 @@ if VTK_AVAILABLE:
             self._surface_poly = None
 
         def set_geometry(self, geometry):
-            """构建几何 SDF 等值面（实体 = SDF<0），作为着色的基底。"""
+            """构建几何 SDF 等值面（实体 = ``sdf < SDF_SOLID_TOL``，与求解器同口径）。"""
             self._geometry = geometry
             sdf = np.asarray(geometry.sdf)
-            occ = (sdf < 0.0).astype(np.uint8)
+            occ = (sdf < SDF_SOLID_TOL).astype(np.uint8)
             img = PP_scalar_to_image(occ, geometry.origin, geometry.spacing)
             surf = vtk.vtkFlyingEdges3D()
             surf.SetInputData(img)

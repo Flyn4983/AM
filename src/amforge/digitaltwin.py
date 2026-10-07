@@ -27,7 +27,7 @@ from __future__ import annotations
 import jax.numpy as jnp
 
 from amforge.core.contracts import (
-    AsBuiltPart, ConstitutiveField, StructuralResult,
+    AsBuiltPart, ConstitutiveField, StructuralResult, solid_mask,
 )
 from amforge.core.registry import register_solver
 
@@ -67,7 +67,7 @@ def solve_digital_twin(*, asbuilt: AsBuiltPart, constitutive: ConstitutiveField,
     Kt = 1.0 + 2.0 * por_mean
     peak_stress = sigma_svc * Kt
 
-    solid = (asbuilt.sdf < 0.0).astype(jnp.float64)
+    solid = solid_mask(asbuilt.sdf).astype(jnp.float64)
     # 截面抛物线分布：表面最大
     zc = (jnp.arange(nz) * spacing if dim == 3 else jnp.arange(ny) * spacing)
     zc = zc / jnp.maximum(b, 1e-12)

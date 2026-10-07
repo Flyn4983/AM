@@ -65,6 +65,52 @@ def _as_array(x, dtype=jnp.float64):
     return jnp.asarray(x, dtype=dtype)
 
 
+# ---------------------------------------------------------------------------
+# 实体/份额口径（全平台唯一定义处）
+# ---------------------------------------------------------------------------
+#: 硬实体掩膜的 ulp 级容差 [m]。`sdf == 0` 是"体素中心正好落在边界上"的刀锋集，
+#: 它随 dx 的浮点拼写（`µm×1e-6` 与 `f"{µm}e-6"`）翻面；实测（§26.8(g)：3 几何 × 3 档
+#: dx × 2 拼写）加 `1e-12` 后逐体素 xor = 0，即**只吃刀锋集、不吃任何真实体素**。
+SDF_SOLID_TOL = 1e-12
+
+
+def solid_mask(sdf: Array, tol: float = SDF_SOLID_TOL) -> Array:
+    """硬实体掩膜 ∈ {0,1}：`sdf < tol`。
+
+    `tol` 不是"更宽的实体"，而是刀锋集的浮点tie-break；置 0 会随 dx 拼写整层翻转。
+    """
+    a = jnp.asarray(sdf)
+    return (a < tol).astype(a.dtype)
+
+
+def solid_weight(sdf: Array, spacing) -> Array:
+    """**体积/面积唯一口径**：线性 cut 份额 `w = clip(0.5 − sdf/dx, 0, 1)` ∈ [0,1]。
+
+    紧支撑（`|sdf| > dx/2` 处严格 0/1），`w = 0.5 ⇔ sdf = 0` ⇒ 与 :func:`solid_mask`
+    共用同一个边界定义。实测（§26.8(h) F1 `am_t2_frac_volume.log`；本轮
+    `am_t2_soft_vs_cut_s5.log`、`am_t2_prod_paths_fix.log`）：6 个几何 × 3 档 dx 上体积偏差
+    `+0.028% … +3.320%` 且随 dx 变细单调收敛，两种 dx 拼写间相对差 ≤ **5.6e-16**
+    （`max|Δw| ≤ 2.2e-14`）；作为对照，`0.5(1−tanh(sdf/dx))`（本模块的**平滑**口径）
+    在同一合并 6 几何组上偏到 **−2.825% … +27.417%** ⇒ 一律不许用后者计体积/面积。
+
+    ⚠ `spacing` 是 pytree 叶子，``jax.grad`` 之下是 tracer，故这里**不**做
+    ``float()``——全程 jnp 运算，保持 tracer 安全。
+    """
+    dx = jnp.maximum(jnp.asarray(spacing, dtype=jnp.float64), 1e-30)
+    return jnp.clip(0.5 - jnp.asarray(sdf, dtype=jnp.float64) / dx, 0.0, 1.0)
+
+
+def smooth_occupancy(sdf: Array, eps) -> Array:
+    """**平滑/梯度用途**的软占位 `0.5·(1 − tanh(sdf/eps))`。
+
+    只服务"需要处处可导的权重场"（几何比较损失、薄壁/悬垂指示场等），
+    **不是体积口径**——它的过渡带是 1 个 `eps` 的长尾，体积分有 O(dx) 系统偏差
+    （见 :func:`solid_weight` 的实测对照）。体积/面积一律走 `solid_weight`。
+    """
+    e = jnp.maximum(jnp.asarray(eps), 1e-12)
+    return 0.5 * (1.0 - jnp.tanh(jnp.asarray(sdf) / e))
+
+
 # ===========================================================================
 # 1. 几何契约 —— 任意复杂构型
 # ===========================================================================
@@ -107,22 +153,30 @@ class PartGeometry:
 
     @property
     def occupancy(self) -> Array:
-        """硬占位（0/1），负 SDF 即为实体。"""
-        return (self.sdf < 0.0).astype(self.sdf.dtype)
+        """硬占位（0/1），带 ulp 级容差的实体掩膜（见 :data:`SDF_SOLID_TOL`）。"""
+        return solid_mask(self.sdf)
+
+    def solid_fraction(self) -> Array:
+        """体积/面积唯一口径：线性 cut 份额（见 :func:`solid_weight`）。"""
+        return solid_weight(self.sdf, self.spacing)
 
     def soft_occupancy(self, eps: float | None = None) -> Array:
-        """**可微**软占位：用 tanh 平滑 Heaviside，供梯度穿过几何比较。
+        """**平滑**软占位：tanh 型 Heaviside，供梯度穿过几何比较。
 
-        eps 默认取 1 个体素，保证界面上有 ~2 个体素的过渡带。
+        eps 缺省取 1 个体素，保证界面上有 ~2 个体素的过渡带。
+        ⚠ 这是**数值平滑**，不是体积口径：体/面积积分一律用 :meth:`solid_fraction`。
+        实测（`docs/evidence/2026-10-07/am_t2_soft_vs_cut_s5.log`）eps=dx 的本函数在最粗档
+        dx=50µm 上对三份新几何分别偏到 **+6.3%（斜置盒）/ +21.4%（薄壁斜柱）/ +27.4%（小球
+        r=0.15mm）**，而同档线性 cut 份额是 +0.70% / +2.22% / +3.32%。
         """
         if eps is None:
             eps = float(self.spacing)
-        return 0.5 * (1.0 - jnp.tanh(self.sdf / jnp.maximum(eps, 1e-12)))
+        return smooth_occupancy(self.sdf, eps)
 
     def volume(self) -> Array:
-        """实体体积 [m^dim]（可微，用软占位积分）。"""
+        """实体体积 [m^dim]（可微，按线性 cut 份额积分）。"""
         cell = self.spacing ** self.dim
-        return jnp.sum(self.soft_occupancy()) * cell
+        return jnp.sum(self.solid_fraction()) * cell
 
     def bbox(self) -> tuple[Array, Array]:
         """零件包围盒 (lo, hi) [m]。"""
@@ -647,9 +701,12 @@ class AsBuiltPart:
     dim: int = 3
 
     def soft_occupancy(self, eps: float | None = None) -> Array:
+        """同 :meth:`PartGeometry.soft_occupancy`：平滑口径，**不用于体/面积积分**。
+        与 PartGeometry 共用 :func:`smooth_occupancy`，两处定义必须是同一个式子。
+        """
         if eps is None:
             eps = float(self.spacing)
-        return 0.5 * (1.0 - jnp.tanh(self.sdf / jnp.maximum(eps, 1e-12)))
+        return smooth_occupancy(self.sdf, eps)
 
     def von_mises_residual(self) -> Array:
         """残余应力的 von Mises 等效值 [Pa]。

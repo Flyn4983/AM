@@ -274,8 +274,10 @@ def heuristic_plan(
     # --- 几何诊断 ---------------------------------------------------------
     oh = overhang_fraction(geometry, angle_threshold=45.0)
     tw = thin_wall_field(geometry)
-    occ = geometry.soft_occupancy()
-    thin_frac = jnp.sum(tw * occ) / jnp.maximum(jnp.sum(occ), 1e-12)
+    # 薄壁**体积占比**是体积口径 ⇒ 一律用线性 cut 份额加权（#19；tanh 软占位对
+    # 薄壁/小曲率几何在最粗档偏到 +21%…+27%，见 am_t2_soft_vs_cut_s5.log）。
+    w_vol = geometry.solid_fraction()
+    thin_frac = jnp.sum(tw * w_vol) / jnp.maximum(jnp.sum(w_vol), 1e-12)
 
     derate = (1.0 - overhang_derate * oh) * (1.0 - thinwall_derate * thin_frac)
     P0 = P0 * jnp.clip(derate, 0.35, 1.0)
@@ -656,9 +658,11 @@ def layer_activation_times(geometry: PartGeometry, plan: ProcessPlan, *,
     """
     n = plan.n_layers
     if area_fraction is None:
-        occ = geometry.soft_occupancy()
-        # 沿 Z 求每层面积占比，再重采样到 n 层
-        az = jnp.mean(occ, axis=tuple(range(geometry.dim - 1)))
+        # 逐层截面积是**面积口径** ⇒ 线性 cut 份额（#19）：沿 Z 求每层实体面积
+        # 占比，再重采样到 n 层。二值掩膜会把界面层整层算成 0 或满，路径长随
+        # 体素对齐抖动；份额把该抖动压到 O(dx²)。
+        w_vol = geometry.solid_fraction()
+        az = jnp.mean(w_vol, axis=tuple(range(geometry.dim - 1)))
         zi = jnp.linspace(0.0, az.shape[0] - 1.0, n)
         area_fraction = jnp.interp(zi, jnp.arange(az.shape[0]), az)
 
