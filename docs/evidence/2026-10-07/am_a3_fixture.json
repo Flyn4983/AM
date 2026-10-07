@@ -1,0 +1,126 @@
+{
+  "benchmark": {
+    "domain_um": [
+      3000.0,
+      2500.0,
+      1000.0
+    ],
+    "T0_C": 20.0,
+    "D4sigma_um": 85.0,
+    "laser_power_W": 285.0,
+    "scan_speed_mm_s": 960.0,
+    "hatch_um": 110.0,
+    "tracks": 18,
+    "alpha_calibrated": 0.54,
+    "alpha_ours": 0.39,
+    "t_end_s": 0.03,
+    "their_cost_min_per_track": 14.0,
+    "bc": "顶面 Neumann alpha*u；左右前后底全绝热；无对流、无辐射、无蒸发"
+  },
+  "beam_radius_by_solver_m": {
+    "meltpool.py|c=1": 3.005203820042827e-05,
+    "meltpool.py|c=2": 4.2499999999999996e-05,
+    "thermal_enthalpy.py|c=1": 3.005203820042827e-05
+  },
+  "beam_census": [
+    {
+      "site": "meltpool.py:752",
+      "coef": 2.0
+    },
+    {
+      "site": "meltpool.py:877",
+      "coef": 2.0
+    },
+    {
+      "site": "meltpool.py:1547",
+      "coef": 1.0
+    },
+    {
+      "site": "thermal_enthalpy.py:268",
+      "coef": 1.0
+    },
+    {
+      "site": "thermal_enthalpy.py:271",
+      "coef": 1.0
+    }
+  ],
+  "normalization": {
+    "meltpool_surface_integral_W": 284.99999999998374,
+    "target_W": 285.0,
+    "rel_error": 5.704286945330208e-14,
+    "integrated_sum_frac": 1.0
+  },
+  "switches_to_match_benchmark": [
+    {
+      "item": "Newton 弱冷却（基准无）",
+      "anchor": "thermal_enthalpy.py:628",
+      "knob": "params[\"thermal\"][\"h_cool\"]=0"
+    },
+    {
+      "item": "蒸发/反冲散热封顶（基准无）",
+      "anchor": "thermal_enthalpy.py:572",
+      "knob": "params[\"thermal\"][\"evap_coeff\"]=0"
+    },
+    {
+      "item": "heat_scale 手工倍率（必须留 1.0）",
+      "anchor": "thermal_enthalpy.py:594",
+      "knob": "保持缺省 1.0"
+    },
+    {
+      "item": "表面对流（基准无，FVM 链）",
+      "anchor": "meltpool.py:131",
+      "knob": "MeltPoolConfig.h_convection=0"
+    },
+    {
+      "item": "辐射 Stefan-Boltzmann（基准无，FVM 链）",
+      "anchor": "meltpool.py:799",
+      "knob": "AMMaterial.emissivity=0（仅对照时）"
+    },
+    {
+      "item": "Fresnel 增强（基准无，FVM 链）",
+      "anchor": "meltpool.py:123",
+      "knob": "MeltPoolConfig.fresnel_boost=0"
+    },
+    {
+      "item": "Beer-Lambert 遮挡（基准为面吸收）",
+      "anchor": "meltpool.py:168",
+      "knob": "MeltPoolConfig 置大 ⇒ 只顶部吸收"
+    }
+  ],
+  "unreachable_switches": [],
+  "alpha_routing": {
+    "solver_reads": "ProcessPlan.absorption",
+    "material_card_role": "construction seed only",
+    "tiers": {
+      "reproduce": 0.54,
+      "predict": 0.39
+    }
+  },
+  "cost_anchor": {
+    "thermal_diffusivity_m2_s": 3.978158188876381e-06,
+    "tiers": [
+      {
+        "tier": "形态档 dx=r/2",
+        "dx_um": 15.026019100214135,
+        "voxels": 2224400,
+        "dt_s": 9.459203618034575e-06,
+        "steps": 3171.5143485021385,
+        "voxel_steps": 7054716516.808157
+      },
+      {
+        "tier": "strict 下界 dx=r",
+        "dx_um": 30.05203820042827,
+        "voxels": 273900,
+        "dt_s": 3.78368144721383e-05,
+        "steps": 792.8785871255346,
+        "voxel_steps": 217169445.01368394
+      }
+    ],
+    "benchmark_their_min_per_track": 14.0
+  },
+  "open_items": [
+    "Eq.(2) 的 u 的空间分布在论文里未给显式公式 ⇒ 只能按 D4σ 口径填，并把『核内是否含 1/cos 入射角修正』留作对照档差异",
+    "开关等效性要用数值跑证明（N3⑧），本探针只登记锚点",
+    "#18 的 (x,y,power,gating) 折线驱动仍未实现 ⇒ 夹具暂不可跑"
+  ]
+}

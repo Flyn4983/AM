@@ -1,0 +1,378 @@
+{
+  "_schema": "https://data.nist.gov/od/dm/nerdm-schema/v0.7#",
+  "@context": [
+    "https://data.nist.gov/od/dm/nerdm-pub-context.jsonld",
+    {
+      "@base": "ark:/88434/mds2-3662"
+    }
+  ],
+  "@type": [
+    "nrdp:DataPublication",
+    "nrdp:PublicDataResource",
+    "dcat:Dataset"
+  ],
+  "_extensionSchemas": [
+    "https://data.nist.gov/od/dm/nerdm-schema/pub/v0.7#/definitions/PublicDataResource"
+  ],
+  "@id": "ark:/88434/mds2-3662",
+  "ediid": "ark:/88434/mds2-3662",
+  "version": "1.0.1",
+  "doi": "doi:10.18434/mds2-3662",
+  "title": "Dataset for Model Validation of Transient Melt Pool Dynamics in Laser Powder Bed Fusion of Nickel Super Alloy 625: Top Surface Melt Pool Width and Area Measurements from Beam on Plate Experiments",
+  "contactPoint": {
+    "fn": "Jesse Redford",
+    "hasEmail": "mailto:jesse.redford@nist.gov"
+  },
+  "modified": "2025-06-26",
+  "status": "available",
+  "landingPage": "https://data.nist.gov/od/id/mds2-3662",
+  "description": [
+    "The files include experimental data from the publication titled \"The trace of heat: on the predictive power of modeling transient diffusion\" (https://doi.org/10.1007/s40964-025-01147-9). This data was used to develop assess the validity of the transient heat equation with phase change and temperature-dependent coefficients as a model to predict the evolution of melt pools for rapid turnaround scan strategies in a laser powder bed fusion (PBF-LB) additive manufacturing (AM) process. The dataset contains the scan paths and parameters used to carry out a series of PBF-LB beam on plate experiments with top surface bright field images and tabulated measurements of the melt pool width and top surface area of the last track of each fabricated sample."
+  ],
+  "keyword": [
+    "Thermal simulation",
+    "Model validation",
+    "Laser optimization",
+    "Turnaround effects"
+  ],
+  "topic": [
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Materials: Metals"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Manufacturing: Additive manufacturing"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Manufacturing: Process measurement and control"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Manufacturing: Process improvement"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Manufacturing: Quality assurance"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Materials: Modeling and computational material science"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Metrology: Dimensional metrology"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Mathematics and Statistics: Experiment design"
+    },
+    {
+      "@type": "Concept",
+      "scheme": "https://data.nist.gov/od/dm/nist-themes/v1.1",
+      "tag": "Mathematics and Statistics: Numerical methods and software"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Materials: Metals",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Build Process: Machine performance",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Build Process: Process mapping",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Build Process: Powder bed fusion: Laser",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Microstructure: Microstructure analysis",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Characterization Approach: Ex-situ",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Characterization Approach: Microscopy",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Computation and Analysis: Process simulation",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Computation and Analysis: Material simulation",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Computation and Analysis: Property simulation",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Computation and Analysis: Performance simulation",
+      "@type": "Concept"
+    },
+    {
+      "scheme": "https://data.nist.gov/od/dm/nist-themes-additivemanufacturing/v1.0",
+      "tag": "Computation and Analysis: Microstructural analysis",
+      "@type": "Concept"
+    }
+  ],
+  "accessLevel": "public",
+  "license": "https://www.nist.gov/open/license",
+  "publisher": {
+    "name": "National Institute of Standards and Technology",
+    "@type": "org:Organization"
+  },
+  "language": [
+    "en"
+  ],
+  "bureauCode": [
+    "006:55"
+  ],
+  "programCode": [
+    "006:052"
+  ],
+  "theme": [
+    "Materials: Metals",
+    "Manufacturing: Additive manufacturing",
+    "Manufacturing: Process measurement and control",
+    "Manufacturing: Process improvement",
+    "Manufacturing: Quality assurance",
+    "Materials: Modeling and computational material science",
+    "Metrology: Dimensional metrology",
+    "Mathematics and Statistics: Experiment design",
+    "Mathematics and Statistics: Numerical methods and software"
+  ],
+  "components": [
+    {
+      "@id": "cmps/Measurements.xlsx.sha256",
+      "@type": [
+        "nrdp:ChecksumFile",
+        "nrdp:DownloadableFile",
+        "dcat:Distribution"
+      ],
+      "filepath": "Measurements.xlsx.sha256",
+      "downloadURL": "https://data.nist.gov/od/ds/ark:/88434/mds2-3662/Measurements.xlsx.sha256",
+      "algorithm": {
+        "tag": "sha256",
+        "@type": "Thing"
+      },
+      "describes": "cmps/Measurements.xlsx",
+      "description": "SHA-256 checksum value for Measurements.xlsx",
+      "_extensionSchemas": [
+        "https://data.nist.gov/od/dm/nerdm-schema/pub/v0.7#/definitions/ChecksumFile"
+      ],
+      "mediaType": "text/plain",
+      "size": 64,
+      "checksum": {
+        "hash": "b8470f853787c9ac434613818b42730692deb38e9a4c470ef2cfdcc09a80a0c5",
+        "algorithm": {
+          "tag": "sha256",
+          "@type": "Thing"
+        }
+      },
+      "valid": true
+    },
+    {
+      "@id": "cmps/Image Data.zip",
+      "@type": [
+        "nrdp:DataFile",
+        "nrdp:DownloadableFile",
+        "dcat:Distribution"
+      ],
+      "_extensionSchemas": [
+        "https://data.nist.gov/od/dm/nerdm-schema/pub/v0.7#/definitions/DataFile"
+      ],
+      "filepath": "Image Data.zip",
+      "downloadURL": "https://data.nist.gov/od/ds/mds2-3662/Image%20Data.zip",
+      "mediaType": "application/x-zip-compressed",
+      "title": "Image Data",
+      "size": 495271476,
+      "checksum": {
+        "hash": "a25a482cc42253bf979a4fc7239abdd5ce9b4a7d00f055284165fd667a90b65a",
+        "algorithm": {
+          "tag": "sha256",
+          "@type": "Thing"
+        }
+      }
+    },
+    {
+      "@id": "cmps/Measurements.xlsx",
+      "@type": [
+        "nrdp:DataFile",
+        "nrdp:DownloadableFile",
+        "dcat:Distribution"
+      ],
+      "_extensionSchemas": [
+        "https://data.nist.gov/od/dm/nerdm-schema/pub/v0.7#/definitions/DataFile"
+      ],
+      "filepath": "Measurements.xlsx",
+      "downloadURL": "https://data.nist.gov/od/ds/mds2-3662/Measurements.xlsx",
+      "mediaType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "title": "Measurements",
+      "size": 376701,
+      "checksum": {
+        "hash": "9e21a77f0c526aa0a913a3f14e2bba7b36640b0fd319febcf8ebfdc9dd5d0edf",
+        "algorithm": {
+          "tag": "sha256",
+          "@type": "Thing"
+        }
+      }
+    },
+    {
+      "@id": "cmps/README.txt",
+      "@type": [
+        "nrdp:DataFile",
+        "nrdp:DownloadableFile",
+        "dcat:Distribution"
+      ],
+      "_extensionSchemas": [
+        "https://data.nist.gov/od/dm/nerdm-schema/pub/v0.7#/definitions/DataFile"
+      ],
+      "filepath": "README.txt",
+      "downloadURL": "https://data.nist.gov/od/ds/mds2-3662/README.txt",
+      "mediaType": "text/plain",
+      "title": "README",
+      "size": 8473,
+      "checksum": {
+        "hash": "e9c33b0b31f7d1548b68041f469e84c6342c974c00e54c387952a24569835918",
+        "algorithm": {
+          "tag": "sha256",
+          "@type": "Thing"
+        }
+      }
+    },
+    {
+      "@id": "cmps/Scan Strategy Data.zip",
+      "@type": [
+        "nrdp:DataFile",
+        "nrdp:DownloadableFile",
+        "dcat:Distribution"
+      ],
+      "_extensionSchemas": [
+        "https://data.nist.gov/od/dm/nerdm-schema/pub/v0.7#/definitions/DataFile"
+      ],
+      "filepath": "Scan Strategy Data.zip",
+      "downloadURL": "https://data.nist.gov/od/ds/mds2-3662/Scan%20Strategy%20Data.zip",
+      "mediaType": "application/x-zip-compressed",
+      "title": "Scan Strategy Data",
+      "size": 28583,
+      "checksum": {
+        "hash": "f442f9734a57f59ed33f0ab5e240bb266164740287a184d7ebd7fedece9c2bee",
+        "algorithm": {
+          "tag": "sha256",
+          "@type": "Thing"
+        }
+      }
+    }
+  ],
+  "_editStatus": "done",
+  "references": [
+    {
+      "@type": [
+        "npg:Document"
+      ],
+      "@id": "#ref:10.1007/s40964-025-01147-9",
+      "refType": "IsSupplementTo",
+      "location": "https://doi.org/10.1007/s40964-025-01147-9",
+      "_extensionSchemas": [
+        "https://data.nist.gov/od/dm/nerdm-schema/bib/v0.7#/definitions/DCiteReference"
+      ],
+      "title": "The trace of heat: on the predictive power of modeling transient diffusion",
+      "issued": "2025-06-26",
+      "citation": "Holla, V., Redford, J., Kopp, P., & Kollmannsberger, S. (2025). The trace of heat: on the predictive power of modeling transient diffusion. Progress in Additive Manufacturing. https://doi.org/10.1007/s40964-025-01147-9\n"
+    }
+  ],
+  "authors": [
+    {
+      "familyName": "Redford",
+      "fn": "Jesse  Redford",
+      "givenName": "Jesse",
+      "middleName": "",
+      "affiliation": [
+        {
+          "title": "National Institute of Standards and Technology",
+          "@type": "org:Organization",
+          "@id": "ror:05xpvk416"
+        }
+      ],
+      "orcid": "0000-0002-0940-8657",
+      "@type": "foaf:Person"
+    },
+    {
+      "familyName": "Holla",
+      "fn": "Vijaya  Holla",
+      "givenName": "Vijaya",
+      "middleName": "",
+      "affiliation": [
+        {
+          "title": "Technical University of Munich",
+          "@type": "org:Organization"
+        }
+      ],
+      "orcid": "",
+      "@type": "foaf:Person"
+    }
+  ],
+  "annotated": "2026-01-06T05:35:48.935730",
+  "revised": "2025-09-25T17:23:38.338489",
+  "issued": null,
+  "firstIssued": "2025-09-25T17:23:38.338489",
+  "releaseHistory": {
+    "@id": "ark:/88434/mds2-3662/pdr:v",
+    "@type": [
+      "nrdr:ReleaseHistory"
+    ],
+    "hasRelease": [
+      {
+        "version": "1.0.0",
+        "issued": "2025-06-26",
+        "@id": "ark:/88434/mds2-3662/pdr:v/1.0.0",
+        "location": "https://data.nist.gov/od/id/ark:/88434/mds2-3662/pdr:v/1.0.0",
+        "description": "initial release"
+      },
+      {
+        "version": "1.0.1",
+        "issued": "2026-01-06",
+        "@id": "ark:/88434/mds2-3662/pdr:v/1.0.1",
+        "location": "https://data.nist.gov/od/id/ark:/88434/mds2-3662/pdr:v/1.0.1",
+        "description": "added to additiveman collection"
+      }
+    ]
+  },
+  "isPartOf": [
+    {
+      "@type": [
+        "nrda:ScienceTheme",
+        "nrdp:PublicDataResource"
+      ],
+      "@id": "ark:/88434/pdr0-0003",
+      "title": "Additive Manufacturing Data"
+    }
+  ]
+}

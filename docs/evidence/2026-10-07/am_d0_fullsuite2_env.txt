@@ -1,0 +1,11 @@
+# D0 全量验收 第 2 轮环境记录（2026-10-07）
+# 与第 1 轮唯一差别：src/amforge/thermal_enthalpy.py:833 的 G=√(Σg²) 加了 +1e-30（§26.10）
+date: 2026-10-07 17:31:50 +0800
+cmd: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests/ -q
+interpreter: Python 3.12.3 @ /usr/bin/python3.12
+jax: 0.11.0
+kernel: Linux 7.0.0-28-generic
+nproc: 104
+log: docs/evidence/2026-10-07/am_d0_fullsuite2.log
+tree_head: 84776da  dirty_src: 7 条
+pid: 2362575

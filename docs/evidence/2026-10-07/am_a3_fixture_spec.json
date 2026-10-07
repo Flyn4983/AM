@@ -1,0 +1,109 @@
+{
+ "source": "Holla et al. 2025, Prog. Addit. Manuf. 10:4203-4215, DOI 10.1007/s40964-025-01147-9（NIST 公开托管 PDF，pub_id=959720；本地 sha256 前缀 d139acb7c99efd26242f72d4a9254dbc） + 数据集 README.txt（EOS M290 / 76×76×6 mm 实心 IN625 板 / 285 W / 960 mm/s / hatch 110 µm / skywriting 开）",
+ "benchmark_table1": {
+  "rho": 8440.0,
+  "T_s_C": 1290.0,
+  "T_l_C": 1350.0,
+  "cs_a": 410.0,
+  "cs_b": 0.276,
+  "cl": 766.0,
+  "ks_a": 9.8,
+  "ks_b": 0.0153,
+  "kl": 29.5,
+  "L": 280000.0,
+  "alpha": 0.54,
+  "S": 1.0,
+  "spot_D4sigma_um": 85.0,
+  "T0_C": 20.0,
+  "domain_um": [
+   3000.0,
+   2500.0,
+   1000.0
+  ],
+  "bc": "顶面 Neumann αI；其余（左右前后底）**绝热 zero flux**；无对流、无辐射",
+  "time": "激光命令 0.01 ms 采样（100 kHz）；熔池轮廓按 T=1290 °C 等值面，约 0.149 ms 一次",
+  "scheme": "线性六面体 FEM + 层级加密；Crank–Nicolson 时间积分；Newton–Raphson 求解",
+  "own_validation": "宽度平均偏差 14%、最大 20%；面积平均 11%、最大 22%（1–2 道可达 41%）"
+ },
+ "ours_parsed_from_materials_py": {
+  "T_solidus": 1563.0,
+  "T_liquidus": 1623.0,
+  "T_boil": 3200.0,
+  "rho_solid": 8440.0,
+  "rho_liquid": 7700.0,
+  "cp_solid": 567.0,
+  "cp_liquid": 710.0,
+  "k_solid": 19.4,
+  "k_liquid": 30.0,
+  "latent_fusion": 280000.0,
+  "latent_vapor": 6400000.0,
+  "mu_liquid": 0.007,
+  "sigma0": 1.8,
+  "dsigma_dT": -0.00038,
+  "T_sigma_ref": 1623.0,
+  "beta_thermal": 0.0001,
+  "absorptivity": 0.39,
+  "emissivity": 0.3,
+  "molar_mass": 0.0588,
+  "packing_fraction": 0.55,
+  "powder_k_factor": 0.02,
+  "E": 208000000000.0,
+  "nu": 0.31,
+  "alpha_thermal": 1.28e-05,
+  "sigma_y": 490000000.0,
+  "hardening_sat": 400000000.0,
+  "hardening_rate": 11.0,
+  "hall_petch_sigma0": 300000000.0,
+  "hall_petch_k": 600000.0,
+  "gb_energy": 0.8,
+  "nucleation_undercooling": 5.0,
+  "dendrite_gibbs_thomson": 3e-07,
+  "partition_coefficient": 0.87,
+  "crss0": 180000000.0,
+  "crss_sat": 480000000.0,
+  "cp_hardening": 200000000.0
+ },
+ "ours_reference_string": "Special Metals Inconel 625 数据表; Mills (2002);  AM-Bench AMB2018-02 建模文献常用温变拟合  cp=405+247·(T[°C]/1000) J/kgK, k=9.5+15·(T[°C]/1000) W/mK  (固相区，取 25~1290 °C 区间均值)",
+ "ours_fitted_forms": {
+  "cp_J_per_kgC": "405.0+247.0*(T_C/1000)",
+  "k_W_per_mC": "9.5+15.0*(T_C/1000)"
+ },
+ "unit_check": {
+  "T_solidus_K": 1563.0,
+  "as_C": 1349.85,
+  "T_liquidus_K": 1623.0,
+  "phase_line_offset_vs_benchmark_K": 0.15000000000009095,
+  "cause": "卡片用 273 偏移（1563−273=1290 恰为整数），非 273.15"
+ },
+ "per_item_relative_difference_pct": {
+  "ρ_solid kg/m³": 0.0,
+  "L 潜热 J/kg": 0.0,
+  "c_s 区间均值 J/kg°C": -4.137149813177342,
+  "c_s @1290 °C J/kg°C": -5.536264424834209,
+  "c_l J/kg°C": -7.310704960835509,
+  "k_s 区间均值 W/m°C": -2.314983824066263,
+  "k_s @1290 °C W/m°C": -2.3258963334123224,
+  "k_l W/m°C": 1.694915254237288,
+  "α 吸收率": -27.77777777777778
+ },
+ "volumetric_heat_capacity_pct": {
+  "solid_interval_mean": -4.137149813177331,
+  "liquid": -15.437491492705377
+ },
+ "absorbed_power_ratio_ours_over_benchmark": 0.7222222222222222,
+ "source_ambiguity": {
+  "c_l_label_says": "assumed (c_s at T_l)",
+  "c_l_value": 766.0,
+  "c_s_at_T_s": 766.04,
+  "c_s_at_T_l": 782.6,
+  "k_l_label_says": "assumed (k_s at T_l)",
+  "k_l_value": 29.5,
+  "k_s_at_T_s": 29.537,
+  "k_s_at_T_l": 30.455,
+  "our_reading_convention": "取**数值**为准 ⇒ 液相物性 = 固相式在 **T_s=1290 °C** 之值"
+ },
+ "not_yet_checked": [
+  "ours_beam（我方光斑/热流空间分布口径与基准 D4σ=85 µm 的对应关系）",
+  "我方默认链的对流/辐射边界如何**关闭**以匹配基准的绝热 BC（需跑，不许假设）"
+ ]
+}

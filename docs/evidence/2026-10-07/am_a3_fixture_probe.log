@@ -1,0 +1,49 @@
+CMD: CUDA_VISIBLE_DEVICES="" python3 am_a3_fixture_probe.py
+TREE: head=66bd18d dirty=16
+== ① 面内高斯光斑口径普查 ==
+  命中 5 处：
+    meltpool.py:752              exp(-2·ρ²/r²)  |  I = (2.0 * P / (jnp.pi * r_b ** 2)) * jnp.exp(-2.0 * r2 / r_b ** 2)   # [W/m²]
+    meltpool.py:877              exp(-2·ρ²/r²)  |  spot = jnp.exp(-2.0 * ((xs[:, None] - xL) ** 2 + (ys[None, :] - yL) ** 2)
+    meltpool.py:1547             exp(-1·ρ²/r²)  |  planar = jnp.exp(-planar2 / jnp.maximum(rb * rb, 1e-18))
+    thermal_enthalpy.py:268      exp(-1·ρ²/r²)  |  decay = jnp.exp(-planar2 / jnp.maximum(r * r, 1e-18)) * \
+    thermal_enthalpy.py:271      exp(-1·ρ²/r²)  |  decay = jnp.exp(-planar2 / jnp.maximum(r * r, 1e-18))
+  PASS  ① 命中集合 == 手工枚举  [解析器多=[] 少=[]]
+  PASS  ① 两种口径同时被点名  [distinct coef = [1.0, 2.0]]
+== ② D4σ=85 µm 反解到各口径的半径 ==
+  c=1 ⇒ 应填半径 r = sqrt(2c)·σ = 30.052 µm
+  c=2 ⇒ 应填半径 r = sqrt(2c)·σ = 42.500 µm
+  PASS  ② 两口径半径差 √2  [ratio=1.414214]
+  PASS  ② c=2 口径即 1/e² 半径 w=D4σ/2  [42.50 µm]
+== ③ 归一化数值核对 ==
+  PASS  ③ meltpool 面源 ∫I dA == P（Simpson）  [∫=285.000000 W vs 285.0 W, 相对误差=5.70e-14]
+  dx=r/2   dx=15.03 µm ⇒ 单轴 Σfrac=1.000000000000 三轴积=1.000000000000
+  dx=r     dx=30.05 µm ⇒ 单轴 Σfrac=1.000000000000 三轴积=1.000000000000
+  dx=2r    dx=60.10 µm ⇒ 单轴 Σfrac=1.000000000000 三轴积=1.000000000000
+  PASS  ③ integrated 份额 Σfrac == 1（与 dx/r 无关）  [dx=r/2 处 1.000000000000]
+  PASS  ③ 误填后果量化  [把 w=42.5µm 当 c=1 口径的 r 填 ⇒ 光斑面积 ×2.00、峰值强度 ×0.500]
+== ④ 与基准 Eq.(1)-(4) 同条件所需开关（每项要源码锚点） ==
+  thermal_enthalpy.py:628   Newton 弱冷却（基准无）                    ⇒ params["thermal"]["h_cool"]=0
+  thermal_enthalpy.py:572   蒸发/反冲散热封顶（基准无）                     ⇒ params["thermal"]["evap_coeff"]=0
+  thermal_enthalpy.py:594   heat_scale 手工倍率（必须留 1.0）           ⇒ 保持缺省 1.0
+  meltpool.py:131   表面对流（基准无，FVM 链）                    ⇒ MeltPoolConfig.h_convection=0
+  meltpool.py:799   辐射 Stefan-Boltzmann（基准无，FVM 链）     ⇒ AMMaterial.emissivity=0（仅对照时）
+  meltpool.py:123   Fresnel 增强（基准无，FVM 链）              ⇒ MeltPoolConfig.fresnel_boost=0
+  meltpool.py:168   Beer-Lambert 遮挡（基准为面吸收）            ⇒ MeltPoolConfig 置大 ⇒ 只顶部吸收
+  PASS  ④ 每项开关都有可达锚点（缺失即 FAIL，不许隐去）  [可达 7/7]
+== ⑤ α 的路由 ==
+  PASS  ⑤ 两链的 α 都取自 ProcessPlan.absorption  [thermal_enthalpy:Y meltpool:Y]
+  PASS  ⑤ 材料卡 absorptivity 只是构造种子（故 α 档位=工艺级开关）  [process.py 内 mat.absorptivity→absorption 的种子点 2 处]
+== ⑥ 代价锚点（N3⑤ 登记用） ==
+  形态档 dx=r/2: dx=15.03 µm → 体素 2.224e+06，dt=9.46 µs，30 ms ⇒ 3172 步，voxel-step 7.055e+09
+  strict 下界 dx=r: dx=30.05 µm → 体素 2.739e+05，dt=37.84 µs，30 ms ⇒ 793 步，voxel-step 2.172e+08
+  论文自报（同基准、纯导热 FEM）：1 道 14 min（2.6 GHz i7-10750H）⇒ 18 道 ≈ 252 min CPU
+  PASS  ⑥ 形态档 voxel-step 已量化并落盘（>0 且有限）  [形态档 7.055e+09]
+== ⑦ 产物读回核对 am_a3_fixture.json (3496 B) ==
+  PASS  ⑦ 键齐
+  PASS  ⑦ 普查条数与①一致  [5]
+  PASS  ⑦ 开关可达数 == 清单长度
+  PASS  ⑦ 半径按 (文件,口径) 分键，键集合由①普查导出  [3 键 / 3 个 (文件,口径) 对，涉及文件 ['meltpool.py', 'thermal_enthalpy.py']]
+  PASS  ⑦ 两个文件的口径确实不同（同一 beam_radius 字段被解成两种半径）  [半径值 [30.052, 42.5] µm]
+
+⇒ 全部判据 PASS
+exit=0

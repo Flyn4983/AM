@@ -1,0 +1,32 @@
+CMD: sha256sum -c _checksums.sha256   (+ 旧文件复现，见下文 git show 84776da)
+TREE: head=66bd18d dirty=21
+DATE: 2026-10-07 18:55:19 +0800
+
+== ① 新留档文件（三行标准格式）逐条核对 ==
+Measurements.xlsx: 成功
+README.txt: 成功
+Scan Strategy Data.zip: 成功
+exit=0
+
+== ② 本地实测哈希（逐字节 sha256sum）==
+9e21a77f0c526aa0a913a3f14e2bba7b36640b0fd319febcf8ebfdc9dd5d0edf  Measurements.xlsx
+e9c33b0b31f7d1548b68041f469e84c6342c974c00e54c387952a24569835918  README.txt
+f442f9734a57f59ed33f0ab5e240bb266164740287a184d7ebd7fedece9c2bee  Scan Strategy Data.zip
+d139acb7c99efd26242f72d4a9254dbc040b51a8f294eb91f0812312452bbd2b  holla2025_trace_of_heat_nist959720.pdf
+
+== ③ NIST 元数据里对应的 component checksum（离线对照本目录 nist_metadata_mds2-3662.json）==
+  b8470f853787c9ac434613818b42730692deb38e9a4c470ef2cfdcc09a80a0c5  <- Measurements.xlsx.sha256
+  a25a482cc42253bf979a4fc7239abdd5ce9b4a7d00f055284165fd667a90b65a  <- Image Data.zip
+  9e21a77f0c526aa0a913a3f14e2bba7b36640b0fd319febcf8ebfdc9dd5d0edf  <- Measurements.xlsx
+  e9c33b0b31f7d1548b68041f469e84c6342c974c00e54c387952a24569835918  <- README.txt
+  f442f9734a57f59ed33f0ab5e240bb266164740287a184d7ebd7fedece9c2bee  <- Scan Strategy Data.zip
+
+== ④ 旧内容（随分片 6 入库的那版）的复现：与真实 xlsx 同目录跑 -c ==
+  OLD| Measurements.xlsx b8470f853787c9ac434613818b42730692deb38e9a4c470ef2cfdcc09a80a0c5
+sha256sum: _checksums.sha256: 找不到格式正确的校验和行
+  exit=1（≠0 的原因是**解析不了 ⇒ 一条校验都没跑**，不是数据坏了）
+
+== 记分 ==
+  ① 三行全部成功/exit=0 : PASS
+  ④ 旧文件对任何数据都哑火 : 已复现 exit=1
+
