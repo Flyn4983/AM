@@ -1,0 +1,8 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests/test_geometry_voxelization.py tests/test_enthalpy_thermal.py tests/test_support.py tests/test_boundary.py tests/test_plastic_asbuilt.py tests/test_dimensional_optimization.py -q
+TREE: head=af9fc89 dirty=18
+DATE: 2026-10-07 19:20:51 +0800
+......................F.F..F.................................
+ARCHIVED-INCOMPLETE: 本文件是 19:20:51 那次定向回归的**残档**，不是记分。写到第 57 个进度字符后中断，
+  既无 pytest 汇总行也无 `exit=` 标记；当前树内**没有任何进程在写它**（`ps` 查过），因此它的发起者已死。
+  同一轮的定向回归由 `am_t2_targeted2.log`（DATE 20:59:37 → 21:00:19，`1 failed, 9 passed in 39.84s`）
+  完成并取代；开发日志 §26.16 只引用后者。留档理由＝如实记录"曾有半截运行"，禁止把上面那行点号当结果读。

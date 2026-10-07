@@ -1,0 +1,56 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python am_t2_prod_paths.py
+TREE: head=af9fc89 dirty=16
+DATE: 2026-10-07 19:19:11 +0800
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== P1/P2/P3：生产 occupancy / solid_fraction / volume ===
+
+-- dx=12.5 µm --
+  box                xor(new)=   0 xor(old sdf<0)= 4465 max|Δw|=1.732e-14 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=1.622e-02 体积偏差=+0.119%
+  sphere(r=0.4mm)    xor(new)=   0 xor(old sdf<0)=    3 max|Δw|=2.176e-14 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=2.125e-03 体积偏差=+0.028%
+  cyl(r=0.3,h=0.4)   xor(new)=   0 xor(old sdf<0)= 1789 max|Δw|=1.305e-14 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=8.479e-03 体积偏差=+0.115%
+
+-- dx=25.0 µm --
+  box                xor(new)=   0 xor(old sdf<0)= 1081 max|Δw|=8.660e-15 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=2.976e-02 体积偏差=+0.477%
+  sphere(r=0.4mm)    xor(new)=   0 xor(old sdf<0)=    3 max|Δw|=8.771e-15 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=8.891e-03 体积偏差=+0.066%
+  cyl(r=0.3,h=0.4)   xor(new)=   0 xor(old sdf<0)=  437 max|Δw|=6.550e-15 |volume-Σw·dx³|/Σ=2.220e-16 |volume-tanh|/tanh=1.277e-02 体积偏差=+0.392%
+
+-- dx=50.0 µm --
+  box                xor(new)=   0 xor(old sdf<0)=  253 max|Δw|=4.330e-15 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=4.872e-02 体积偏差=+1.910%
+  sphere(r=0.4mm)    xor(new)=   0 xor(old sdf<0)=    3 max|Δw|=4.385e-15 |volume-Σw·dx³|/Σ=0.000e+00 |volume-tanh|/tanh=3.315e-02 体积偏差=+0.384%
+  cyl(r=0.3,h=0.4)   xor(new)=   0 xor(old sdf<0)=  109 max|Δw|=3.275e-15 |volume-Σw·dx³|/Σ=2.220e-16 |volume-tanh|/tanh=7.029e-03 体积偏差=+1.320%
+
+  P1 正对照：旧硬掩膜拼写间翻转体素总数 = 8143 ⇒ 探针看得见刀锋集（有效）
+
+=== P2 收敛性：偏差随 dx 变细单调减小 ===
+  box                |bias| dx=50/25/12.5 = +1.910% / +0.477% / +0.119% ⇒ 单调 PASS
+  sphere(r=0.4mm)    |bias| dx=50/25/12.5 = +0.384% / +0.066% / +0.028% ⇒ 单调 PASS
+  cyl(r=0.3,h=0.4)   |bias| dx=50/25/12.5 = +1.320% / +0.392% / +0.115% ⇒ 单调 PASS
+
+=== P4：tracer 安全（spacing 是 pytree 叶子） ===
+  grad w.r.t. spacing = 2.890049e-07  finite(sdf)=True
+  jit volume = 2.893750000000e-10 vs eager 2.893750000000e-10 位一致=False
+  solid_weight grad 抛异常：ConcretizationTypeError: Abstract tracer value encountered where concrete value is expected: traced array with shape float64[]
+The problem arose with the `float` function. If trying to convert the data type of a value, try using `x.astype(float)` or `jnp.array(x, float)` instead.
+
+See https://docs.jax.dev/en/latest/errors.html#jax.errors.ConcretizationTypeError
+
+=== P5：layer_activation_times 的层面积口径 ===
+  旧 tanh 口径 track_len = [0.00180197 0.00324858 0.00324858 0.00180197]
+  [mul] 激活时刻 = [ 8.00175936 16.00511737 24.00847538 32.01023475]
+  [lit] 激活时刻 = [ 8.00175936 16.00511737 24.00847538 32.01023475]
+  拼写间 max|Δt| = 0.000e+00 ⇒ P5 位一致 PASS
+  份额 vs tanh 逐层面积占比最大相对差 = 0.1136 ⇒ 切换确实生效
+
+=== 记分 ===
+FAILS: ['P1 box dx=12.5: 份额 max|Δw|=1.732e-14 != 0', 'P1 sphere(r=0.4mm) dx=12.5: 份额 max|Δw|=2.176e-14 != 0', 'P1 cyl(r=0.3,h=0.4) dx=12.5: 份额 max|Δw|=1.305e-14 != 0', 'P1 box dx=25.0: 份额 max|Δw|=8.660e-15 != 0', 'P1 sphere(r=0.4mm) dx=25.0: 份额 max|Δw|=8.771e-15 != 0', 'P1 cyl(r=0.3,h=0.4) dx=25.0: 份额 max|Δw|=6.550e-15 != 0', 'P1 box dx=50.0: 份额 max|Δw|=4.330e-15 != 0', 'P1 sphere(r=0.4mm) dx=50.0: 份额 max|Δw|=4.385e-15 != 0', 'P1 cyl(r=0.3,h=0.4) dx=50.0: 份额 max|Δw|=3.275e-15 != 0', 'P4 jit/eager volume 不一致 2.893749999999999e-10 vs 2.8937499999999994e-10', 'P4 solid_weight grad 抛异常 ConcretizationTypeError']
+exit=0

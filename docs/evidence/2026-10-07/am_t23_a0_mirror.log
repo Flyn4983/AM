@@ -1,0 +1,23 @@
+CMD: PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-07/am_t23_a0_mirror.py   （GPU）
+TREE: head=c41d3b0 dirty_src=0
+DATE: 2026-10-07 22:13:49 +0800
+NOTE: #23 打分第 4 轮：把 fv patch 放进 A0 测试**自己的**口径（δ=0 刀锋、dx∈{50,25}µm、Vn=n·dx³）逐条打分。预注册 M1..M3 在脚本 docstring；M3 正对照要求 A 复现 docstring 登记的 5.24%/11.04%。判据不许放宽（用户规则：A0 断言不许放宽）。
+device = cuda:0
+[none] dx= 50.0 nvox=   2925   6.79s peak=2349.0672 熔体素=   415 Vn=0.05188mm3 Vm=0.05188mm3 calls={'div': 0, 'src': 0}
+[none] dx= 25.0 nvox=  20825   5.75s peak=2478.9673 熔体素=  3732 Vn=0.05831mm3 Vm=0.05809mm3 calls={'div': 0, 'src': 0}
+[fv  ] dx= 50.0 nvox=   2925   1.08s peak=2461.2693 熔体素=   482 Vn=0.06025mm3 Vm=0.05800mm3 calls={'div': 2, 'src': 2}
+[fv  ] dx= 25.0 nvox=  20825   1.52s peak=2563.0062 熔体素=  4446 Vn=0.06947mm3 Vm=0.06759mm3 calls={'div': 2, 'src': 2}
+
+=== M1 逐条余量（相对测试判据 5%；正=通过并留余量，负=超出）===
+  none: assert1 |Δpeak|= 5.240% ⇒ 余量 -0.240pt 红   assert2 |ΔVn|=11.040% ⇒ 余量 -6.040pt 红   assert3 加密不变冷 绿   （Vm 形态 10.705%，信息项）
+  fv  : assert1 |Δpeak|= 3.969% ⇒ 余量 +1.031pt 绿   assert2 |ΔVn|=13.270% ⇒ 余量 -8.270pt 红   assert3 加密不变冷 绿   （Vm 形态 14.183%，信息项）
+
+=== M3 正对照：A 必须复现测试 docstring 登记的 5.24% / 11.04% ===
+  A: assert1 5.240%（登记 5.240%）、assert2 11.040%（登记 11.04%）
+
+=== M2 结论分支 ===
+  ⇒ #23 只解决峰值半边（assert1 5.24%→3.97% 转绿；assert2 11.04%→13.27% 仍红且更差）⇒ A0 保持红灯，形态半边须另立机制（面开口度加权 / T(H) 反演口径 / 守恒重验），不许放宽 assert2 或改用 Vm。
+
+FAILS: 无
+elapsed=20s
+exit=0

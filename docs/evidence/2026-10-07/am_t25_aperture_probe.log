@@ -1,0 +1,111 @@
+CMD: PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-07/am_t25_aperture_probe.py   （GPU）
+TREE: head=c41d3b0 dirty_src=0
+DATE: 2026-10-07 22:25:51 +0800
+NOTE: 复跑取代 22:20 那次 exit=1：那次 N1 的逐位对照 4/4 全 YES（peak 逐位相同），FAILS 全部来自**我把活路判据写错**——V0 的 cap=off 只替换 _div_alpha_grad，源仍走 ORIG_SRC，src=0 属设计，我却要求 src>0。本次按登记规则正确实现（div>0 必要；cap=on 再查 src），并加 N1b 逐变体活路、加第三档 dx=12.5µm 与表观收敛阶诊断 N5（追加诊断，不改 N2/N4 判据）。规模 7 变体 × δ∈{0,0.25}·dx × dx∈{50,25,12.5}µm＝42 次真实求解（GPU）。
+RESTARTED: 22:20 那次 28 次求解的原始数字未进判据（N1 判据实现有误），已由本次取代；两次的 production/V0 前四组数值逐位相同（peak 2349.067161971144 / 2478.9673107488034 / 2404.8938323784323 / 2524.228518794772）。
+device = cuda:0
+[production face=binary  cap=off] δ=0.00·dx dx= 50.0 nvox=   2925   7.16s peak=2349.0672 熔体素=   415 Vn=0.05188mm3 Vm=0.05188mm3 calls={'div': 0, 'src': 0}
+[production face=binary  cap=off] δ=0.00·dx dx= 25.0 nvox=  20825   5.77s peak=2478.9673 熔体素=  3732 Vn=0.05831mm3 Vm=0.05809mm3 calls={'div': 0, 'src': 0}
+[production face=binary  cap=off] δ=0.00·dx dx= 12.5 nvox= 156849  12.31s peak=2517.9764 熔体素= 34703 Vn=0.06778mm3 Vm=0.06715mm3 calls={'div': 0, 'src': 0}
+[production face=binary  cap=off] δ=0.25·dx dx= 50.0 nvox=   3640   4.19s peak=2404.8938 熔体素=   480 Vn=0.06000mm3 Vm=0.06000mm3 calls={'div': 0, 'src': 0}
+[production face=binary  cap=off] δ=0.25·dx dx= 25.0 nvox=  23400   4.34s peak=2524.2285 熔体素=  4277 Vn=0.06683mm3 Vm=0.06653mm3 calls={'div': 0, 'src': 0}
+[production face=binary  cap=off] δ=0.25·dx dx= 12.5 nvox= 166600  11.49s peak=2538.6998 熔体素= 37236 Vn=0.07273mm3 Vm=0.07236mm3 calls={'div': 0, 'src': 0}
+[V0         face=binary  cap=off] δ=0.00·dx dx= 50.0 nvox=   2925   1.21s peak=2349.0672 熔体素=   415 Vn=0.05188mm3 Vm=0.05188mm3 calls={'div': 2, 'src': 0}
+[V0         face=binary  cap=off] δ=0.00·dx dx= 25.0 nvox=  20825   1.43s peak=2478.9673 熔体素=  3732 Vn=0.05831mm3 Vm=0.05809mm3 calls={'div': 2, 'src': 0}
+[V0         face=binary  cap=off] δ=0.00·dx dx= 12.5 nvox= 156849   7.73s peak=2517.9764 熔体素= 34703 Vn=0.06778mm3 Vm=0.06715mm3 calls={'div': 2, 'src': 0}
+[V0         face=binary  cap=off] δ=0.25·dx dx= 50.0 nvox=   3640   1.07s peak=2404.8938 熔体素=   480 Vn=0.06000mm3 Vm=0.06000mm3 calls={'div': 2, 'src': 0}
+[V0         face=binary  cap=off] δ=0.25·dx dx= 25.0 nvox=  23400   1.47s peak=2524.2285 熔体素=  4277 Vn=0.06683mm3 Vm=0.06653mm3 calls={'div': 2, 'src': 0}
+[V0         face=binary  cap=off] δ=0.25·dx dx= 12.5 nvox= 166600   8.67s peak=2538.6998 熔体素= 37236 Vn=0.07273mm3 Vm=0.07236mm3 calls={'div': 2, 'src': 0}
+[V1         face=binary  cap=on ] δ=0.00·dx dx= 50.0 nvox=   2925   1.07s peak=2461.2693 熔体素=   482 Vn=0.06025mm3 Vm=0.05800mm3 calls={'div': 2, 'src': 2}
+[V1         face=binary  cap=on ] δ=0.00·dx dx= 25.0 nvox=  20825   1.44s peak=2563.0062 熔体素=  4446 Vn=0.06947mm3 Vm=0.06759mm3 calls={'div': 2, 'src': 2}
+[V1         face=binary  cap=on ] δ=0.00·dx dx= 12.5 nvox= 156849   7.84s peak=2565.0767 熔体素= 37982 Vn=0.07418mm3 Vm=0.07307mm3 calls={'div': 2, 'src': 2}
+[V1         face=binary  cap=on ] δ=0.25·dx dx= 50.0 nvox=   3640   1.07s peak=2447.2721 熔体素=   502 Vn=0.06275mm3 Vm=0.06244mm3 calls={'div': 2, 'src': 2}
+[V1         face=binary  cap=on ] δ=0.25·dx dx= 25.0 nvox=  23400   1.48s peak=2554.9611 熔体素=  4520 Vn=0.07063mm3 Vm=0.06996mm3 calls={'div': 2, 'src': 2}
+[V1         face=binary  cap=on ] δ=0.25·dx dx= 12.5 nvox= 166600   9.05s peak=2555.8135 熔体素= 38157 Vn=0.07453mm3 Vm=0.07407mm3 calls={'div': 2, 'src': 2}
+[V2         face=min     cap=off] δ=0.00·dx dx= 50.0 nvox=   2925   1.08s peak=2388.6687 熔体素=   428 Vn=0.05350mm3 Vm=0.05350mm3 calls={'div': 2, 'src': 0}
+[V2         face=min     cap=off] δ=0.00·dx dx= 25.0 nvox=  20825   1.41s peak=2486.3623 熔体素=  3780 Vn=0.05906mm3 Vm=0.05906mm3 calls={'div': 2, 'src': 0}
+[V2         face=min     cap=off] δ=0.00·dx dx= 12.5 nvox= 156849   7.78s peak=2517.4429 熔体素= 34846 Vn=0.06806mm3 Vm=0.06748mm3 calls={'div': 2, 'src': 0}
+[V2         face=min     cap=off] δ=0.25·dx dx= 50.0 nvox=   3640   1.06s peak=2369.9679 熔体素=   422 Vn=0.05275mm3 Vm=0.05275mm3 calls={'div': 2, 'src': 0}
+[V2         face=min     cap=off] δ=0.25·dx dx= 25.0 nvox=  23400   1.48s peak=2476.9162 熔体素=  3780 Vn=0.05906mm3 Vm=0.05887mm3 calls={'div': 2, 'src': 0}
+[V2         face=min     cap=off] δ=0.25·dx dx= 12.5 nvox= 166600   8.60s peak=2514.1714 熔体素= 34562 Vn=0.06750mm3 Vm=0.06717mm3 calls={'div': 2, 'src': 0}
+[V3         face=min     cap=on ] δ=0.00·dx dx= 50.0 nvox=   2925   1.06s peak=2465.1177 熔体素=   459 Vn=0.05738mm3 Vm=0.05669mm3 calls={'div': 2, 'src': 2}
+[V3         face=min     cap=on ] δ=0.00·dx dx= 25.0 nvox=  20825   1.47s peak=2560.3630 熔体素=  4414 Vn=0.06897mm3 Vm=0.06731mm3 calls={'div': 2, 'src': 2}
+[V3         face=min     cap=on ] δ=0.00·dx dx= 12.5 nvox= 156849   7.81s peak=2560.9640 熔体素= 37848 Vn=0.07392mm3 Vm=0.07286mm3 calls={'div': 2, 'src': 2}
+[V3         face=min     cap=on ] δ=0.25·dx dx= 50.0 nvox=   3640   1.10s peak=2411.8614 熔体素=   437 Vn=0.05463mm3 Vm=0.05463mm3 calls={'div': 2, 'src': 2}
+[V3         face=min     cap=on ] δ=0.25·dx dx= 25.0 nvox=  23400   1.46s peak=2523.9264 熔体素=  4126 Vn=0.06447mm3 Vm=0.06388mm3 calls={'div': 2, 'src': 2}
+[V3         face=min     cap=on ] δ=0.25·dx dx= 12.5 nvox= 166600   8.94s peak=2542.6881 熔体素= 36655 Vn=0.07159mm3 Vm=0.07115mm3 calls={'div': 2, 'src': 2}
+[V4         face=product cap=on ] δ=0.00·dx dx= 50.0 nvox=   2925   1.11s peak=2459.8348 熔体素=   462 Vn=0.05775mm3 Vm=0.05688mm3 calls={'div': 2, 'src': 2}
+[V4         face=product cap=on ] δ=0.00·dx dx= 25.0 nvox=  20825   1.51s peak=2556.0303 熔体素=  4414 Vn=0.06897mm3 Vm=0.06720mm3 calls={'div': 2, 'src': 2}
+[V4         face=product cap=on ] δ=0.00·dx dx= 12.5 nvox= 156849   7.87s peak=2558.5053 熔体素= 37798 Vn=0.07382mm3 Vm=0.07275mm3 calls={'div': 2, 'src': 2}
+[V4         face=product cap=on ] δ=0.25·dx dx= 50.0 nvox=   3640   1.13s peak=2410.5034 熔体素=   441 Vn=0.05513mm3 Vm=0.05500mm3 calls={'div': 2, 'src': 2}
+[V4         face=product cap=on ] δ=0.25·dx dx= 25.0 nvox=  23400   1.54s peak=2521.3999 熔体素=  4131 Vn=0.06455mm3 Vm=0.06392mm3 calls={'div': 2, 'src': 2}
+[V4         face=product cap=on ] δ=0.25·dx dx= 12.5 nvox= 166600   8.73s peak=2540.9579 熔体素= 36573 Vn=0.07143mm3 Vm=0.07099mm3 calls={'div': 2, 'src': 2}
+[V5         face=avg     cap=on ] δ=0.00·dx dx= 50.0 nvox=   2925   1.09s peak=2454.0987 熔体素=   475 Vn=0.05938mm3 Vm=0.05756mm3 calls={'div': 2, 'src': 2}
+[V5         face=avg     cap=on ] δ=0.00·dx dx= 25.0 nvox=  20825   1.46s peak=2556.2444 熔体素=  4428 Vn=0.06919mm3 Vm=0.06729mm3 calls={'div': 2, 'src': 2}
+[V5         face=avg     cap=on ] δ=0.00·dx dx= 12.5 nvox= 156849   7.92s peak=2560.2776 熔体素= 37879 Vn=0.07398mm3 Vm=0.07287mm3 calls={'div': 2, 'src': 2}
+[V5         face=avg     cap=on ] δ=0.25·dx dx= 50.0 nvox=   3640   1.10s peak=2355.3320 熔体素=   422 Vn=0.05275mm3 Vm=0.05275mm3 calls={'div': 2, 'src': 2}
+[V5         face=avg     cap=on ] δ=0.25·dx dx= 25.0 nvox=  23400   1.51s peak=2472.3979 熔体素=  3743 Vn=0.05848mm3 Vm=0.05848mm3 calls={'div': 2, 'src': 2}
+[V5         face=avg     cap=on ] δ=0.25·dx dx= 12.5 nvox= 166600   8.66s peak=2510.3021 熔体素= 34657 Vn=0.06769mm3 Vm=0.06743mm3 calls={'div': 2, 'src': 2}
+
+=== N1 同构对照：V0（重写循环，binary）vs production，逐位 ===
+  δ=0.00·dx dx= 50.0: 逐位=YES (peak 2349.067161971144 vs 2349.067161971144, n 415 vs 415) 重写 div 调用=2（源走生产实现，cap=off ⇒ src=0 属设计） ⇒ 重写在执行路径上
+  δ=0.00·dx dx= 25.0: 逐位=YES (peak 2478.9673107488034 vs 2478.9673107488034, n 3732 vs 3732) 重写 div 调用=2（源走生产实现，cap=off ⇒ src=0 属设计） ⇒ 重写在执行路径上
+  δ=0.00·dx dx= 12.5: 逐位=YES (peak 2517.9763844446547 vs 2517.9763844446547, n 34703 vs 34703) 重写 div 调用=2（源走生产实现，cap=off ⇒ src=0 属设计） ⇒ 重写在执行路径上
+  δ=0.25·dx dx= 50.0: 逐位=YES (peak 2404.8938323784323 vs 2404.8938323784323, n 480 vs 480) 重写 div 调用=2（源走生产实现，cap=off ⇒ src=0 属设计） ⇒ 重写在执行路径上
+  δ=0.25·dx dx= 25.0: 逐位=YES (peak 2524.228518794772 vs 2524.228518794772, n 4277 vs 4277) 重写 div 调用=2（源走生产实现，cap=off ⇒ src=0 属设计） ⇒ 重写在执行路径上
+  δ=0.25·dx dx= 12.5: 逐位=YES (peak 2538.6998093907205 vs 2538.6998093907205, n 37236 vs 37236) 重写 div 调用=2（源走生产实现，cap=off ⇒ src=0 属设计） ⇒ 重写在执行路径上
+
+=== N1b 每个变体的 patch 活路（div 必查；cap=on 再查 src）===
+  V0         face=binary  cap=off: 6 组计数 全部达标 ✓（cap=off 时 src=0 属设计，只查 div）
+  V1         face=binary  cap=on : 6 组计数 全部达标 ✓（cap=off 时 src=0 属设计，只查 div）
+  V2         face=min     cap=off: 6 组计数 全部达标 ✓（cap=off 时 src=0 属设计，只查 div）
+  V3         face=min     cap=on : 6 组计数 全部达标 ✓（cap=off 时 src=0 属设计，只查 div）
+  V4         face=product cap=on : 6 组计数 全部达标 ✓（cap=off 时 src=0 属设计，只查 div）
+  V5         face=avg     cap=on : 6 组计数 全部达标 ✓（cap=off 时 src=0 属设计，只查 div）
+
+=== N2 主判据：每个 δ 上 assert1(|Δpeak|) 与 assert2(|ΔVn|) 是否都 <5% ===
+  production δ=0:    peak  5.240%  Vn 11.040%  (Vm  10.70%)   δ=0.25: peak  4.728%  Vn 10.217%  (Vm   9.81%)  ⇒ 不入选
+  V0         δ=0:    peak  5.240%  Vn 11.040%  (Vm  10.70%)   δ=0.25: peak  4.728%  Vn 10.217%  (Vm   9.81%)  ⇒ 不入选
+  V1         δ=0:    peak  3.969%  Vn 13.270%  (Vm  14.18%)   δ=0.25: peak  4.215%  Vn 11.150%  (Vm  10.76%)  ⇒ 不入选
+  V2         δ=0:    peak  3.929%  Vn  9.418%  (Vm   9.42%)   δ=0.25: peak  4.318%  Vn 10.688%  (Vm  10.39%)  ⇒ 不入选
+  V3         δ=0:    peak  3.720%  Vn 16.810%  (Vm  15.78%)   δ=0.25: peak  4.440%  Vn 15.269%  (Vm  14.49%)  ⇒ 不入选
+  V4         δ=0:    peak  3.763%  Vn 16.266%  (Vm  15.37%)   δ=0.25: peak  4.398%  Vn 14.597%  (Vm  13.96%)  ⇒ 不入选
+  V5         δ=0:    peak  3.996%  Vn 14.182%  (Vm  14.45%)   δ=0.25: peak  4.735%  Vn  9.805%  (Vm   9.80%)  ⇒ 不入选
+  ⇒ N4：无变体入选 ⇒ 面开口度不是 Vn 不收敛的主因；下一条候选另开打分
+
+=== N3 归因：各变体相对 V0 的两条余量变化（pt，正=更接近判据）===
+  V0         δ=0.00·dx: assert1  -0.240 (V0  -0.240)  assert2  -6.040 (V0  -6.040)
+  V0         δ=0.25·dx: assert1  +0.272 (V0  +0.272)  assert2  -5.217 (V0  -5.217)
+  V1         δ=0.00·dx: assert1  +1.031 (V0  -0.240)  assert2  -8.270 (V0  -6.040)
+  V1         δ=0.25·dx: assert1  +0.785 (V0  +0.272)  assert2  -6.150 (V0  -5.217)
+  V2         δ=0.00·dx: assert1  +1.071 (V0  -0.240)  assert2  -4.418 (V0  -6.040)
+  V2         δ=0.25·dx: assert1  +0.682 (V0  +0.272)  assert2  -5.688 (V0  -5.217)
+  V3         δ=0.00·dx: assert1  +1.280 (V0  -0.240)  assert2 -11.810 (V0  -6.040)
+  V3         δ=0.25·dx: assert1  +0.560 (V0  +0.272)  assert2 -10.269 (V0  -5.217)
+  V4         δ=0.00·dx: assert1  +1.237 (V0  -0.240)  assert2 -11.266 (V0  -6.040)
+  V4         δ=0.25·dx: assert1  +0.602 (V0  +0.272)  assert2  -9.597 (V0  -5.217)
+  V5         δ=0.00·dx: assert1  +1.004 (V0  -0.240)  assert2  -9.182 (V0  -6.040)
+  V5         δ=0.25·dx: assert1  +0.265 (V0  +0.272)  assert2  -4.805 (V0  -5.217)
+
+=== N5（**追加的描述性诊断，不参与 N2/N4 判据**）：三档表观收敛阶与「assert2 需要的 dx」===
+  模型 f(dx)=f*+C·dx^p 由三档反解：p=log((f1−f2)/(f2−f3))/log2，f*=f3+(f3−f2)/(2^p−1)；再由 |C|dx^p(1−2^{−p})/|f*|=5% 解出 dx_req。
+  δ=0.00·dx V0         peak: p= 1.74 f*=2501.2343 dx_req=  54.9µm | Vn  : p=-0.56 f*=   0.0974 dx_req=575.8+425.7jµm | Vm  : p=-0.54 f*=   0.0960 dx_req=619.8+333.8jµm
+  δ=0.00·dx V1         peak: p= 5.62 f*=2565.0337 dx_req=  52.1µm | Vn  : p= 0.97 f*=   0.0692 dx_req=  39.1µm | Vm  : p= 0.81 f*=   0.0657 dx_req=  49.4µm
+  δ=0.00·dx V2         peak: p= 1.65 f*=2502.9412 dx_req=  66.6µm | Vn  : p=-0.69 f*=   0.0916 dx_req=-96.2+520.5jµm | Vm  : p=-0.60 f*=   0.0923 dx_req=300.8+493.0jµm
+  δ=0.00·dx V3         peak: p= 7.31 f*=2560.9602 dx_req=  52.1µm | Vn  : p= 1.23 f*=   0.0702 dx_req=  27.3µm | Vm  : p= 0.94 f*=   0.0668 dx_req=  33.7µm
+  δ=0.00·dx V4         peak: p= 5.28 f*=2558.4400 dx_req=  52.8µm | Vn  : p= 1.21 f*=   0.0701 dx_req=  28.2µm | Vm  : p= 0.90 f*=   0.0663 dx_req=  36.7µm
+  δ=0.00·dx V5         peak: p= 4.66 f*=2560.1118 dx_req=  52.5µm | Vn  : p= 1.03 f*=   0.0694 dx_req=  34.3µm | Vm  : p= 0.80 f*=   0.0653 dx_req=  49.2µm
+  δ=0.25·dx V0         peak: p= 3.04 f*=2536.7028 dx_req=  51.5µm | Vn  : p= 0.21 f*=   0.0353 dx_req=   2.4µm | Vm  : p= 0.16 f*=   0.0235 dx_req=   0.0µm
+  δ=0.25·dx V1         peak: p= 6.98 f*=2555.8067 dx_req=  51.2µm | Vn  : p= 1.01 f*=   0.0707 dx_req=  44.1µm | Vm  : p= 0.88 f*=   0.0692 dx_req=  57.6µm
+  δ=0.25·dx V2         peak: p= 1.52 f*=2494.2561 dx_req=  66.4µm | Vn  : p=-0.42 f*=   0.1010 dx_req=287.6-761.7jµm | Vm  : p=-0.44 f*=   0.0987 dx_req=504.6-575.1jµm
+  δ=0.25·dx V3         peak: p= 2.58 f*=2538.9154 dx_req=  53.7µm | Vn  : p= 0.47 f*=   0.0529 dx_req=2077.8µm | Vm  : p= 0.35 f*=   0.0445 dx_req=  54.0µm
+  δ=0.25·dx V4         peak: p= 2.50 f*=2536.7700 dx_req=  54.1µm | Vn  : p= 0.45 f*=   0.0527 dx_req=1143.0µm | Vm  : p= 0.34 f*=   0.0441 dx_req=  46.1µm
+  δ=0.25·dx V5         peak: p= 1.63 f*=2492.1528 dx_req=  60.0µm | Vn  : p=-0.68 f*=   0.0921 dx_req=-61.6+551.4jµm | Vm  : p=-0.64 f*=   0.0924 dx_req=106.1+567.2jµm
+  读法（dx_req = 让一对相邻档（dx 与 dx/2）相对差恰好等于 5% 的粗档 dx）：
+    · dx_req ≥ 50µm 而实测 50↔25 仍红 ⇒ 幂律模型解释不了 ⇒ 三档尚未进入渐近区，找机制而不是加网格；
+    · dx_req < 50µm ⇒ assert2 是「加密可达」的，但可达分辨率若 ≪ r/2=50µm，说明该判据实际在要求**亚光斑**分辨率 ⇒ 要么把形态口径换成可积的份额加权体积并**同步**重开 O1 打分（不许当作放宽），要么承认标定档预算够不着、把 A0 的形态半边挂到更细档位上。
+
+FAILS: 无
+入选变体: []
+elapsed=186s
+exit=0

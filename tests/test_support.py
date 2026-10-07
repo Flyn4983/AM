@@ -11,7 +11,7 @@ import pytest
 
 import amforge as af
 from amforge.core.contracts import (
-    AsBuiltPart, PartGeometry, SupportStructure, ThermalHistory,
+    AsBuiltPart, PartGeometry, SupportStructure, ThermalHistory, solid_mask,
 )
 from amforge.core.registry import get_solver
 from amforge.support import support_auto, support_simulate
@@ -47,7 +47,8 @@ def _box(center, half, n=6, sp=2e-4):
 
 
 def _heated_thermal(geo, amp=600.0):
-    occ = (geo.sdf < 0).astype(jnp.float64)
+    # 口径＝#19 solid_mask（实测本组夹具 Δn=+4 个刀锋单元，见 am_t26_bare_sdf_census.log S1）
+    occ = (solid_mask(geo.sdf) > 0.5).astype(jnp.float64)
     peak = 373.0 + amp * occ
     sh = geo.sdf.shape
     return ThermalHistory(peak_temperature=peak, cooling_rate=jnp.full(sh, 1e3),
@@ -73,8 +74,10 @@ def test_support_auto_floating_needs_support():
     sup = support_auto(geometry=geo, params={"kind": "block"})
     assert float(sup.volume_fraction) > 1e-3, "悬空零件应生成支撑"
     assert float(sup.contact_area) > 0.0
-    # 支撑掩膜与零件不重叠
-    assert float(jnp.sum(sup.support_mask * (geo.sdf < 0).astype(jnp.float64))) == 0.0
+    # 支撑掩膜与零件不重叠。口径＝#19 solid_mask：旧写法 `geo.sdf < 0` 是**弱判据**
+    # （刀锋层在规范口径下算实体却不被本检查覆盖）。实测本夹具 Δn=+4，而重叠和在两种
+    # 口径下同为 0 ⇒ 换口径为可证无操作（am_t26_bare_sdf_census.log S3）。
+    assert float(jnp.sum(sup.support_mask * (solid_mask(geo.sdf) > 0.5).astype(jnp.float64))) == 0.0
 
 
 def test_support_auto_overhang_subset_of_block():
@@ -122,7 +125,7 @@ def test_support_simulate_couples_and_zeroes_support():
     # 支撑改变了合并几何的求解 → 与无支撑基线不同
     assert float(jnp.max(jnp.abs(ab.displacement - ab_base.displacement))) > 1e-12
     # 输出只含零件区域：支撑专用 voxel（支撑=1 且零件=0）位移应为 0
-    sup_only = (sup.support_mask > 0.5) & (~(geo.sdf < 0))
+    sup_only = (sup.support_mask > 0.5) & (~(solid_mask(geo.sdf) > 0.5))
     leaked = jnp.sum(jnp.abs(ab.displacement) * sup_only[..., None])
     assert float(leaked) == 0.0
 

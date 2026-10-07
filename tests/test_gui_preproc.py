@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from amforge.core.contracts import PartGeometry
+from amforge.core.contracts import PartGeometry, solid_mask
 from amforge.gui.preproc import (
     build_primitive,
     generate_hatch_paths,
@@ -24,7 +24,7 @@ from amforge.gui.preproc import (
 def test_build_primitive_sphere():
     part = build_primitive("sphere", length_mm=1.0, spacing_um=200.0)
     assert part.dim == 3
-    assert (np.asarray(part.sdf) < 0).any()       # 有实体体素
+    assert bool(np.asarray(solid_mask(np.asarray(part.sdf)) > 0.5).any())  # 有实体体素（#19 口径）
     assert (np.asarray(part.sdf) > 0).any()       # 有空气体素
     assert part.layer_count(40e-6) >= 1
 

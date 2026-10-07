@@ -1,0 +1,79 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python am_t2_soft_vs_cut.py
+TREE: head=af9fc89 dirty=2
+DATE: 2026-10-07 19:03:11 +0800
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== S1/S2/S3：三套口径 × 三几何 × 三档 dx ===
+
+-- dx=12.5 µm --
+  box(填满包围盒)           cut:  1.0012× | tanh_dx:  0.9852× | tanh_half:  0.9991×
+    cut       偏差  +0.119%  拼写差 3.59e-16  体外泄漏  0.000%  体内截断 90.904%
+    tanh_dx   偏差  -1.478%  拼写差 1.80e-16  体外泄漏  0.000%  体内截断 89.660%
+    tanh_half 偏差  -0.092%  拼写差 1.80e-16  体外泄漏  0.000%  体内截断 90.746%
+  sphere(r=0.4mm)      cut:  1.0003× | tanh_dx:  1.0024× | tanh_half:  1.0006×
+    cut       偏差  +0.028%  拼写差 0.00e+00  体外泄漏  0.000%  体内截断 90.652%
+    tanh_dx   偏差  +0.241%  拼写差 0.00e+00  体外泄漏  0.655%  体内截断 90.144%
+    tanh_half 偏差  +0.057%  拼写差 0.00e+00  体外泄漏  0.046%  体内截断 90.618%
+  cyl(r=0.3,h=0.4)     cut:  1.0012× | tanh_dx:  0.9927× | tanh_half:  0.9998×
+    cut       偏差  +0.115%  拼写差 0.00e+00  体外泄漏  0.000%  体内截断 88.387%
+    tanh_dx   偏差  -0.726%  拼写差 0.00e+00  体外泄漏  0.369%  体内截断 87.213%
+    tanh_half 偏差  -0.019%  拼写差 0.00e+00  体外泄漏  0.029%  体内截断 88.257%
+
+-- dx=25.0 µm --
+  box(填满包围盒)           cut:  1.0048× | tanh_dx:  0.9757× | tanh_half:  1.0009×
+    cut       偏差  +0.477%  拼写差 1.80e-16  体外泄漏  0.000%  体内截断 76.866%
+    tanh_dx   偏差  -2.427%  拼写差 1.80e-16  体外泄漏  0.000%  体内截断 75.286%
+    tanh_half 偏差  +0.088%  拼写差 3.59e-16  体外泄漏  0.000%  体内截断 76.676%
+  sphere(r=0.4mm)      cut:  1.0007× | tanh_dx:  1.0096× | tanh_half:  1.0023×
+    cut       偏差  +0.066%  拼写差 0.00e+00  体外泄漏  0.000%  体内截断 82.280%
+    tanh_dx   偏差  +0.964%  拼写差 0.00e+00  体外泄漏  1.510%  体内截断 81.313%
+    tanh_half 偏差  +0.230%  拼写差 0.00e+00  体外泄漏  0.110%  体内截断 82.208%
+  cyl(r=0.3,h=0.4)     cut:  1.0039× | tanh_dx:  0.9913× | tanh_half:  1.0021×
+    cut       偏差  +0.392%  拼写差 1.14e-16  体外泄漏  0.000%  体内截断 72.532%
+    tanh_dx   偏差  -0.874%  拼写差 3.43e-16  体外泄漏  0.813%  体内截断 71.104%
+    tanh_half 偏差  +0.215%  拼写差 1.14e-16  体外泄漏  0.080%  体内截断 72.393%
+
+-- dx=50.0 µm --
+  box(填满包围盒)           cut:  1.0191× | tanh_dx:  0.9718× | tanh_half:  1.0126×
+    cut       偏差  +1.910%  拼写差 1.80e-16  体外泄漏  0.000%  体内截断 57.292%
+    tanh_dx   偏差  -2.825%  拼写差 0.00e+00  体外泄漏  0.000%  体内截断 54.890%
+    tanh_half 偏差  +1.257%  拼写差 0.00e+00  体外泄漏  0.000%  体内截断 56.991%
+  sphere(r=0.4mm)      cut:  1.0038× | tanh_dx:  1.0383× | tanh_half:  1.0092×
+    cut       偏差  +0.384%  拼写差 1.93e-16  体外泄漏  0.000%  体内截断 65.372%
+    tanh_dx   偏差  +3.825%  拼写差 0.00e+00  体外泄漏  3.383%  体内截断 63.980%
+    tanh_half 偏差  +0.917%  拼写差 0.00e+00  体外泄漏  0.230%  体内截断 65.273%
+  cyl(r=0.3,h=0.4)     cut:  1.0132× | tanh_dx:  1.0061× | tanh_half:  1.0146×
+    cut       偏差  +1.320%  拼写差 2.29e-16  体外泄漏  0.000%  体内截断 47.083%
+    tanh_dx   偏差  +0.613%  拼写差 1.14e-16  体外泄漏  1.301%  体内截断 45.384%
+    tanh_half 偏差  +1.463%  拼写差 0.00e+00  体外泄漏  0.122%  体内截断 46.904%
+
+=== S1 收敛性：偏差应随 dx 变细单调减小（顺序 50→25→12.5）===
+  cut       box(填满包围盒)            +1.910% /  +0.477% /  +0.119% ⇒ PASS
+  cut       sphere(r=0.4mm)       +0.384% /  +0.066% /  +0.028% ⇒ PASS
+  cut       cyl(r=0.3,h=0.4)      +1.320% /  +0.392% /  +0.115% ⇒ PASS
+  tanh_dx   box(填满包围盒)            -2.825% /  -2.427% /  -1.478% ⇒ PASS
+  tanh_dx   sphere(r=0.4mm)       +3.825% /  +0.964% /  +0.241% ⇒ PASS
+  tanh_dx   cyl(r=0.3,h=0.4)      +0.613% /  -0.874% /  -0.726% ⇒ FAIL(反弹)
+  tanh_half box(填满包围盒)            +1.257% /  +0.088% /  -0.092% ⇒ PASS
+  tanh_half sphere(r=0.4mm)       +0.917% /  +0.230% /  +0.057% ⇒ PASS
+  tanh_half cyl(r=0.3,h=0.4)      +1.463% /  +0.215% /  -0.019% ⇒ PASS
+
+=== S4 裁决 ===
+  cut       合格=True  最粗档最大|偏差|=1.910%  拼写差上界=3.59e-16  体外泄漏上界=0.000%
+  tanh_dx   合格=False  最粗档最大|偏差|=3.825%  拼写差上界=3.43e-16  体外泄漏上界=3.383%
+  tanh_half 合格=True  最粗档最大|偏差|=1.463%  拼写差上界=3.59e-16  体外泄漏上界=0.230%
+  ⇒ 按 S4 取 **tanh_half**（最粗档 |偏差| 最小），其余口径**不再是第二套 helper**
+
+=== 记分 ===
+FAILS: ['S1 tanh_dx box(填满包围盒) dx=25.0: |偏差| 2.43% ≥2%', 'S1 tanh_dx box(填满包围盒) dx=50.0: |偏差| 2.82% ≥2%', 'S1 tanh_dx sphere(r=0.4mm) dx=50.0: |偏差| 3.83% ≥2%', 'S1 tanh_dx 收敛 cyl(r=0.3,h=0.4): 未单调减小']
+WINNER: tanh_half
+exit=0

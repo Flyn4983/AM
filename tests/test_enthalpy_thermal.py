@@ -93,7 +93,14 @@ def test_latent_heat_lowers_peak_temperature():
     part = _part(dx=dx)
     plan = _plan()
     coords = part.coords()
-    mask = (part.sdf < 0.0).astype(jnp.float64)
+    # 口径＝#19 solid_mask（本测试是**手写的参考求解器**，不是生产求解器）。实测本夹具
+    # Δn=+24 个刀锋单元（99→123），换口径后 peak_with_L 2656.57→2790.15 K、判据余量
+    # 224.95→258.01 K（`am_t26_bare_sdf_census.log` S4）⇒ 断言不放宽且余量变大。
+    # ⚠ 已知分歧（照实记）：这里的 `_div_alpha_grad(H, a, dx)` **不带面掩膜**，而生产
+    # `_div_alpha_grad(..., mask=solid_mask)` 带；补上面掩膜后本参考峰值变成
+    # 4621.27/5102.31 K（+65%）⇒ 本参考与生产**不同构**，只用于"潜热是否压低峰值"的
+    # 相对比较，不得当生产量级引用。
+    mask = (solid_mask(part.sdf) > 0.5).astype(jnp.float64)
 
     P = float(jnp.mean(plan.laser_power))
     r = float(jnp.mean(plan.beam_radius))

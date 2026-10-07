@@ -1,0 +1,93 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python am_t2_soft_vs_cut_s5.py
+TREE: head=af9fc89 dirty=4
+DATE: 2026-10-07 19:05:33 +0800
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== S5a/S5b：三个新几何上的三套口径 ===
+  旋转阵正交性核对：|R1ᵀR1−I|∞=1.11e-16 det=1.000000 | |R2ᵀR2−I|∞=7.44e-18 det=1.000000
+
+-- box_rot(37°)  V_true=288.0000 µm³ --
+  dx= 12.5 µm  cut=+0.040%  tanh_dx=+0.393%  tanh_half=+0.098%
+      cut       拼写差=0.00e+00
+      tanh_dx   拼写差=0.00e+00
+      tanh_half 拼写差=1.80e-16
+  dx= 25.0 µm  cut=+0.161%  tanh_dx=+1.571%  tanh_half=+0.394%
+      cut       拼写差=1.80e-16
+      tanh_dx   拼写差=0.00e+00
+      tanh_half 拼写差=0.00e+00
+  dx= 50.0 µm  cut=+0.705%  tanh_dx=+6.296%  tanh_half=+1.619%
+      cut       拼写差=0.00e+00
+      tanh_dx   拼写差=1.80e-16  ⇒ S5b 偏差≥2%
+      tanh_half 拼写差=0.00e+00
+
+-- sphere_small(r=0.15)  V_true=14.1372 µm³ --
+  dx= 12.5 µm  cut=+0.261%  tanh_dx=+1.713%  tanh_half=+0.402%
+      cut       拼写差=2.29e-16
+      tanh_dx   拼写差=3.43e-16
+      tanh_half 拼写差=2.29e-16
+  dx= 25.0 µm  cut=+0.481%  tanh_dx=+6.853%  tanh_half=+1.642%
+      cut       拼写差=2.29e-16
+      tanh_dx   拼写差=0.00e+00  ⇒ S5b 偏差≥2%
+      tanh_half 拼写差=1.14e-16
+  dx= 50.0 µm  cut=+3.320%  tanh_dx=+27.417%  tanh_half=+6.507%
+      cut       拼写差=2.29e-16  ⇒ S5b 偏差≥2%
+      tanh_dx   拼写差=4.57e-16  ⇒ S5b 偏差≥2%
+      tanh_half 拼写差=2.29e-16  ⇒ S5b 偏差≥2%
+
+-- cyl_rot_thin(r=0.5,h=0.1,30°)  V_true=78.5398 µm³ --
+  dx= 12.5 µm  cut=+0.105%  tanh_dx=+1.082%  tanh_half=+0.264%
+      cut       拼写差=1.65e-16
+      tanh_dx   拼写差=4.94e-16
+      tanh_half 拼写差=3.29e-16
+  dx= 25.0 µm  cut=+0.424%  tanh_dx=+4.638%  tanh_half=+1.063%
+      cut       拼写差=3.29e-16
+      tanh_dx   拼写差=4.94e-16  ⇒ S5b 偏差≥2%
+      tanh_half 拼写差=0.00e+00
+  dx= 50.0 µm  cut=+2.219%  tanh_dx=+21.427%  tanh_half=+4.816%
+      cut       拼写差=3.29e-16  ⇒ S5b 偏差≥2%
+      tanh_dx   拼写差=1.65e-16  ⇒ S5b 偏差≥2%
+      tanh_half 拼写差=1.65e-16  ⇒ S5b 偏差≥2%
+
+=== S1 收敛（新几何，50→25→12.5）===
+  cut       box_rot(37°)                    +0.705% /  +0.161% /  +0.040% ⇒ PASS
+  cut       sphere_small(r=0.15)            +3.320% /  +0.481% /  +0.261% ⇒ PASS
+  cut       cyl_rot_thin(r=0.5,h=0.1,30°)   +2.219% /  +0.424% /  +0.105% ⇒ PASS
+  tanh_dx   box_rot(37°)                    +6.296% /  +1.571% /  +0.393% ⇒ PASS
+  tanh_dx   sphere_small(r=0.15)           +27.417% /  +6.853% /  +1.713% ⇒ PASS
+  tanh_dx   cyl_rot_thin(r=0.5,h=0.1,30°)  +21.427% /  +4.638% /  +1.082% ⇒ PASS
+  tanh_half box_rot(37°)                    +1.619% /  +0.394% /  +0.098% ⇒ PASS
+  tanh_half sphere_small(r=0.15)            +6.507% /  +1.642% /  +0.402% ⇒ PASS
+  tanh_half cyl_rot_thin(r=0.5,h=0.1,30°)   +4.816% /  +1.063% /  +0.264% ⇒ PASS
+
+=== S5c 推翻规则的执行 ===
+  cut       新几何合格=False  最粗档 max|偏差|=3.3202%
+  tanh_dx   新几何合格=False  最粗档 max|偏差|=27.4173%
+  tanh_half 新几何合格=False  最粗档 max|偏差|=6.5069%
+  逐几何比较（tanh_half 是否比 cut 差）：
+    box_rot(37°)                   tanh_half=1.6189%  cut=0.7054%  ⇒ tanh_half 更差
+    sphere_small(r=0.15)           tanh_half=6.5069%  cut=3.3202%  ⇒ tanh_half 更差
+    cyl_rot_thin(r=0.5,h=0.1,30°)  tanh_half=4.8164%  cut=2.2192%  ⇒ tanh_half 更差
+  ⇒ 新几何上 tanh_half 比 cut 差的个数 = 3/3
+  S4 旧 3 几何（dx=50）cut       逐几何偏差 = +1.910% / +0.384% / +1.320%  max|·|=1.9100%
+  S4 旧 3 几何（dx=50）tanh_dx   逐几何偏差 = -2.825% / +3.825% / +0.613%  max|·|=3.8250%
+  S4 旧 3 几何（dx=50）tanh_half 逐几何偏差 = +1.257% / +0.917% / +1.463%  max|·|=1.4630%
+  合并 6 几何（dx=50）cut       max|偏差| = 3.3202%
+  合并 6 几何（dx=50）tanh_dx   max|偏差| = 27.4173%
+  合并 6 几何（dx=50）tanh_half max|偏差| = 6.5069%
+
+S5c 裁决语：S4 的 3 样本判为不具代表性 ⇒ 在合并 6 几何上用同一统计量重裁，合并胜者 = **cut**
+
+=== 记分 ===
+FAILS: ['S5b cut sphere_small(r=0.15): |偏差|≥2%', 'S5b cut cyl_rot_thin(r=0.5,h=0.1,30°): |偏差|≥2%', 'S5b tanh_dx box_rot(37°): |偏差|≥2%', 'S5b tanh_dx sphere_small(r=0.15): |偏差|≥2%', 'S5b tanh_dx cyl_rot_thin(r=0.5,h=0.1,30°): |偏差|≥2%', 'S5b tanh_half sphere_small(r=0.15): |偏差|≥2%', 'S5b tanh_half cyl_rot_thin(r=0.5,h=0.1,30°): |偏差|≥2%']
+QUALIFIED: []
+TANH_HALF_WORSE_ON: 3/3
+exit=0

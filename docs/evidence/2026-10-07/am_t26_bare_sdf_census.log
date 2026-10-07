@@ -1,0 +1,32 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src:tests JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-07/am_t26_bare_sdf_census.py
+TREE: head=c41d3b0 dirty_src=0
+DATE: 2026-10-07 22:43:41 +0800
+NOTE: §26.17(d) 原登记只列了 1 处（test_support.py:77）；本探针按 fault 17 的纪律做**全树普查**，实际命中 6 处裸 `sdf < 0` 位点（grep 全树、排除 pycache 与注释行）。逐位点量 Δn＝solid_mask 与 sdf<0 的实体数差，并**实跑**两条断言的取值与参考求解器，以便区分「换口径＝可证无操作」与「换口径＝真动集合」。CPU 钉住：本探针不产出任何吞吐/耗时结论（用户 2026-10-07 指令：性能只在 GPU 上测）。首两次失败记录：①模块路径 R 少剥一层 dirname ⇒ tests 不在 sys.path（ModuleNotFoundError: test_support），已用 PYTHONPATH=src:tests 修正；②_moving_source 生产签名是 5 参数 (positions_t, cell_centers, Q0, r, dp)，我照探针旧写法多传了 dx。
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== S1/S2 逐位点刀锋计数 ===
+  test_support._box(plate)           n_strict=     8 n_tol=    12 Δn=    +4 ⇒ 换口径会动集合
+  test_support._box(floating)        n_strict=     4 n_tol=     8 Δn=    +4 ⇒ 换口径会动集合
+  :77 重叠和 严格=0.0 容差=0.0 ⇒ 同为 0（无操作）
+  :125 sup_only 单元数 严格=4 容差=4 ⇒ 容差口径下检查集合不变/变大（差 0 个刀锋单元）
+  test_boundary._box3d                     n_strict=   216 n_tol=   216 Δn=    +0 ⇒ 换口径=无操作
+  test_enthalpy_thermal._part(80µm)        n_strict=    99 n_tol=   123 Δn=   +24 ⇒ 换口径会动集合
+  test_gui_preproc build_primitive sphere  n_strict=    56 n_tol=    56 Δn=    +0 ⇒ 换口径=无操作
+
+  S2 正对照：非零 Δn 位点数 = 3 ⇒ PASS（刀锋差别在这些夹具上真实存在）
+
+=== S4 test_latent_heat_lowers_peak_temperature：严格 vs 容差 mask ===
+  现状：严格 sdf<0，面无掩膜（＝测试现写法） mask 单元数=    99  peak_with_L= 2656.57K  peak_no_L= 2881.51K  余量=  224.95K（判据 >10K）⇒ 绿
+  换容差 solid_mask，面无掩膜 mask 单元数=   123  peak_with_L= 2790.15K  peak_no_L= 3048.16K  余量=  258.01K（判据 >10K）⇒ 绿
+  换容差 solid_mask + 面掩膜（＝生产同构） mask 单元数=   123  peak_with_L= 4621.27K  peak_no_L= 5102.31K  余量=  481.04K（判据 >10K）⇒ 绿
+elapsed=9s
+exit=0

@@ -12,7 +12,7 @@ import jax.numpy as jnp
 import pytest
 
 from amforge.geometry import PartGeometry
-from amforge.core.contracts import ProcessPlan
+from amforge.core.contracts import ProcessPlan, solid_mask
 from amforge.boundary import (
     BoundaryCondition, InitialCondition, BoundaryCollection, face_mask,
     initial_enthalpy_field,
@@ -153,7 +153,10 @@ def test_convection_removes_energy():
     """
     part = _box3d(size_mm=0.4, spacing_um=80.0)
     plan = _plan()
-    solid = np.asarray(part.sdf) < 0.0
+    # 口径＝#19 solid_mask（实测本夹具 Δn=0 ⇒ 可证无操作，am_t26_bare_sdf_census.log S1）。
+    # ⚠ `solid_mask` 返回 ∈{0,1} 的**同 dtype 数值**数组（contracts.py: `.astype(a.dtype)`），
+    # 不是 bool ⇒ 用作布尔索引前必须 `> 0.5`。
+    solid = np.asarray(solid_mask(np.asarray(part.sdf)) > 0.5)
     res0 = solve_enthalpy_thermal(geometry=part, process=plan,
                                   params={"material": "316L"})
     mean0 = float(np.mean(np.asarray(res0.final_temperature)[solid]))

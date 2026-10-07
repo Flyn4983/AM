@@ -977,7 +977,12 @@ class SupportStructure:
         支撑体的带符号距离场 [m]（负值在支撑内部，与 ``PartGeometry.sdf`` 同栅格、
         同轴，便于做并集 ``min(part_sdf, support_sdf)`` 得到「零件 ∪ 支撑」几何）。
     support_mask : (...,)
-        支撑占位掩膜 ∈ [0,1]（1 = 支撑实体），是 ``support_sdf < 0`` 的硬/软占位。
+        支撑占位掩膜 ∈ {0,1}（1 = 支撑实体）。它是 ``support.py`` 生成器里的**主字段**，
+        ``support_sdf`` 反过来由它合成 ``(0.5 − support_mask)·spacing``（support.py:150）
+        ——与旧表述「是 ``support_sdf < 0`` 的硬/软占位」**方向相反**，且因取值只有
+        ±0.5·spacing，支撑场**不存在刀锋层** ⇒ ``support_sdf < 0`` 与 :func:`solid_mask`
+        在支撑侧等价。零件（``PartGeometry.sdf``）侧的实体口径仍以 :func:`solid_mask`
+        为唯一规范（#19）。
     kind : str
         支撑类型（``"block"`` 整足迹块支撑 / ``"overhang"`` 仅悬垂下方支撑 /
         ``"line"`` 线支撑 / ``"cone"`` 锥支撑 / ``"skin"`` 轮廓皮支撑），静态。

@@ -1,0 +1,39 @@
+CMD: PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-07/am_t23_capacity_probe.py   （GPU：不带 CUDA_VISIBLE_DEVICES=""）
+TREE: head=c41d3b0 dirty_src=0
+DATE: 2026-10-07 21:55:00 +0800
+NOTE: #23 的改前打分（monkeypatch，不改生产代码）。预注册判据 J1..J4 写在脚本 docstring 里。device=jax.devices()[0]=CudaDevice（本 log 首行前已实测可用）。与全量验收 face 并发：J1 的逐位对照是同进程内 none-vs-identity，计时与设备都不进判据。预期 f0=0.25 灵敏度档可能因 dt∝fv 失稳——若为 NaN/发散，那是 #23 第 2 条的实测证据，不是探针故障。
+[none     f0=1.00] dx= 50.0 nvox=   2925 ns=  262   4.78s peak=  2349.1 nml=   415 Ly= 0.500mm Vm= 0.0519mm3 Efv=1.9065 Efull=2.2310 calls={'div': 0, 'src': 0}
+[none     f0=1.00] dx= 25.0 nvox=  20825 ns= 1045   4.11s peak=  2479.0 nml=  3732 Ly= 0.550mm Vm= 0.0581mm3 Efv=2.0151 Efull=2.2036 calls={'div': 0, 'src': 0}
+[none     f0=1.00] dx= 12.5 nvox= 156849 ns= 4180  10.43s peak=  2518.0 nml= 34703 Ly= 0.563mm Vm= 0.0672mm3 Efv=2.0806 Efull=2.1825 calls={'div': 0, 'src': 0}
+[identity f0=1.00] dx= 50.0 nvox=   2925 ns=  262   1.04s peak=  2349.1 nml=   415 Ly= 0.500mm Vm= 0.0519mm3 Efv=1.9065 Efull=2.2310 calls={'div': 2, 'src': 2}
+[identity f0=1.00] dx= 25.0 nvox=  20825 ns= 1045   1.34s peak=  2479.0 nml=  3732 Ly= 0.550mm Vm= 0.0581mm3 Efv=2.0151 Efull=2.2036 calls={'div': 2, 'src': 2}
+[identity f0=1.00] dx= 12.5 nvox= 156849 ns= 4180   7.58s peak=  2518.0 nml= 34703 Ly= 0.563mm Vm= 0.0672mm3 Efv=2.0806 Efull=2.1825 calls={'div': 2, 'src': 2}
+[fv       f0=0.50] dx= 50.0 nvox=   2925 ns=  262   1.04s peak=  2461.3 nml=   482 Ly= 0.550mm Vm= 0.0580mm3 Efv=2.1300 Efull=2.5461 calls={'div': 2, 'src': 2}
+[fv       f0=0.50] dx= 25.0 nvox=  20825 ns= 1045   1.42s peak=  2563.0 nml=  4446 Ly= 0.550mm Vm= 0.0676mm3 Efv=2.1524 Efull=2.3703 calls={'div': 2, 'src': 2}
+[fv       f0=0.50] dx= 12.5 nvox= 156849 ns= 4180   7.70s peak=  2565.1 nml= 37982 Ly= 0.563mm Vm= 0.0731mm3 Efv=2.1577 Efull=2.2679 calls={'div': 2, 'src': 2}
+[fv       f0=0.25] dx= 50.0 nvox=   2925 ns=  262   1.08s peak=  2461.3 nml=   482 Ly= 0.550mm Vm= 0.0580mm3 Efv=2.1300 Efull=2.5461 calls={'div': 2, 'src': 2}
+[fv       f0=0.25] dx= 25.0 nvox=  20825 ns= 1045   1.37s peak=  2563.0 nml=  4446 Ly= 0.550mm Vm= 0.0676mm3 Efv=2.1524 Efull=2.3703 calls={'div': 2, 'src': 2}
+[fv       f0=0.25] dx= 12.5 nvox= 156849 ns= 4180   7.84s peak=  2565.1 nml= 37982 Ly= 0.563mm Vm= 0.0731mm3 Efv=2.1577 Efull=2.2679 calls={'div': 2, 'src': 2}
+
+=== J1 逐位对照：生产(none) vs 恒等 patch(identity) ===
+  dx= 50.0: 逐位=YES (peak 2349.067161971144 vs 2349.067161971144)  patch 调用 div=2 src=2 ⇒ 看得见
+  dx= 25.0: 逐位=YES (peak 2478.9673107488034 vs 2478.9673107488034)  patch 调用 div=2 src=2 ⇒ 看得见
+  dx= 12.5: 逐位=YES (peak 2517.9763844446547 vs 2517.9763844446547)  patch 调用 div=2 src=2 ⇒ 看得见
+
+=== J2/J3 相邻档 peak 相对差（50↔25, 25↔12.5）[%] ===
+  A 生产（满体素热容）              =  5.240 /  1.549
+  B fv 加权 f0=0.5           =  3.969 /  0.081
+  B' 灵敏度 f0=0.25           =  3.969 /  0.081
+  ⇒ J2：域热容/剂量失配是主因，#23 值得完整实现（仍受 O1「每个 δ」约束）
+
+=== 形态量与记账（A → B，f0=0.5）===
+  dx= 50.0: peak   2349.1 →   2461.3 ( +4.78%)  nml    415 →    482  Ly  0.500 →  0.550  Vm  0.0519 →  0.0580mm3  Efv/Efull 0.855 → 0.837
+  dx= 25.0: peak   2479.0 →   2563.0 ( +3.39%)  nml   3732 →   4446  Ly  0.550 →  0.550  Vm  0.0581 →  0.0676mm3  Efv/Efull 0.914 → 0.908
+  dx= 12.5: peak   2518.0 →   2565.1 ( +1.87%)  nml  34703 →  37982  Ly  0.563 →  0.563  Vm  0.0672 →  0.0731mm3  Efv/Efull 0.953 → 0.951
+
+已知不一致（探针范围的诚实边界）：cool/evap 仍乘 fv、T=H 反演仍按满体素。弱冷却项的相对作用实测 = hcool·t_exposure：
+  dx= 50.0: t_exposure=0.0066s ⇒ hcool·t_exp=3.28e-03（≪1 ⇒ cool 是小项；完整能量闭合属 #23 实现）
+  dx= 25.0: t_exposure=0.0066s ⇒ hcool·t_exp=3.28e-03（≪1 ⇒ cool 是小项；完整能量闭合属 #23 实现）
+  dx= 12.5: t_exposure=0.0066s ⇒ hcool·t_exp=3.28e-03（≪1 ⇒ cool 是小项；完整能量闭合属 #23 实现）
+FAILS: 无（J1 逐位等价且 patch 确在执行路径上；J2/J3 结论见上）
+exit=0

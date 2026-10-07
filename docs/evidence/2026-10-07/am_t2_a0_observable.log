@@ -1,0 +1,36 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python am_t2_a0_observable.py
+TREE: head=af9fc89 dirty=24
+DATE: 2026-10-07 20:45:51 +0800
+NOTE: v1 在 line 91 '12.5.' 语法错（exit=1，见本文件上一版已被覆盖；登记为过程故障：发射前未 py_compile）
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== 逐 (dx, δ) 采集 4 个观测量 ===
+  dx= 50.0 δ=0.00  峰值= 2349.07K  Vm(fv)= 0.05187mm³  Vn(计数)= 0.05187mm³  ΔH=1.31094e+00J
+  dx= 50.0 δ=0.25  峰值= 2404.89K  Vm(fv)= 0.06000mm³  Vn(计数)= 0.06000mm³  ΔH=1.47810e+00J
+  dx= 50.0 δ=0.50  峰值= 2433.15K  Vm(fv)= 0.06400mm³  Vn(计数)= 0.06400mm³  ΔH=1.66710e+00J
+  dx= 25.0 δ=0.00  峰值= 2478.97K  Vm(fv)= 0.05809mm³  Vn(计数)= 0.05831mm³  ΔH=1.45242e+00J
+  dx= 25.0 δ=0.25  峰值= 2524.23K  Vm(fv)= 0.06653mm³  Vn(计数)= 0.06683mm³  ΔH=1.55483e+00J
+  dx= 25.0 δ=0.50  峰值= 2565.18K  Vm(fv)= 0.06473mm³  Vn(计数)= 0.06473mm³  ΔH=1.58948e+00J
+  dx= 12.5 δ=0.00  峰值= 2517.98K  Vm(fv)= 0.06715mm³  Vn(计数)= 0.06778mm³  ΔH=1.53409e+00J
+  dx= 12.5 δ=0.25  峰值= 2538.70K  Vm(fv)= 0.07236mm³  Vn(计数)= 0.07273mm³  ΔH=1.59074e+00J
+
+=== O1：跨档相对差（对每一种 δ 都必须 <5% 才算入选） ===
+  pk  max over δ∈{0,.25}:  50↔25   5.24%   25↔12.5   1.55%   |  δ=0.5 档对   5.15%  ⇒ 不入选
+  Vm  max over δ∈{0,.25}:  50↔25  10.70%   25↔12.5  13.49%   |  δ=0.5 档对   1.13%  ⇒ 不入选
+  Vn  max over δ∈{0,.25}:  50↔25  11.04%   25↔12.5  13.97%   |  δ=0.5 档对   1.13%  ⇒ 不入选
+  dH  max over δ∈{0,.25}:  50↔25   9.74%   25↔12.5   5.32%   |  δ=0.5 档对   4.66%  ⇒ 不入选
+
+=== O2：决策 ===
+  A2/A4 都不入选 ⇒ 保持红灯
+
+FAILS: ['A2/A4 均不入选 ⇒ 没有可靠收敛观测量，A0 判据必须保持红灯，不许换指标']
+exit=0
