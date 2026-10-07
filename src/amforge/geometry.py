@@ -111,11 +111,21 @@ __all__ = [
 # 1. 构造：各种来源 -> PartGeometry
 # ===========================================================================
 def _grid_axes(bounds: Sequence[tuple[float, float]], spacing: float):
-    """由包围盒与体素边长生成等距轴坐标。"""
+    """由包围盒与体素边长生成等距轴坐标。
+
+    ``D4``（2026-10-06 §25.7 T1）：``ceil((hi-lo)/spacing)`` 对 **dx 的浮点拼写**
+    敏感——``12.5*1e-6 = 1.2499999999999999e-05`` 比字面量 ``12.5e-6`` 小 1 ulp，
+    件厚恰为 dx 整数倍时比值越过整数，层数从 33 跳到 34：同一零件、同一版本代码
+    多出一层 Z 体素（161602 vs 156849），实测峰值温度差 0.53%、熔化体积差 1.77%。
+    所以这里按比例做**容差吸附**（``1e-9`` 相对容差 ≫ 单次 ulp 抖动，又 ≪ 真实
+    非整数余量）：只有当余量确实超过一个体素的十万分之一时才多铺一格。
+    """
     axes = []
+    sp = float(spacing)
     for lo, hi in bounds:
-        n = max(2, int(np.ceil((hi - lo) / spacing)) + 1)
-        axes.append(lo + spacing * np.arange(n, dtype=np.float64))
+        ratio = (hi - lo) / sp
+        n_cells = int(np.ceil(ratio - 1e-9 * max(1.0, abs(ratio))))
+        axes.append(lo + sp * np.arange(max(2, n_cells + 1), dtype=np.float64))
     return axes
 
 

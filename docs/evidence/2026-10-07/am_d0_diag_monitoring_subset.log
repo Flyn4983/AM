@@ -1,0 +1,32 @@
+# 子集诊断（先于全量拿到 traceback 的那一次，2026-10-07 17:2x）
+# 命令: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests/test_monitoring.py -q -x -k "monitor_detect or monitor_correct or inverse_controller or run_loop_inverse"
+# 目的: 全量验收在 32% 处出现第一个 F，用子集并行取根因（比长跑早 ~40 分钟拿到 traceback）
+# 记分口径: 仍以 docs/evidence/2026-10-07/am_d0_fullsuite.log 自身的汇总行为准，本文件只作机理证据
+
+...F
+=================================== FAILURES ===================================
+__________________ test_inverse_controller_lowers_defect_cost __________________
+
+    def test_inverse_controller_lowers_defect_cost():
+        geo = _tiny_geo()
+        # 低功率工艺 -> 明显未熔合（缺陷代价有下降空间）
+        base = af.ProcessPlan.uniform(n_layers=3, laser_power=120.0, scan_speed=1.5)
+        ms = MonitoringState(defect_probs=jnp.array([0.8, 0.0, 0.0]))
+        clp = monitor_correct_inverse(monitoring=ms, process=base,
+                                      params={"n_grid": 6, "max_layers": 3,
+                                              "n_sub_cp": 8, "micro": {}},
+                                      geo=geo, n_steps=10, learning_rate=0.08)
+        assert isinstance(clp, ClosedLoopPlan)
+        assert clp.controller == "inverse"
+        cost_base = _smooth_cost_of(geo, base)
+        cost_corr = _smooth_cost_of(geo, clp.corrected)
+        # 真实优化：修正后缺陷代价应低于基准（至少改善 1%）
+>       assert cost_corr < cost_base * 0.99, f"{cost_base:.4e} -> {cost_corr:.4e}"
+E       AssertionError: 9.1280e-01 -> nan
+E       assert nan < (0.9128024566983355 * 0.99)
+
+tests/test_monitoring.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monitoring.py::test_inverse_controller_lowers_defect_cost
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 3 passed, 9 deselected in 52.11s

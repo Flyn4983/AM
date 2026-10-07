@@ -1,0 +1,48 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:386: UserWarning: 名义工艺在本网格上欠分辨：hatch_spacing=80.0µm、layer_thickness=40.0µm 小于体素 dx=57.1µm（道距/层厚至少要占一个体素才解得开）。时间调度已按**实际**曝光定价所以数值仍稳定，但逐层累积与熔池形态会失真：请加密网格或把工艺量抬到 ≥ dx。（搜索子盒仍取 ≥ dx 的可分辨下界。）
+  return _chain_schedule(geometry, process, material=material, cfl=cfl,
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/inverse.py:142: UserWarning: 体素 dx=57.1µm 大于光束半径 r=50.0µm：横向仅约 1.8 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 档熔宽偏低 ~45%、熔体积偏低 ~36%）。定量熔池形态请取 dx≤r/2。
+  return solve_enthalpy_thermal(geometry=geometry, process=process, params=params)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-07/am_d0_nan_diag.py:35: RuntimeWarning: All-NaN slice encountered
+  return f"finite={bool(np.isfinite(a).all())} min={np.nanmin(a):.4g} max={np.nanmax(a):.4g}"
+=== 基准工艺前向场 ===
+peak         finite=True min=300 max=373.1
+cooling_rate finite=True min=0 max=177.2
+thermal_grad finite=True min=0 max=9.047e+05
+solidif_rate finite=True min=0.05448 max=0.05448
+gr_ratio     finite=True min=0 max=1.661e+07
+cost_base    0.9128024566983355
+
+=== 档位钉住的静态调度 ===
+{}
+bounds keys  ['absorption', 'beam_radius', 'dwell_time', 'hatch_spacing', 'laser_power', 'layer_thickness', 'powder_feed_rate', 'preheat_temp', 'scan_speed']
+
+=== Adam 10 步逐站 ===
+[0] loss=8.777695e-01 grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=True
+[1] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[2] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[3] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[4] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[5] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[6] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[7] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[8] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+[9] loss=nan grad_finite=False z_finite=False P=nanW v=nan h=nan peak_finite=False
+
+=== 修正后工艺（用测试里的原始 sp 重跑，与 _smooth_cost_of 同口径）===
+P/V/H        nan nan nan
+peak         finite=False min=nan max=nan
+cooling_rate finite=False min=nan max=nan
+solidif_rate finite=False min=nan max=nan
+gr_ratio     finite=False min=nan max=nan
+cost_corr    nan

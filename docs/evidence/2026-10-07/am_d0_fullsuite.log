@@ -1,0 +1,80 @@
+........................................................................ [ 32%]
+.............................................................F......s... [ 65%]
+...................FF................................................... [ 98%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+__________________ test_inverse_controller_lowers_defect_cost __________________
+
+    def test_inverse_controller_lowers_defect_cost():
+        geo = _tiny_geo()
+        # 低功率工艺 -> 明显未熔合（缺陷代价有下降空间）
+        base = af.ProcessPlan.uniform(n_layers=3, laser_power=120.0, scan_speed=1.5)
+        ms = MonitoringState(defect_probs=jnp.array([0.8, 0.0, 0.0]))
+        clp = monitor_correct_inverse(monitoring=ms, process=base,
+                                      params={"n_grid": 6, "max_layers": 3,
+                                              "n_sub_cp": 8, "micro": {}},
+                                      geo=geo, n_steps=10, learning_rate=0.08)
+        assert isinstance(clp, ClosedLoopPlan)
+        assert clp.controller == "inverse"
+        cost_base = _smooth_cost_of(geo, base)
+        cost_corr = _smooth_cost_of(geo, clp.corrected)
+        # 真实优化：修正后缺陷代价应低于基准（至少改善 1%）
+>       assert cost_corr < cost_base * 0.99, f"{cost_base:.4e} -> {cost_corr:.4e}"
+E       AssertionError: 9.1280e-01 -> nan
+E       assert nan < (0.9128024566983355 * 0.99)
+
+tests/test_monitoring.py:177: AssertionError
+__________________ test_optimize_dimensional_phasefield_runs ___________________
+
+    def test_optimize_dimensional_phasefield_runs():
+        """micro_solver='phasefield' 透传进 optimize_dimensional（轻量 buildup 路径，无 FEM）。"""
+        geo = _small_geo(name="pf-demo3")
+        plan_init = heuristic_plan(geo, material="316L", modality="SLM")
+        res = optimize_dimensional(
+            geo, process_init=plan_init, material="316L",
+            params={"n_grid": 6, "micro": {"grid": (20, 20), "n_steps": 20,
+                                           "mode": "isothermal"}},
+            asbuilt_solver="buildup", micro_solver="phasefield",
+            n_steps=4, learning_rate=0.05, weights=dict(geom=5.0, stress=1.0),
+            verbose=False,
+        )
+        assert len(res["loss_history"]) == 4
+>       assert jnp.all(jnp.isfinite(jnp.asarray(res["loss_history"])))
+E       assert Array(False, dtype=bool)
+E        +  where Array(False, dtype=bool) = <function all at 0x7fdace76c400>(Array([ True, False, False, False], dtype=bool))
+E        +    where <function all at 0x7fdace76c400> = jnp.all
+E        +    and   Array([ True, False, False, False], dtype=bool) = <PjitFunction of <function isfinite at 0x7fdace7f60c0>>(Array([0.65210181,        nan,        nan,        nan], dtype=float64))
+E        +      where <PjitFunction of <function isfinite at 0x7fdace7f60c0>> = jnp.isfinite
+E        +      and   Array([0.65210181,        nan,        nan,        nan], dtype=float64) = <function asarray at 0x7fdacedc7ec0>([0.6521018087766162, nan, nan, nan])
+E        +        where <function asarray at 0x7fdacedc7ec0> = jnp.asarray
+
+tests/test_phasefield.py:207: AssertionError
+________________ test_optimize_geometry_process_phasefield_runs ________________
+
+    def test_optimize_geometry_process_phasefield_runs():
+        """micro_solver='phasefield' 透传进联合优化 _joint_forward（轻量 buildup 路径）。"""
+        geo = _small_geo(name="pf-demo4")
+        res = optimize_geometry_process(
+            geo, material="316L",
+            params={"n_grid": 6, "micro": {"grid": (20, 20), "n_steps": 20,
+                                           "mode": "isothermal"}},
+            asbuilt_solver="buildup", micro_solver="phasefield",
+            n_steps=3, learning_rate=0.05, smoothness=0.02,
+            constraint_weight=0.0, verbose=False,
+        )
+        assert len(res["loss_history"]) == 3
+>       assert jnp.all(jnp.isfinite(jnp.asarray(res["loss_history"])))
+E       assert Array(False, dtype=bool)
+E        +  where Array(False, dtype=bool) = <function all at 0x7fdace76c400>(Array([ True, False, False], dtype=bool))
+E        +    where <function all at 0x7fdace76c400> = jnp.all
+E        +    and   Array([ True, False, False], dtype=bool) = <PjitFunction of <function isfinite at 0x7fdace7f60c0>>(Array([0.47653445,        nan,        nan], dtype=float64))
+E        +      where <PjitFunction of <function isfinite at 0x7fdace7f60c0>> = jnp.isfinite
+E        +      and   Array([0.47653445,        nan,        nan], dtype=float64) = <function asarray at 0x7fdacedc7ec0>([0.47653445210832135, nan, nan])
+E        +        where <function asarray at 0x7fdacedc7ec0> = jnp.asarray
+
+tests/test_phasefield.py:225: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_monitoring.py::test_inverse_controller_lowers_defect_cost
+FAILED tests/test_phasefield.py::test_optimize_dimensional_phasefield_runs - ...
+FAILED tests/test_phasefield.py::test_optimize_geometry_process_phasefield_runs
+3 failed, 215 passed, 3 skipped in 3987.42s (1:06:27)

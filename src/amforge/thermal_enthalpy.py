@@ -354,6 +354,7 @@ def suggest_n_steps(geometry, process, *, material="316L", cfl=0.35):
 
 def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
                    speed_slack=2.0, path_slack=2.0, max_steps=200000,
+                   max_voxel_steps=None, over_budget="raise",
                    fixed_n_steps=None, resolution_policy="strict"):
     """**这张网格上默认链的可用档位**：静态时间调度 + 与之自洽的工艺搜索子盒。
 
@@ -371,9 +372,11 @@ def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
     三条时间离散校核在 trace 内**既不会误报、也不会静默放行**。
 
     代价上限显式可见：返回的 ``voxel_steps = n_steps × 体素数`` 即一次正向的
-    voxel-step 量。若 ``n_steps`` 超 ``max_steps`` 直接报错并指出出路（粗网格 /
-    提到 cfl=1 档 / 走 β 降阶），这正是开发日志 §24.3 零件尺度外推的结论——
-    显式瞬态解在零件尺度不可用要**换算法**（§25.8 的 D2/D3），而不是悄悄放宽校核。
+    voxel-step 量。预算有两把尺——``max_steps``（步数）与 ``max_voxel_steps``
+    （voxel-step，按网格规模反比收紧步数）。预算不够时缺省（``over_budget="raise"``，
+    标定档）**报错**并指出出路（粗化网格 / cfl→1 / 加大预算 / 走 §25.8 的 D2、D3），
+    因为标定档不该悄悄缩小工艺窗口；``over_budget="pin"``（链条演示档）改为把
+    ``scan_speed`` 下界**抬进预算**（窗口变窄，dt 精度不赔）并警告。
 
     ``fixed_n_steps`` 给定时反过来**由步数定工艺盒**：把速度下界抬到"钉住的
     ``n_steps`` 覆盖得住曝光"，用于调用方自带调度的场合（返回的 ``n_steps`` 即该值）。
@@ -383,6 +386,8 @@ def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
         return _chain_schedule(geometry, process, material=material, cfl=cfl,
                                speed_slack=speed_slack, path_slack=path_slack,
                                max_steps=max_steps, bounds=dict(PROCESS_BOUNDS),
+                               max_voxel_steps=max_voxel_steps,
+                               over_budget=over_budget,
                                fixed_n_steps=fixed_n_steps,
                                resolution_policy=resolution_policy)
     except jax.errors.ConcretizationTypeError as e:
@@ -394,8 +399,8 @@ def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
 
 
 def _chain_schedule(geometry, process, *, material, cfl, speed_slack, path_slack,
-                    max_steps, bounds, fixed_n_steps=None,
-                    resolution_policy="strict"):
+                    max_steps, bounds, max_voxel_steps=None, over_budget="raise",
+                    fixed_n_steps=None, resolution_policy="strict"):
     mat = get_material(material)
     alpha0 = float(mat.k_solid) / (float(mat.rho_solid) * float(mat.cp_solid) + 1e-12)
     dx = float(jnp.asarray(geometry.spacing, dtype=jnp.float64))
@@ -450,29 +455,47 @@ def _chain_schedule(geometry, process, *, material, cfl, speed_slack, path_slack
                             beam_radius=jnp.asarray(max(r_nom, r_lo)))
     path_max = float(_scan_topology(coords, worst, dim=geometry.dim,
                                     solid=solid)[-1])
-    # 速度下界还要保证「钉住的步数覆盖得住最坏曝光」：n_steps·dt_target ≥ path/v
-    dt_budget = (int(fixed_n_steps) if fixed_n_steps else int(max_steps)) * dt_target
-    v_lo = max(v_lo, path_max / max(dt_budget, 1e-30))
+    # 代价上限（§25.7 实测成本律的工程化）：一次正向的墙钟 ≈ n_steps × 体素数。
+    # 于是"预算"有两把尺：步数上限 max_steps 与 voxel-step 上限 max_voxel_steps
+    # （后者按网格规模反比地收紧步数）。预算不够时**抬扫描速度下界**（缩小可优化的
+    # 工艺窗口），而不是放大 dt——放大 dt 会把时间离散的精度一起赔进去。
+    nvox = int(jnp.asarray(geometry.sdf).size)
+    cap = int(max_steps)
+    if max_voxel_steps:
+        cap = min(cap, max(1, int(max_voxel_steps) // max(nvox, 1)))
+    budget_steps = int(fixed_n_steps) if fixed_n_steps else cap
+    v_lo_auto = v_lo
+    v_need = path_max / max(budget_steps * dt_target, 1e-30)
+    if over_budget == "raise" and not fixed_n_steps and v_need > v_lo_auto:
+        n_need = max(1, int(math.ceil(path_max / v_lo_auto / dt_target - 1e-9)))
+        n_stable = max(1, int(math.ceil(path_max / v_lo_auto
+                                        / (dt_target / max(cfl, 1e-12)) - 1e-9)))
+        raise ValueError(
+            f"本网格 + 本工艺盒的显式热解需要 n_steps={n_need} > 预算 "
+            f"{budget_steps}（dx={dx*1e6:.1f}µm, 体素={nvox}, 代价上界="
+            f"{n_need*nvox:.2e} voxel-step）。可选出路：① **粗化**网格或缩短单次扫描"
+            f"行程；② cfl→1（仍需 n_steps>={n_stable}）；③ 加大 max_steps / "
+            f"max_voxel_steps；④ 允许 over_budget='pin'（把窗口压进预算，代价是"
+            f"扫得更慢的那部分工艺不可达）；⑤ 改走 §25.8 的 D2（活跃子网格×子循环）"
+            f"或 D3（本征应变降阶）。")
+    v_lo = max(v_lo, v_need)
     if v_lo >= v_hi:
         raise ValueError(
             f"本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ "
             f"{v_lo:.3g} m/s，而设备上界只有 {v_hi:.3g} m/s（dx={dx*1e6:.1f}µm, "
-            f"最坏路径长={path_max*1e3:.1f}mm, 步数预算="
-            f"{int(fixed_n_steps) if fixed_n_steps else int(max_steps)}）。"
-            f"出路：粗化网格／加大步数预算／走 β 降阶档（§25.8 D3）。")
+            f"最坏路径长={path_max*1e3:.1f}mm, 步数预算={budget_steps}, "
+            f"代价上界={budget_steps*nvox:.2e} voxel-step）。"
+            f"出路：粗化网格／加大预算／走 §25.8 的 D2 或 D3。")
+    if over_budget == "pin" and not fixed_n_steps and v_lo > v_lo_auto:
+        warnings.warn(
+            f"演示档预算压缩工艺窗口：scan_speed 下界由 {v_lo_auto:.3g} 抬到 "
+            f"{v_lo:.3g} m/s（n_steps≤{budget_steps}, 体素={nvox}, 代价上界="
+            f"{budget_steps*nvox:.2e} voxel-step）。比这更慢的扫描在本档跑不动；"
+            f"要覆盖它请加大 max_steps/max_voxel_steps 或改走 §25.8 D2/D3。",
+            stacklevel=2)
     t_bound = path_max / v_lo
     n_steps = (int(fixed_n_steps) if fixed_n_steps
                else max(1, int(math.ceil(t_bound / dt_target - 1e-9))))
-    nvox = int(jnp.asarray(geometry.sdf).size)
-    if n_steps > max_steps:
-        n_stable = max(1, int(math.ceil(t_bound / (dt_target / max(cfl, 1e-12)) - 1e-9)))
-        raise ValueError(
-            f"本网格 + 本工艺盒的显式热解需要 n_steps={n_steps} > max_steps="
-            f"{max_steps}（dx={dx*1e6:.1f}µm, 曝光上界={t_bound:.3e}s, 体素={nvox}, "
-            f"代价上界={n_steps*nvox:.2e} voxel-step）。可选出路：① 加密→**粗化**网格"
-            f"或缩小单次扫描行程；② cfl→1（仍需 n_steps>={n_stable}）；③ 放宽"
-            f"speed_slack/path_slack（会缩小可优化的工艺窗口）；④ 改走路线 β "
-            f"（本征应变/降阶热，见 §25.8 D3）。")
 
     bounds["beam_radius"] = (r_lo, bounds["beam_radius"][1])
     bounds["hatch_spacing"] = (h_lo, bounds["hatch_spacing"][1])
@@ -807,7 +830,9 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
 
     # 凝固前沿 G（逐体素，可作空间场）与 凝固速率 R
     grads = jnp.gradient(Tf, dx)
-    G = jnp.sqrt(sum(g ** 2 for g in grads))
+    # 纯 √(Σg²) 在 ∇T≡0 处导数是 0/0 ⇒ 反传 NaN（正向却正常）。等温区/域外体素必然
+    # 出现 ∇T≡0，故按 meltpool._norm 同纪律在根号内加 ε；对 G≫√ε 的正向值无影响。
+    G = jnp.sqrt(sum(g ** 2 for g in grads) + 1e-30)
     R_grid = cool_rate / jnp.maximum(G, 1e-3)
     # solidification_rate 与 thermal.history 契约保持一致：工艺级标量（熔池平均 R），
     # 不进体素浏览器（由 scalar_summary 以 float() 汇总）；逐体素 G/R 可由

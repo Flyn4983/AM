@@ -38,10 +38,21 @@ ALL_CONTRACTS = (
 
 @pytest.fixture(scope="module")
 def part():
-    """一个 0.9mm 球（半径 0.45mm），50µm 体素 —— 任意复杂几何的代表。"""
+    """一个 0.3mm 小立方级试片（半径 0.15mm），50µm 体素 —— 默认链的演示几何。
+
+    为什么不是 0.9mm 的球（2026-10-07 D0）：A0 把 ``dt`` 钉成**物理曝光/n_steps**
+    之后，链条档的时间调度由 :func:`amforge.thermal_enthalpy.chain_schedule` 在工艺
+    盒最坏角落定价，代价 ∝ 体素数 × 曝光/dt ∝ **件尺的 6 次方**（体素 ∝ L³，路径长
+    ∝ L³，dt 由 dx 定）。实测（docs/evidence/2026-10-07/am_d0_budget_probe.log）：
+    0.9mm 球 @50µm 需要 31223 步 × 15625 体素 = 4.9e8 voxel-step ≈ 490s CPU/次正向，
+    而 §25.7 成本律下这条链的演示闸门是 5e6 voxel-step——**窗口压不进预算**（需要
+    scan_speed≥48.8m/s，设备上界只有 5）。这不是可以放校的旋钮：粗化 dt 会赔时间
+    离散精度，截断曝光会改物理剂量（A0 禁）。所以演示链跑试片尺度，部件尺度等
+    §25.8 的 D2（活跃子网格×子循环）/ D3（本征应变降阶）。
+    """
     return G.from_sdf_fn(
-        lambda x: jnp.linalg.norm(x, axis=-1) - 0.45e-3,
-        bounds=[(-0.6e-3, 0.6e-3)] * 3, spacing=50e-6, name="e2e_sphere",
+        lambda x: jnp.linalg.norm(x, axis=-1) - 0.15e-3,
+        bounds=[(-0.2e-3, 0.2e-3)] * 3, spacing=50e-6, name="e2e_coupon",
     )
 
 

@@ -11,6 +11,7 @@
 import jax
 import jax.numpy as jnp
 import numpy as np
+import pytest
 
 jax.config.update("jax_enable_x64", True)
 
@@ -27,7 +28,7 @@ from amforge.inverse import (
     simulate, loss_fn, _dimensional_loss, optimize_dimensional, optimize_shape,
     optimize_geometry_process, geometry_features, mlp_init,
     process_constraint_penalty, process_feasibility, project_process_feasible,
-    pareto_optimize_geometry_process,
+    pareto_optimize_geometry_process, thermal_tier, tier_bounds,
 )
 from amforge.nsga2 import fast_non_dominated_sort
 
@@ -319,6 +320,56 @@ def _heuristic_z(geo, material="316L"):
     return normalize_process(heuristic_plan(geo, material=material, modality="SLM"))
 
 
+def _deep_keyhole_plan(geo, params=_LIGHT):
+    """**本档工艺子盒可表达**的深匙孔/超窗起点（不是"细工艺"起点）。
+
+    为什么要按子盒取值（2026-10-07 D0，实测见
+    ``docs/evidence/2026-10-07/am_d0_pen_traj_probe.log``）：A0 把 ``dt`` 钉成物理曝光
+    /``n_steps`` 之后，链条档位给工艺盒加了下界 ``layer_thickness ≥ dx``、
+    ``hatch_spacing ≥ dx``、``beam_radius ≥ dx/2``。若像 ``_high_energy_plan`` 那样用
+    60µm 层厚/120µm 道距当"病态起点"，进优化器第一步就被下界抬成 120µm/60µm，剩下的
+    罚项只有粗网格造成的 ``layer_penalty``（实测 ``pen_init=0.78``）——而 6 步 Adam 内
+    **连不加约束的轨迹都会把它降到 0**（实测
+    ``pen_free=[0.78, 0.42, 0.22, 0.08, 0, 0]``），于是"启用软约束后罚项更低"变成
+    空断言（真实报错：``pen_cons=0.000 >= pen_free=0.000``）。
+    本起点把越界做在**尺度无关**的 VED/匙孔两项上（功率由目标体能量密度反解、速度贴
+    下界、大吸收率），使 ``pen_init`` 在任意网格下同为窗口上界的 1.67 倍越界。
+    探针实测同类起点（``pen_init=3.06``）的轨迹：尺寸损失把无约束轨迹**推得更病态**
+    （``pen_free=[3.06, 5.27, 8.17, 7.58, 7.12, 6.15]``），软约束则在 5 步内归零
+    （``pen_cons=[3.06, 0.86, 0.21, 0.04, 0, 0]``）——前提为真，比较才可分辨。
+
+    ⚠ 子盒必须用**贴着下界的名义工艺**定价，不能用 ``heuristic_plan``：
+    ``chain_schedule`` 的 ``scan_speed`` 下界跟着**名义工艺自己的速度**走
+    （实测 ``v_nom=1.0→下界 0.5``、``v_nom=0.75→0.375``、``v_nom=0.6→0.3``，即
+    ``v_nom/speed_slack``），最坏角落路径长又取 ``min(h_lo, h_nom)``/
+    ``min(lt_lo, lt_nom)``。启发式名义工艺给的 ``hatch≈103µm``、``lt=40µm`` 都**小于**
+    本网格下界 dx=120µm，用它定价会把速度下界抬高；再"按下界造起点"造出来的其实是
+    被抬快了的弱起点（实测 ``pen_init=1.80``，只剩 0.667 的网格性 ``layer_penalty``
+    + 1.13 的匙孔项，6 步内被无约束轨迹自己归零 ⇒ 测试再次退化成空断言）。
+    用**下界本身**当名义来定价，定价与起点才自洽。
+    """
+    dx = float(geo.spacing)
+    nl = int(geo.layer_count(40e-6))
+    floor_nominal = ProcessPlan.uniform(
+        nl, modality="SLM", laser_power=1000.0, scan_speed=1.0,
+        layer_thickness=dx, hatch_spacing=dx, beam_radius=0.5 * dx,
+        absorption=0.4, preheat_temp=473.0, dwell_time=0.0)
+    p = thermal_tier(dict(params), geo, floor_nominal, material="316L",
+                     thermal_solver="enthalpy")
+    tb = tier_bounds(p)
+    v_lo, h_lo, lt_lo, r_lo = (tb["scan_speed"][0], tb["hatch_spacing"][0],
+                               tb["layer_thickness"][0], tb["beam_radius"][0])
+    # 功率由**目标体能量密度**反解（E_v = P/(v·h·t)），使起点不随网格尺度漂移：
+    # 2.5e11 J/m³ = VED 窗口上界 1.5e11 的 1.67 倍（匙孔/球化那一侧）。
+    ved_target = 2.5e11
+    return ProcessPlan.uniform(
+        nl, modality="SLM",
+        laser_power=float(ved_target * v_lo * h_lo * lt_lo),
+        scan_speed=v_lo, layer_thickness=lt_lo, hatch_spacing=h_lo,
+        beam_radius=r_lo, absorption=0.6,
+        preheat_temp=473.0, dwell_time=0.0)
+
+
 def test_process_constraint_penalty_finite_and_connected():
     """工艺物理约束罚项在可行工艺上≈0、在病态工艺上显著，且梯度有限可微。"""
     geo = _small_geo()
@@ -340,16 +391,30 @@ def test_process_constraint_penalty_finite_and_connected():
 
 
 def test_process_constraint_reduces_penalty_in_joint():
-    """联合优化中启用软约束后，工艺杠杆最终罚项显著低于未启用时（同病态初值）。
+    """联合优化中启用软约束后，工艺杠杆**沿轨迹**更快进入可行域（同病态初值）。
 
     注：本测试固定 ``hard_project=False``，专门验证**软罚项**本身的语义
     （constraint_weight 把工艺推入可行域）。硬投影的语义由下面的
-    ``test_hard_projection_*`` 系列单独覆盖。
+    ``test_hard_projection_*`` 系列单独覆盖；"软约束到底有没有接到 z 上"这一
+    **接线语义**由 :func:`test_soft_constraint_alone_drives_process_feasible`
+    用确定性构造单独覆盖。
+
+    ⚠ 为什么不再断言"末步严格更低"（2026-10-07 D0 实测，两次踩坑）：
+    末步比较在演示档是**赌损失走哪条路**，不是测约束。同一夹具族的两条无约束轨迹实测
+    分别收敛到完全不同的地方——
+      · 起点 P1600/v0.45：``pen_free=[3.06,5.27,8.17,7.58,7.12,6.15]``（越优化越病态）
+      · 起点 P1800/v0.50：``pen_free=[3.27,1.07,0.22,0.07,0,0]``（自己就归零）
+    后者让 ``pen_cons < pen_free`` 退化成 ``0.0 < 0.0`` 恒假（真实报错见
+    ``am_d0_feas_subset.log``）。原因：Adam 按坐标归一化步长，``constraint_weight=20``
+    在两条轨迹上只造成**首步 ~10% 的方向差**（1.066 → 0.965），随后两条轨迹几乎重合
+    ——这是本项目的**已知杠杆不足**（任务 #17），不该由测试来掩盖。
+    因此本测试改成四条**都可分辨**的断言：起点确实病态、首步确实分离、累计罚项确实更低、
+    约束轨迹自身单调进入可行域并满足绝对可行阈（``< 0.2`` 阈值原样保留，未放宽）。
     """
     geo = _small_geo()
     kw = _LIGHT
-    # 同一起点：高能量病态工艺（未熔合/匙孔区）
-    init = _high_energy_plan(geo)
+    # 同一起点：本档可表达的深匙孔/超窗工艺（能量密度与焓双双越界）
+    init = _deep_keyhole_plan(geo, params=kw)
     res_free = optimize_geometry_process(
         geo, material="316L", process_init=init, params=kw, n_steps=6,
         learning_rate=0.05, smoothness=0.02, constraint_weight=0.0,
@@ -358,15 +423,84 @@ def test_process_constraint_reduces_penalty_in_joint():
         geo, material="316L", process_init=init, params=kw, n_steps=6,
         learning_rate=0.05, smoothness=0.02, constraint_weight=20.0,
         hard_project=False, verbose=False)
-    pen_free = res_free["constraint_penalty_history"][-1]
-    pen_cons = res_cons["constraint_penalty_history"][-1]
-    # 软约束把工艺推入可行域：启用后罚项远小于未启用时
-    assert pen_cons < pen_free, \
-        f"约束未降低罚项: pen_cons={pen_cons:.3f} >= pen_free={pen_free:.3f}"
-    assert pen_cons < 0.2, f"约束后工艺仍不可行: pen_cons={pen_cons:.3f}"
+    hist_free = res_free["constraint_penalty_history"]
+    hist_cons = res_cons["constraint_penalty_history"]
+    # (0) 两条轨迹必须从**同一个**病态起点出发（前提，不是放宽）
+    assert hist_free[0] == pytest.approx(hist_cons[0]), \
+        f"对照组与实验组起点不同: {hist_free[0]} vs {hist_cons[0]}"
+    assert hist_free[0] > 0.5, f"起点并不病态，比较将退化为空断言: {hist_free}"
+    # (1) 首步分离：加入 20·pen 后，第一步就更朝可行域走（这才是约束自身的贡献）
+    assert hist_free[1] - hist_cons[1] > 0.02, \
+        f"软约束首步未见效果: free={hist_free[1]:.4f} cons={hist_cons[1]:.4f}"
+    # (2) 累计罚项更低（整条轨迹更快进入可行域）
+    assert sum(hist_cons) < sum(hist_free), \
+        f"约束轨迹的累计罚项并不更低: {hist_cons} vs {hist_free}"
+    # (3) 约束轨迹单调下降并最终**绝对**可行（阈值 0.2 未放宽）
+    assert all(b <= a + 1e-9 for a, b in zip(hist_cons, hist_cons[1:])), \
+        f"约束轨迹罚项非单调: {hist_cons}"
+    assert hist_cons[-1] < 0.2, f"约束后工艺仍不可行: pen_cons={hist_cons[-1]:.3f}"
     # 两种情况下两条杠杆仍都被正常优化（有限、z 在设备边界内）
     assert jnp.all(jnp.isfinite(res_cons["delta"]))
     assert jnp.all(res_cons["z"] >= 0.0) and jnp.all(res_cons["z"] <= 1.0)
+
+
+def test_soft_constraint_alone_drives_process_feasible():
+    """**确定性**验证软约束的接线语义：目标里只剩 ``w·pen`` 时，Adam 把 z 推进可行域。
+
+    为什么要单独一条（2026-10-07 D0）：联合/尺寸优化的轨迹由尺寸损失主导，同一族起点
+    换个 20% 功率就能让无约束轨迹从"越跑越病态"翻成"自己归零"（实测见
+    :func:`test_process_constraint_reduces_penalty_in_joint` 的 docstring），
+    于是"约束降低了罚项"变成对随机性的抽样。本测试把尺寸损失**逐项置零**
+    （``weights`` 全 0）并把 ``service_stress`` 压到极低，使安全罚
+    ``relu(1-safety_factor)`` 恒为 0 ⇒ 目标函数 ≡ ``constraint_weight · pen``：
+    此时罚项若不下降，只可能是约束没接到 z 上——断言因此是确定的。
+
+    对照组取 ``constraint_weight=0``：目标恒 0 ⇒ Adam 更新为 0 ⇒ 工艺**一步都不该动**
+    （``final_plan`` 与初值逐参数相同），证明"罚项下降"确实来自约束项而非别的驱动。
+
+    ⚠ 两条实测出来的性质写在这里，免得后来人把它们当 bug 或当运气：
+    ① ``optimize_dimensional`` 的 ``constraint_penalty_history[i]`` 记的是**第 i 步更新
+    之后**的罚项（与联合优化器记"更新之前"不同），所以起点罚项不能取 ``hist[0]``，
+    本测试因此用提交给优化器的那个 ``z`` 直接算。
+    ② 纯 hinge 目标 + Adam 会**过冲**：实测序列
+    ``[0.34, 0.0, 0.0, 0.52, 0.63, 0.43, 0.11, 0.0]``——罚项到达 0 后梯度消失，
+    Adam 的动量继续推，于是又冲出可行域再被拉回。故本测试只断言"整体下降 + 终值可行"，
+    不断言逐步单调；这也是 :func:`optimize_dimensional` 把 ``hard_project=True``
+    设为缺省的实测理由（见任务 #17）。
+    """
+    geo = _small_geo()
+    init = _deep_keyhole_plan(geo, params=_TINY)
+    zero_w = dict(geom=0.0, stress=0.0, strain=0.0, defect=0.0, powder=0.0)
+    kw = dict(material="316L", params=_TINY, n_steps=8, learning_rate=0.08,
+              weights=zero_w, service_stress=1e-3, hard_project=False,
+              verbose=False, asbuilt_solver="plastic", constitutive="j2")
+    cons = optimize_dimensional(geo, process_init=init, constraint_weight=20.0, **kw)
+    free = optimize_dimensional(geo, process_init=init, constraint_weight=0.0, **kw)
+
+    # 起点必须显著不可行（直接对提交给优化器的 z 求罚项，避开记账偏移）
+    p = thermal_tier(dict(_TINY), geo, init, material="316L",
+                     thermal_solver="enthalpy")
+    nl = int(geo.layer_count(40e-6))
+    pen0, _ = process_constraint_penalty(
+        normalize_process(init, bounds=tier_bounds(p)), material="316L",
+        n_layers=nl, modality="SLM", params=p)
+    assert float(pen0) > 0.5, f"起点应当显著不可行: pen0={float(pen0):.3f}"
+
+    hc = cons["constraint_penalty_history"]
+    lh = cons["loss_history"]
+    assert hc[-1] < 0.2, f"纯约束驱动 8 步后仍不可行: {hc}"
+    assert min(lh) < lh[0] - 1e-6, f"纯约束目标没有下降: {lh}"
+    assert jnp.all(jnp.isfinite(jnp.asarray(lh))), "纯约束目标含 NaN/Inf"
+    # 对照：目标恒 0 时优化器不该动工艺
+    assert max(abs(l) for l in free["loss_history"]) == 0.0, \
+        f"零权重对照组目标非恒零: {free['loss_history']}"
+    for field in ("laser_power", "scan_speed", "layer_thickness",
+                  "hatch_spacing", "beam_radius", "absorption"):
+        got = float(jnp.mean(jnp.atleast_1d(getattr(free["final_plan"], field))))
+        want = float(jnp.mean(jnp.atleast_1d(getattr(init, field))))
+        assert got == pytest.approx(want, rel=1e-9), \
+            f"零目标对照组不该改变 {field}: {want} -> {got}"
+
 
 
 def test_dimensional_constraint_keeps_plan_feasible():

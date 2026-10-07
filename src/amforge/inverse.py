@@ -45,7 +45,8 @@ from amforge.core.contracts import (
 from amforge.core.registry import register_solver
 from amforge.materials import get_material
 from amforge.process import (
-    denormalize_process, normalize_process, heuristic_plan, PROCESS_BOUNDS,
+    denormalize_process, normalize_process, heuristic_plan, clip_to_bounds,
+    PROCESS_BOUNDS,
 )
 
 # 物理前向求解器（均为纯函数、已注册、可微）
@@ -145,16 +146,31 @@ def _run_thermal(name, *, geometry, process, meltpool, params):
 
 _EXPLICIT_THERMAL = ("enthalpy", "thermal.enthalpy")
 
-# 影响显式热解调度（路径长/曝光）与光源离散的全部工艺叶子
-_TIER_FIELDS = ("laser_power", "scan_speed", "layer_thickness", "hatch_spacing",
-                "beam_radius", "absorption")
+# 显式热解调度**真正读到**的工艺叶子：路径长只由几何 extent 与
+# (layer_thickness, hatch_spacing) 决定，曝光上界再除以 scan_speed，半径下界由
+# dx 定价（resolution_policy 判据）。laser_power / absorption 只改沉积能量，
+# **不改时间离散**——所以 ``jax.grad`` 只对功率求导（最常见的
+# ``plan.replace(laser_power=P)``）时档位照样能在 trace 入口自动钉好，
+# 不该被当成"trace 内不可算"而退回未钉档的报错。
+_TIER_FIELDS = ("scan_speed", "layer_thickness", "hatch_spacing", "beam_radius")
 
 
 def _is_traced(plan: ProcessPlan) -> bool:
-    """工艺方案里是否含 JAX tracer（= 当前处于 ``jax.grad``/``jit`` 之内）。"""
+    """调度所依赖的工艺叶子里是否含 JAX tracer（= 无法在 trace 内固化静态调度）。"""
     from jax.core import Tracer
     vals = [getattr(plan, f, None) for f in _TIER_FIELDS]
     return any(v is not None and isinstance(jnp.asarray(v), Tracer) for v in vals)
+
+
+# 链条/装配/GUI 档（demo）的代价闸门（§25.7 实测成本律的工程化）：一次正向显式热解
+# ≈ n_steps × 体素数 voxel-step，CPU f64 实测 0.75–2.40 M/s。默认链条要能在测试与
+# 交互里秒级跑完，故缺省把单次正向压在 ~5e6 voxel-step（≈2–6s CPU）。预算不够时
+# 走 ``over_budget="pin"``：**抬 scan_speed 下界**把窗口压进预算（dt 精度不赔，
+# 代价是更慢的扫描在本档不可达），而不是放大 dt。标定档（strict）不设体素预算，
+# 预算不够就报错——标定不该悄悄缩小工艺窗口。
+_DEMO_TIER_VOXEL_STEPS = 5_000_000
+
+
 def thermal_tier(p: dict, geometry: PartGeometry, nominal_plan: ProcessPlan, *,
                material: str, thermal_solver: str = "enthalpy",
                resolution_policy: str = "demo") -> dict:
@@ -177,25 +193,51 @@ def thermal_tier(p: dict, geometry: PartGeometry, nominal_plan: ProcessPlan, *,
 
     ``resolution_policy``：链条/装配/GUI 这类"跑通即可"的岗位缺省 ``"demo"``（网格
     装不下光斑时把光源半径抬到 dx/2 并警告），标定档由调用方传 ``"strict"`` 恢复
-    硬报错（§25.10 的严重度分层）。trace 内（工艺量是 tracer）**只**沿用外层已钉好
-    的档位，不再重算——真实校核错误必须在 eager 报出，不能在这里被吞掉。
+    硬报错（§25.10 的严重度分层）。**只有调度真正读到的那四个叶子**（scan_speed /
+    layer_thickness / hatch_spacing / beam_radius）是 tracer 时才跳过重算——只对
+    ``laser_power`` 求导的常见写法依然自动钉档。trace 内跳过时**只**沿用外层已钉好
+    的档位，不再重算：真实校核错误必须在 eager 报出，不能在这里被吞掉。
+
+    demo 档自带代价闸门 ``max_voxel_steps``（缺省 5e6）与 ``over_budget="pin"``：
+    诚实调度（覆盖最坏角落曝光）在这张网格上超出闸门时，把 ``scan_speed`` 下界抬进
+    闸门并警告，而不是放大 dt 或截断曝光；若连抬到设备上界都不够（部件级），
+    报错并指向 §25.8 的 D2/D3。可用 ``params["thermal"]["max_voxel_steps"]`` 或
+    ``params["thermal_max_voxel_steps"]`` 覆盖。
     """
     p = dict(p)
     if thermal_solver not in _EXPLICIT_THERMAL:
         return p
     tp = dict(p.get("thermal") or {})
     tp.setdefault("resolution_policy", resolution_policy)
+    demo = tp["resolution_policy"] != "strict"
     pinned = tp.get("n_steps") is not None
     kw = dict(material=tp.get("material", material),
               cfl=float(tp.get("cfl", 0.35)),
               speed_slack=float(p.get("thermal_speed_slack", 2.0)),
               path_slack=float(p.get("thermal_path_slack", 2.0)),
               max_steps=int(tp.get("max_steps", p.get("thermal_max_steps", 200000))),
+              max_voxel_steps=tp.get("max_voxel_steps",
+                                     p.get("thermal_max_voxel_steps",
+                                           _DEMO_TIER_VOXEL_STEPS if demo else None)),
+              over_budget=str(tp.get("over_budget",
+                                     p.get("thermal_over_budget",
+                                           "pin" if demo else "raise"))),
               resolution_policy=tp["resolution_policy"])
     if pinned:
         kw["fixed_n_steps"] = int(tp["n_steps"])
     if _is_traced(nominal_plan):
-        return p
+        # trace 内读不到工艺值，无法用它给调度定价。退化到**这张网格上的规则式名义
+        # 工艺**（heuristic，具体值）——与 :func:`loss_fn` 的钉档策略同源，于是
+        # 「``jax.grad`` 直接穿透 ``simulate`` 对工艺求导」这条产品主回路不必要求
+        # 调用方手工钉档。几何本身也是 tracer（形状优化）时无从定价：沿用外层已钉
+        # 好的档位；若外层也没钉，求解器会因缺少静态调度而**报错**，不静默发散。
+        try:
+            nominal_plan = heuristic_plan(geometry, material=kw["material"],
+                                          modality=nominal_plan.modality)
+        except (jax.errors.ConcretizationTypeError, TypeError, ValueError):
+            return p
+        if pinned or _is_traced(nominal_plan):
+            return p
     sched = chain_schedule(geometry, nominal_plan, **kw)
     bounds = sched.pop("bounds")
     if not pinned:
@@ -210,6 +252,23 @@ def thermal_tier(p: dict, geometry: PartGeometry, nominal_plan: ProcessPlan, *,
 def tier_bounds(p: Mapping[str, Any] | None):
     """取当前档位的工艺子盒（无则 ``None``=原设备盒，逐位向后兼容）。"""
     return dict(p["process_bounds"]) if (p or {}).get("process_bounds") else None
+
+
+def z_to_device_box(z, *, n_layers: int = 1, bounds=None,
+                    modality: str = "SLM"):
+    """把**档位子盒坐标**的 z 换算回**设备盒坐标**的 z（交给外部消费者之前用）。
+
+    ``z`` 的公开语义始终是"相对设备工艺盒 ``PROCESS_BOUNDS`` 归一化"——
+    :func:`process_constraint_penalty`、:func:`process_feasibility`、报告与前端都按
+    设备盒解释它。D0 之后优化器**内部**把 z 映射进"本网格分辨得出、且钉住的显式
+    调度覆盖得了曝光"的那部分盒子，内部坐标与公开坐标于是分叉：把内部的 z 原样交
+    出去，外部按设备盒一解释就得到一个不相干的工艺（实测 ``feas≈4e-4``）。子盒是
+    设备盒的子集，故这次往返换算无损，只是将坐标对齐回文档承诺的那一套。
+    """
+    if not bounds:
+        return z
+    plan = denormalize_process(z, n_layers=n_layers, modality=modality, bounds=bounds)
+    return normalize_process(plan)
 
 
 def simulate(geometry: PartGeometry, process: ProcessPlan, *,
@@ -234,12 +293,17 @@ def simulate(geometry: PartGeometry, process: ProcessPlan, *,
     数字样机与可微逆问题。
 
     ``params["thermal"]`` 缺省时本函数按 :func:`thermal_tier` 自动为**这张网格**钉好
-    显式热解的静态调度；在 ``jax.grad`` 内调用时须由外层优化器预先钉好（或工艺里
-    除功率外的量保持具体），否则会拿到明确报错而不是静默发散。
+    显式热解的静态调度；调用方已钉好的档位一律尊重。trace 内（工艺量是 tracer）读不到
+    数值，无法用报错拦下"走出可积分窗口"的请求，故把工艺**结构性投影**回该档位给出的
+    子盒（被夹住的分量梯度为 0）——这是 A0 留给显式解法的那个"步数不足→扩散发散→被
+    蒸发封顶伪装成可行结果"静默洞的正面对策。eager 调用仍在越界时明确报错。
     """
     p = thermal_tier(dict(params or {}), geometry, process,
                    material=(params or {}).get("material", material),
                    thermal_solver=thermal_solver)
+    _bnds = tier_bounds(p)
+    if _bnds and _is_traced(process):
+        process = clip_to_bounds(process, bounds=_bnds)
     mat_name = p.get("material", material)
     mp_p = {"material": mat_name, "n_grid": int(p.get("n_grid", 28))}
     thermal_p = {"material": mat_name, **dict(p.get("thermal") or {})}
@@ -471,7 +535,18 @@ def train_process_predictor(geometry: PartGeometry, *,
         if verbose and (step % max(1, n_steps // 10) == 0 or step == n_steps - 1):
             print(f"  step {step:3d}  loss = {float(loss):.4e}")
 
-    final_plan = predict_process(theta, feats, n_layers=int(geometry.layer_count(40e-6)))
+    # 训练时网络是被**档位子盒**（:func:`thermal_tier`，与 ``loss_fn`` 同一套
+    # params/名义工艺）约束的：z↔工艺 用子盒映射。出训练后必须用**同一个**子盒
+    # 还原 final_plan——否则用设备全盒还原会把 z 误读成另一套坐标，产出的工艺落在
+    # 档位覆盖之外（实测 v=1.1e-3 m/s 而本子盒下界 0.5 m/s），下游 ``simulate`` 的
+    # 曝光校核随即报错。
+    tier_p = thermal_tier(dict(params or {}), geometry,
+                          heuristic_plan(geometry, material=material,
+                                         modality="SLM"),
+                          material=material, thermal_solver=thermal_solver)
+    final_plan = predict_process(theta, feats,
+                                 n_layers=int(geometry.layer_count(40e-6)),
+                                 modality="SLM", bounds=tier_bounds(tier_p))
     return {"params": theta, "loss_history": loss_history, "final_plan": final_plan}
 
 
@@ -571,7 +646,8 @@ def optimize_dimensional(geometry: PartGeometry, process_init: ProcessPlan | Non
                   f"constr = {float(pen):.3e}")
 
     final_plan = denormalize_process(z, n_layers=nl, modality="SLM", bounds=bnds)
-    return {"z": z, "final_plan": final_plan, "loss_history": loss_history,
+    return {"z": z_to_device_box(z, n_layers=nl, bounds=bnds),
+            "final_plan": final_plan, "loss_history": loss_history,
             "constraint_penalty_history": constraint_penalty_history}
 
 
@@ -1120,13 +1196,16 @@ def optimize_geometry_process(target: PartGeometry, *,
                   f"tv={float(aux[2]):.3e}  constr={float(aux[3]):.3e}")
 
     nominal = build_nominal(params_joint["u"])
+    _b = tier_bounds(params)
     final_plan = denormalize_process(params_joint["z"], n_layers=nl,
-                                     modality="SLM", bounds=tier_bounds(params))
+                                     modality="SLM", bounds=_b)
     final_ab = _forward(params_joint["u"], params_joint["z"])["asbuilt"]
     return {"delta": params_joint["u"] * spacing, "nominal_geometry": nominal,
-            "final_plan": final_plan, "asbuilt": final_ab, "z": params_joint["z"],
+            "final_plan": final_plan, "asbuilt": final_ab,
+            "z": z_to_device_box(params_joint["z"], n_layers=nl, bounds=_b),
             "loss_history": loss_history, "u_history": u_history,
-            "z_history": z_history, "geom_history": geom_history,
+            "z_history": [z_to_device_box(zz, n_layers=nl, bounds=_b)
+                          for zz in z_history], "geom_history": geom_history,
             "stress_history": stress_history,
             "constraint_penalty_history": constraint_penalty_history}
 
@@ -1358,7 +1437,9 @@ def pareto_optimize_geometry_process(target: PartGeometry, *,
             plans.append(final_plan); deltas.append(r["u"] * spacing)
             sols.append({"lambda": lam, "final_plan": final_plan,
                          "delta": r["u"] * spacing, "nominal_geometry": nominal,
-                         "asbuilt": out["asbuilt"], "z": r["z"],
+                         "asbuilt": out["asbuilt"],
+                         "z": z_to_device_box(r["z"], n_layers=nl,
+                                              bounds=tier_bounds(params)),
                          "geom_dev": float(gd), "stress": float(st),
                          "constraint_penalty": float(pen),
                          "penalty_history": r["pen_hist"]})
@@ -1464,7 +1545,9 @@ def pareto_optimize_geometry_process(target: PartGeometry, *,
         deltas.append(u_flat * spacing)
         sols.append({"final_plan": final_plan, "delta": u_flat * spacing,
                      "nominal_geometry": nominal, "asbuilt": out["asbuilt"],
-                     "z": z, "geom_dev": float(gd), "stress": float(st),
+                     "z": z_to_device_box(z, n_layers=nl, modality=modality,
+                                          bounds=tier_bounds(params)),
+                     "geom_dev": float(gd), "stress": float(st),
                      "constraint_penalty": float(pen), "penalty_history": None})
         pens.append(float(pen)); feas.append(float(1.0 / (1.0 + pen)))
 

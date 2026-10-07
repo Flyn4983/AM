@@ -33,7 +33,6 @@
 
 from __future__ import annotations
 
-import warnings
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
@@ -263,27 +262,12 @@ def heuristic_plan(
         t_layer = 40e-6
         feed = 0.0
 
-    # 网格分辨率下限（2026-10-06 D0）：**体素分辨不出的工艺不提出来**。判据与
-    # ``thermal.enthalpy`` 的 eager 护栏、``chain_schedule`` 的子盒同源：
-    #   2r ≥ dx（光斑直径至少一个体素，否则热源完全欠采样→护栏直接报错）
-    #   layer_thickness ≥ dx（层厚小于体素 → 层序在网格上不可分）
-    #   hatch_spacing ≥ dx（道间距小于体素 → 相邻扫描道在网格上不可分）
-    # 违反时不悄悄给出一个本网格看不见的建议，而是抬到网格下限并**警告**：要么
-    # 加密网格，要么接受更粗的等效光斑（§25.2/A0：细光斑配粗网格的定量结论无意义）。
-    dx = float(jnp.asarray(geometry.spacing, dtype=jnp.float64))
-    _lift = []
-    if r0 < 0.5 * dx:
-        _lift.append(f"beam_radius {r0 * 1e6:.1f}→{0.5 * dx * 1e6:.1f}µm")
-        r0 = 0.5 * dx
-    if t_layer < dx:
-        _lift.append(f"layer_thickness {t_layer * 1e6:.1f}→{dx * 1e6:.1f}µm")
-        t_layer = dx
-    if _lift:
-        warnings.warn(
-            f"heuristic_plan：体素 dx={dx * 1e6:.1f}µm 分辨不出更细的工艺，已把 "
-            f"{', '.join(_lift)} 抬到网格下限。要保留原工艺尺度请加密网格"
-            f"（定量熔池形态需 dx≤r/2）。", stacklevel=2)
-
+    # ⚠ 这里**不**做网格分辨率补偿（2026-10-07 D0 复盘推翻上一版）：heuristic_plan 是
+    # 物理规划器，提出的是"这台设备/这种材料该怎么扫"；体素分辨不分辨得开是**数值档**
+    # 的事，由 chain_schedule 的工艺子盒（hatch/lt ≥ dx、r ≥ dx/2）与求解器的
+    # resolution_policy 负责——在那里拒绝或降档，并把代价如实报出来。把 dx 耦合进规划器
+    # 会让"粗网格上的启发式工艺"在物理约束罚项里被记成工艺缺陷（实测 pen 0→0.667），
+    # 混淆"网格太粗"与"工艺不可制造"两件事。
     P0 = recommended_power_for_enthalpy(
         mat, target_enthalpy=target_enthalpy, scan_speed=v0, beam_radius=r0)
 
@@ -300,7 +284,7 @@ def heuristic_plan(
     # 传导模式下 w ≈ 2r·sqrt(1 + ΔH/h_s / 8)，是 Eagar-Tsai 的一阶近似
     w_est = 2.0 * r0 * jnp.sqrt(1.0 + target_enthalpy / 8.0)
     hatch = jnp.clip(w_est * (1.0 - hatch_overlap),
-                     max(PROCESS_BOUNDS["hatch_spacing"][0], dx),
+                     PROCESS_BOUNDS["hatch_spacing"][0],
                      PROCESS_BOUNDS["hatch_spacing"][1])
 
     n_layers = geometry.layer_count(t_layer) if per_layer else 1
