@@ -1,0 +1,81 @@
+===== #28 换数取证：test_boundary 对流表的 ③ 代绝对读数（CPU 钉住）=====
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t28_boundary_probe.py
+TREE: head=d7404f4 dirty_src=0 dirty_tests=1
+DATE: 2026-10-08 00:58:22 +0800
+NOTE: 判据 P1-P5 写在探针 docstring 里、跑前登记，此处不复述。
+NOTE: 触发本轮的事实＝全量记分已落地（2 failed, 216 passed, 3 skipped in 3818.21s），旧基线被取代
+NOTE:   ⇒ #28 允许动 tests/ 的 docstring；但 ③ 代**绝对均值**档案里缺格（只有 Δmean），故先取证再换数。
+NOTE: 并发：无（全量记分跑已于 00:53 退出；本轮此前三个 GPU 探针也已收）。
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t28_boundary_probe.py", line 29, in <module>
+    from amforge.core.contracts import BoundaryCondition, BoundaryCollection, solid_mask  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ImportError: cannot import name 'BoundaryCondition' from 'amforge.core.contracts' (/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/core/contracts.py)
+probe exit=1
+elapsed=1s
+
+===== 第 2 次落盘（第 1 次因脚本 import 路径写错而崩，**不参与记分**；判据头一字未改）=====
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t28_boundary_probe.py
+TREE: head=d7404f4 dirty_src=0 dirty_tests=1
+DATE: 2026-10-08 00:58:55 +0800
+RESTARTED: 第 1 次崩在 import（BoundaryCondition/BoundaryCollection 实际住 amforge.boundary，我按 contracts 写了）。
+  按 P1 的"作废"条款它本来不算一轮，但它是**脚本缺陷**不是**夹具不同构**，故照 §26.17(e) 的纪律处置：
+  只修 import 与取用方式（tb.BoundaryCollection），P1-P5 判据、常量、打印精度一字未改 ⇒ 第 2 次有效。
+  dirty_tests=1 是本轮 #28 已改的 A0 docstring（记分跑 00:53 已落地，才允许动 tests/）。
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+jax.devices() = [CpuDevice(id=0)]
+default_backend = cpu
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t28_boundary_probe.py:42: UserWarning: 体素 dx=80.0µm 大于光束半径 r=50.0µm：横向仅约 1.3 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 相对 dx=r/8 档：熔宽偏低 46.7%、熔体积偏低 52.8%）。定量熔池形态请取 dx≤r/2。
+  res0 = solve_enthalpy_thermal(geometry=part, process=plan, params={"material": "316L"})
+peak0=2937.060997302282  ==锚点 2937.060997302282? True  (P1)
+mean0=2720.801960759309  n_solid=216  grid=[8, 8, 8]
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t28_boundary_probe.py:61: UserWarning: 体素 dx=80.0µm 大于光束半径 r=50.0µm：横向仅约 1.3 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 相对 dx=r/8 档：熔宽偏低 46.7%、熔体积偏低 52.8%）。定量熔池形态请取 dx≤r/2。
+  res = solve_enthalpy_thermal(geometry=part, process=plan,
+h=    200  mean=2713.5287737621484  Δmean=   -7.27K  (P2 ✓)   peak=2938.2871572414197  Δpeak=+0.042%  (P3 ✓)
+h=   2000  mean=2649.4252962044116  Δmean=  -71.38K  (P2 ✓)   peak=2944.735183630389  Δpeak=+0.261%  (P3 ✓)
+h=  20000  mean=1964.8705276471778  Δmean= -755.93K  (P2 ✓)   peak=2908.771450618092  Δpeak=-0.963%  (P3 ✓)
+P5 现行守护①（h=2000 不动峰值，abs<2%）= True    守护②（h=20000 压峰 ≥2%）= False   ⇒ ② 为 False 即 #27 红灯，本探针**不改判据**、只登记
+FAILS: 无
+probe exit=0
+probe exit=0
+elapsed=10s
+
+=== ADJUDICATION（发起人于跑后逐条记分；P1-P5 全部跑前写在探针 docstring，此处不新增判据）===
+P1 锚点逐位 **PASS**：`peak0=2937.060997302282` 与档案 U0b 的 new 口径锚点、以及 `am_t27_fullsuite.log`
+   里 pytest 打印的那串**逐位相等**（`repr()` 比对，非四舍五入）。⇒ 本探针量的就是那条测试的夹具
+   （`_box3d(0.4mm, 80µm)` → grid=[8,8,8]、n_solid=216、实体口径 `solid_mask(...)>0.5`）。
+P2 Δmean **3/3 PASS**（−7.27 / −71.38 / −755.93 K，±0.01K 内）。P3 Δpeak **3/3 PASS**
+   （+0.042 / +0.261 / −0.963%，±0.005pt 内）。⇒ 与 `am_t27_convection_peak_probe.log` 的 [new/on] 同值。
+P4 设备行**在日志本体**：`jax.devices() = [CpuDevice(id=0)]`、`default_backend = cpu`，
+   且伴随 CPU 钉住签名 `CUDA_ERROR_NO_DEVICE … Falling back to cpu` ⇒ 本跑**是** CPU，不冒充 GPU。
+P5 绝对读数（#28 换数唯一缺的格）：mean0=**2720.80 K**、三档 2713.53 / 2649.43 / 1964.87 K；
+   peak0=2937.061 K、三档 2938.287 / 2944.735 / 2908.771 K。
+   两条现行守护：①（h=2000 不动峰值）**True**；②（h=20000 压峰 ≥2%）**False** ⇒ 就是 #27 那条红灯，
+   本探针**没有**改判据、只是复现并给出绝对值。
+**新信息（照实记，不在 P1-P5 内）**：③ 代的**绝对均值比 ② 代高约 19%**（2720.80 vs 2291 K），
+   而**峰值几乎没动**（2937.061 vs 2943.778 K，−0.23%）。机制与 §26.19/#23 一致且不矛盾：
+   峰值被蒸发封顶钉住 ⇒ 对热容口径不敏感；末态均值是"总能量 ÷ 总热容"的直接读数 ⇒ #23 把半填充
+   单元的热容从整格改成按 fv 计，均值就整体抬上去。**结论**：任何"末态温度"绝对数在 #23 前后
+   不可互换，这与峰值那批过期数是**两个独立的换数量级**（峰值 ≈ 不动、均值 +19%）。
+第 1 次落盘（import 路径写错，elapsed=1s，无判据被评）**不参与记分**，traceback 保留在上方。

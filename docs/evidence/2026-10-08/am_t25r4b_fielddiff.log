@@ -1,0 +1,77 @@
+===== #25 第 4b 轮：δ=0.5 列的**整场**差（GPU 实测；把'四观测量恒等'升级为/否证为'场恒等'）=====
+CMD: /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t25r4b_fielddiff.py <new_src> <old_src> <workdir>
+TREE: head=d7404f4 dirty_src=0 dirty_all=6
+DATE: 2026-10-08 00:40:16 +0800
+OLD-TREE: git archive 533c90f src（#23 之前）cap_w 命中数=0（必须 0）
+判据头（引用包好的 heredoc，未经 shell 展开）——
+NOTE: 动机＝第 4 轮只证到"四个观测量在 δ=0.5 上 old/new 相同（dH 差 1 ulp）"。max 与集合计数
+NOTE:   对场的低位差不敏感 ⇒ 本轮直接比 `peak_temperature` / `final_temperature` **整场**。
+NOTE: F1 δ=0.5/dx=25：`max|T_new−T_old|/max|T_old| < 1e-12`（两个场都要满足）。
+NOTE: F2 正对照 δ=0/dx=25：同一指标必须 **> 1e-3**（#23 在刀锋对齐上是真效应）。
+NOTE:    ⇒ 若 δ=0.5 也 >1e-3，F1 FAILS，"δ=0.5 非信息"退回为"只是观测量碰巧相同"。
+NOTE: F3（非判据）差的空间结构：max|ΔT| 所在单元的 fv/cap_w、|ΔT|>0 的单元数与其中 cap_w≠1 的占比
+NOTE:    ⇒ 用来确认差落在第 4 轮 V2 数到的那批 `cap_w = 1−ulp` 单元上（δ=0.5 时 1136 格）。
+NOTE: F4 设备行写进日志本体。判据与脚本 docstring 同文，跑前已定。
+NVIDIA RTX A6000, 2600 MiB, 49140 MiB, 25 %
+=== F4 设备行 ===
+  jax.devices() = [CudaDevice(id=0)]   backend=gpu
+  F1/F2 dx=25.0 δ=0.5 场=`peak`：相对最大差 = 5.318e-15 （期望 **tiny**）⇒ PASS   逐元素不等的单元数 = 2676/23400
+    F3 max|ΔT|=1.364e-11K 出现在 fv=1（cap_w=1，该格 cap_w≠1 ⇒ 否）；全域 cap_w≠1 的单元数 = 6104
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t25r4b_fielddiff.py", line 118, in <module>
+    sys.exit(main(sys.argv[1], sys.argv[2], os.path.abspath(__file__), sys.argv[3]))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t25r4b_fielddiff.py", line 108, in main
+    f"{np.count_nonzero((dT > 0) & (cw != 1.0))}/{ndiff}", flush=True)
+                        ~~~~~~~~~^~~~~~~~~~~~~
+ValueError: operands could not be broadcast together with shapes (50,26,18) (23400,) 
+probe exit=1
+elapsed=24s
+===== #25 第 4b 轮（第 2 次落盘）：δ=0.5 列的**整场**差（GPU 实测；把'四观测量恒等'升级为/否证为'场恒等'）=====
+CMD: /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t25r4b_fielddiff.py <new_src> <old_src> <workdir>
+DEFECT: 第 1 次落盘（00:40:5x，elapsed=24s，probe exit=1）在 F3 的第二行 print 崩：\n
+  \'ValueError: operands could not be broadcast together with shapes (50,26,18) (23400,)\'\n
+  ＝把三维 `dT` 与一维 `cw` 直接做布尔与。判据 F1/F2 **未被判定完**（只打出 δ=0.5/peak 一行）\n
+  ⇒ 该次落盘**不参与记分**；修的是报告行的形状，判据一字未改。\n
+  上方 L1-F1 那行读数（相对最大差 5.318e-15、2676/23400 格不等）会被本次复现核对。
+TREE: head=d7404f4 dirty_src=0 dirty_all=6
+DATE: 2026-10-08 00:41:59 +0800
+OLD-TREE: git archive 533c90f src（#23 之前）cap_w 命中数=0（必须 0）
+判据头（引用包好的 heredoc，未经 shell 展开）——
+NOTE: 动机＝第 4 轮只证到"四个观测量在 δ=0.5 上 old/new 相同（dH 差 1 ulp）"。max 与集合计数
+NOTE:   对场的低位差不敏感 ⇒ 本轮直接比 `peak_temperature` / `final_temperature` **整场**。
+NOTE: F1 δ=0.5/dx=25：`max|T_new−T_old|/max|T_old| < 1e-12`（两个场都要满足）。
+NOTE: F2 正对照 δ=0/dx=25：同一指标必须 **> 1e-3**（#23 在刀锋对齐上是真效应）。
+NOTE:    ⇒ 若 δ=0.5 也 >1e-3，F1 FAILS，"δ=0.5 非信息"退回为"只是观测量碰巧相同"。
+NOTE: F3（非判据）差的空间结构：max|ΔT| 所在单元的 fv/cap_w、|ΔT|>0 的单元数与其中 cap_w≠1 的占比
+NOTE:    ⇒ 用来确认差落在第 4 轮 V2 数到的那批 `cap_w = 1−ulp` 单元上（δ=0.5 时 1136 格）。
+NOTE: F4 设备行写进日志本体。判据与脚本 docstring 同文，跑前已定。
+NVIDIA RTX A6000, 2600 MiB, 49140 MiB, 27 %
+=== F4 设备行 ===
+  jax.devices() = [CudaDevice(id=0)]   backend=gpu
+  F1/F2 dx=25.0 δ=0.5 场=`peak`：相对最大差 = 5.318e-15 （期望 **tiny**）⇒ PASS   逐元素不等的单元数 = 2676/23400
+    F3 max|ΔT|=1.364e-11K 出现在 fv=1（cap_w=1，该格 cap_w≠1 ⇒ 否）；全域 cap_w≠1 的单元数 = 6104
+    F3 |ΔT|>0 的单元中 cap_w≠1 的占比 = 648/2676
+  F1/F2 dx=25.0 δ=0.5 场=`final`：相对最大差 = 4.663e-15 （期望 **tiny**）⇒ PASS   逐元素不等的单元数 = 2915/23400
+    F3 max|ΔT|=1.182e-11K 出现在 fv=1（cap_w=1，该格 cap_w≠1 ⇒ 否）；全域 cap_w≠1 的单元数 = 6104
+    F3 |ΔT|>0 的单元中 cap_w≠1 的占比 = 494/2915
+  F1/F2 dx=25.0 δ=0.0 场=`peak`：相对最大差 = 1.685e-01 （期望 **large**）⇒ PASS   逐元素不等的单元数 = 20825/20825
+  F1/F2 dx=25.0 δ=0.0 场=`final`：相对最大差 = 1.719e-01 （期望 **large**）⇒ PASS   逐元素不等的单元数 = 20825/20825
+
+FAILS: 无（δ=0.5 整场差在机器精度内，δ=0 差为真效应）
+probe exit=0
+elapsed=43s
+
+=== ADJUDICATION（跑后记分；F1–F4 跑前已登记，见上）===
+F1 **PASS**（两场都过，阈值 1e-12）：peak 5.318e-15、final 4.663e-15。
+F2 **PASS**（正对照能失败，阈值 >1e-3）：δ=0 给 1.685e-01 / 1.719e-01，20825/20825 格全不等。
+F3 非判据行照实打出：最大差单元 `cap_w = 1.0`（否证"差只落在 cap_w≠1 那批格上"这种朴素读法），
+   `|ΔT|>0` 单元中 cap_w≠1 占比 648/2676（peak）/ 494/2915（final）。
+F4 **PASS**：`jax.devices() = [CudaDevice(id=0)] backend=gpu` 在日志本体。
+复现核对：第 1 次落盘（崩于 F3 报告行的形状错，不参与记分）打出的
+   `5.318e-15` 与 `2676/23400` 与第 2 次逐位相同 ⇒ GPU 上该路径可复现。
+落盘 2 次：第 1 次 elapsed=24s exit=1（`ValueError: … shapes (50,26,18) (23400,)`，
+   ＝三维 `dT` 与一维 `cw` 做布尔与）；修报告行、判据一字未改，第 2 次 elapsed=43s exit=0。
+结论：δ=0.5 对齐对 `cap_w` 口径变更**不是**逐位恒等（第 4 轮 V2/V3 已否证精确读法），
+   而是**场级机器精度恒等**（≤5.4e-15 相对、≈1.4e-11 K）⇒ 「δ=0.5 不携带信息」保留为
+   **近似规则**，其成立范围由本 log 定量给出。

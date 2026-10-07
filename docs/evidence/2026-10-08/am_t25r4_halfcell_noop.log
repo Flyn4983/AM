@@ -1,0 +1,159 @@
+OLD-TREE: provenance=git archive 533c90f (parent of d7404f4)  cap_w 命中数=0（必须为 0）
+
+===== #25 第 4 轮：δ=0.5 列在 #23 热容口径变更下是否恒等（GPU 实测）=====
+CMD: PYTHONPATH=<两副> JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t25r4_halfcell_noop.py <new_src> <old_src>
+TREE: head=d7404f4 dirty_src=0 dirty_all=6
+DATE: 2026-10-08 00:33:46 +0800
+判据头（引用包好的 heredoc 写入，未经 shell 展开；与脚本 docstring 同文，此处为跑前登记）——
+NOTE: 本轮**不改求解器、不改测试**，只做两副口径的对照，回答第 3 轮留下的两条未解释读数。
+NOTE: 动机（跑前已核对的档案事实）：② 代 `am_t2_a0_observable.log`（head af9fc89 dirty=30，
+NOTE:   2026-10-07 20:45，＝ #19 之后 / #23 之前）与 ③ 代 `am_t25_round3_observable.log`
+NOTE:   （head d7404f4 干净，2026-10-08 00:17，＝ #23 之后）的 **δ=0.5 那一行 8 个打印值全部相同**
+NOTE:   （pk 2433.15/2565.18 K、Vm=Vn 0.06400/0.06473 mm³、ΔH 1.66710/1.58948 J），
+NOTE:   而 δ=0、δ=0.25 的各行全部不同。⇒ 要么"δ=0.5 列对 cap_w 变更恒等"（机理），要么巧合。
+NOTE: 术语更正（本轮登记）：第 3 轮 log 把对照基线叫作"G1 代"，那是指**那份探针文件的上一次运行**；
+NOTE:   按 §25.2 的代际链（①#19 前 / ②#19＋#26 / ③#23 后）它其实是 **② 代**，本轮一律写 ②/③。
+NOTE: 判据 V1–V5 与裁决口径全部写在脚本 docstring（`am_t25r4_halfcell_noop.py`），跑前已定。
+NOTE: 起飞前的**单点干跑**（CPU、dx=50 δ=0.5，只为验证脚本 API，不参与记分）已给出两条读数，
+NOTE:   照实在此登记而不是事后解释：`fv_dev=8.88e-16`（V1 通过一侧）、但
+NOTE:   `n_heated_capw_ne1=96`、`cap_w_min=0x1.ffffffffffff8p-1 = 1−ulp` ⇒ **V2 的"逐位等于 1.0"
+NOTE:   预期会 FAIL**。⇒ 本轮真正的产出是把"δ=0.5 非信息"从**精确陈述**降级为
+NOTE:   **~1e-16 量级的近似陈述**（若 V3 的相对差确实在 1e-15 以下）；判据不追溯放宽、不改写，
+NOTE:   FAILS 照留，V3 里那条"差值量级"行（跑前就写好的非判据行）负责给出量级。
+NOTE: 并发：同一时刻 CPU 上在跑 `am_t27_fullsuite.log` 全量记分，两跑不共享进程；本跑走 GPU。
+NOTE: 设备行按 V5 写进日志本体（第 3 轮 R4 的整改项，不再事后补）。
+NVIDIA RTX A6000, 2606 MiB, 49140 MiB, 24 %
+2001926, 588 MiB
+2016277, 296 MiB
+2019632, 296 MiB
+=== V5 设备行（写进日志本体） ===
+  jax.devices() = [CudaDevice(id=0)]   backend=gpu
+
+=== V1/V2 结构段（工作树口径，五个对齐点） ===
+  new(#23)        dx= 50.0 δ=0.50 shape=(26, 14, 10) fv_dev=8.882e-16 partial=     0 empty=  1336 full=   2304 | heated= 2304 非空= 2304 heated_capw≠1=   96
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t25r4_halfcell_noop.py", line 238, in <module>
+    sys.exit(parent(sys.argv[1], sys.argv[2], os.path.abspath(__file__)))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-08/am_t25r4_halfcell_noop.py", line 166, in parent
+    print(f"      cap_w(被加热实体单元) ∈ [{float(r['capw_min']):.17g}, "
+                                            ^^^^^^^^^^^^^^^^^^^^
+ValueError: could not convert string to float: '0x1.ffffffffffff8p-1'
+probe exit=1
+elapsed=12s
+
+===== 第 2 次落盘（第 1 次在 V1/V2 结构段的第一行 print 就崩，没有任何判据被判定 ⇒ 不参与记分）=====
+DEFECT: 脚本把  的十六进制字符串用  解析（应为 ）⇒
+  ValueError，probe exit=1、elapsed=12s。**判据一字未改**，只修读数解析（新增 h2f 助手）。
+  该次崩掉前已打出的那行结构读数（dx=50 δ=0.5：fv_dev=8.882e-16、partial=0、
+  heated_capw≠1=96）与本轮第 2 次同值，且与起飞前 CPU 干跑同值 ⇒ 结构量与设备无关。
+CMD: PYTHONPATH=<两副> JAX_ENABLE_X64=1 /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t25r4_halfcell_noop.py <new_src> <old_src>
+TREE: head=d7404f4 dirty_src=0 dirty_all=6
+DATE: 2026-10-08 00:35:14 +0800
+OLD-TREE: git archive 533c90f src（＝ d7404f4 的父提交，#23 之前）cap_w 命中数=0（必须 0）
+NVIDIA RTX A6000, 2600 MiB, 49140 MiB, 26 %
+2001926, 588 MiB
+2016277, 296 MiB
+2019632, 296 MiB
+=== V5 设备行（写进日志本体） ===
+  jax.devices() = [CudaDevice(id=0)]   backend=gpu
+
+=== V1/V2 结构段（工作树口径，五个对齐点） ===
+  new(#23)        dx= 50.0 δ=0.50 shape=(26, 14, 10) fv_dev=8.882e-16 partial=     0 empty=  1336 full=   2304 | heated= 2304 非空= 2304 heated_capw≠1=   96
+      cap_w(被加热的非空单元) ∈ [0.99999999999999911, 1]
+  new(#23)        dx= 25.0 δ=0.50 shape=(50, 26, 18) fv_dev=2.998e-15 partial=     0 empty=  4968 full=  18432 | heated=18432 非空=18432 heated_capw≠1= 1136
+      cap_w(被加热的非空单元) ∈ [0.999999999999997, 1]
+  new(#23)        dx= 50.0 δ=0.00 shape=(25, 13, 9) fv_dev=5.000e-01 partial=  1154 empty=     0 full=   1771 | heated= 2925 非空= 2925 heated_capw≠1= 1154
+      cap_w(被加热的非空单元) ∈ [0.5, 1]
+  new(#23)        dx= 25.0 δ=0.00 shape=(49, 25, 17) fv_dev=5.000e-01 partial=  4610 empty=     0 full=  16215 | heated=20825 非空=20825 heated_capw≠1= 4610
+      cap_w(被加热的非空单元) ∈ [0.5, 1]
+  new(#23)        dx= 25.0 δ=0.25 shape=(50, 26, 18) fv_dev=2.500e-01 partial=  4610 empty=  2575 full=  16215 | heated=19265 非空=19265 heated_capw≠1= 3050
+      cap_w(被加热的非空单元) ∈ [0.5, 1]
+  V1 δ=0.5 dx=50.0: max|fv−round(fv)| = 8.882e-16 < 1e-12 ⇒ PASS
+  V1 δ=0.5 dx=25.0: max|fv−round(fv)| = 2.998e-15 < 1e-12 ⇒ PASS
+  V1 正对照（δ=0/dx50、δ=0/dx25、δ=0.25/dx25 有真切割单元）＝3/3 ⇒ PASS
+  V2 δ=0.5 dx=50.0: 被加热的非空单元 2304 格，其中 cap_w≠1.0 的 96 格 ⇒ FAILS
+  V2 δ=0.5 dx=25.0: 被加热的非空单元 18432 格，其中 cap_w≠1.0 的 1136 格 ⇒ FAILS
+  V2 正对照（δ=0/dx25 有 cap_w≠1.0 且被加热的单元）＝4610 格 ⇒ PASS
+
+=== V3 主判据：两副口径逐位（float.hex）对照 ===
+  old(pre-#23)    dx= 25.0 δ=0.50 shape=(50, 26, 18) fv_dev=2.998e-15 partial=     0 empty=  4968 full=  18432 | heated=18432 非空=18432 heated_capw≠1= 1136
+  new(#23)        dx= 25.0 δ=0.50 shape=(50, 26, 18) fv_dev=2.998e-15 partial=     0 empty=  4968 full=  18432 | heated=18432 非空=18432 heated_capw≠1= 1136
+  V3 dx=25.0 δ=0.5 期望**same** ⇒ FAILS   pk:== Vm:== Vn:== dH:≠
+    差值量级（非判据，只用于归因）：dH 相对差 1.397e-16
+    old pk=0x1.40a5afc3aca11p+11 Vm=0x1.0926e978d4fdfp-4 Vn=0x1.0926e978d4fdfp-4 dH=0x1.96e81f1dbb09dp+0
+    new pk=0x1.40a5afc3aca11p+11 Vm=0x1.0926e978d4fdfp-4 Vn=0x1.0926e978d4fdfp-4 dH=0x1.96e81f1dbb09ep+0
+  old(pre-#23)    dx= 50.0 δ=0.50 shape=(26, 14, 10) fv_dev=8.882e-16 partial=     0 empty=  1336 full=   2304 | heated= 2304 非空= 2304 heated_capw≠1=   96
+  new(#23)        dx= 50.0 δ=0.50 shape=(26, 14, 10) fv_dev=8.882e-16 partial=     0 empty=  1336 full=   2304 | heated= 2304 非空= 2304 heated_capw≠1=   96
+  V3 dx=50.0 δ=0.5 期望**same** ⇒ FAILS   pk:== Vm:== Vn:== dH:≠
+    差值量级（非判据，只用于归因）：dH 相对差 1.332e-16
+    old pk=0x1.3024c6abc6144p+11 Vm=0x1.0624dd2f1a9fbp-4 Vn=0x1.0624dd2f1a9fbp-4 dH=0x1.aac6e189dfca1p+0
+    new pk=0x1.3024c6abc6144p+11 Vm=0x1.0624dd2f1a9fbp-4 Vn=0x1.0624dd2f1a9fbp-4 dH=0x1.aac6e189dfca2p+0
+  old(pre-#23)    dx= 25.0 δ=0.00 shape=(49, 25, 17) fv_dev=5.000e-01 partial=  4610 empty=     0 full=  16215 | heated=20825 非空=20825 heated_capw≠1= 4610
+  new(#23)        dx= 25.0 δ=0.00 shape=(49, 25, 17) fv_dev=5.000e-01 partial=  4610 empty=     0 full=  16215 | heated=20825 非空=20825 heated_capw≠1= 4610
+  V3 dx=25.0 δ=0.0 期望**differ** ⇒ PASS   pk:≠ Vm:≠ Vn:≠ dH:≠
+    old pk=0x1.35def435abe5ep+11 Vm=0x1.dbe76c8b43957p-5 Vn=0x1.ddb22d0e56040p-5 dH=0x1.73d1d1f5200d6p+0
+    new pk=0x1.4060327c75720p+11 Vm=0x1.14d4fdf3b6459p-4 Vn=0x1.1c8b439581061p-4 dH=0x1.9df2d04bd45abp+0
+  old(pre-#23)    dx= 50.0 δ=0.00 shape=(25, 13, 9) fv_dev=5.000e-01 partial=  1154 empty=     0 full=   1771 | heated= 2925 非空= 2925 heated_capw≠1= 1154
+  new(#23)        dx= 50.0 δ=0.00 shape=(25, 13, 9) fv_dev=5.000e-01 partial=  1154 empty=     0 full=   1771 | heated= 2925 非空= 2925 heated_capw≠1= 1154
+  V3 dx=50.0 δ=0.0 期望**differ** ⇒ PASS   pk:≠ Vm:≠ Vn:≠ dH:≠
+    old pk=0x1.25a22630dcb34p+11 Vm=0x1.a8f5c28f5c28ep-5 Vn=0x1.a8f5c28f5c28ep-5 dH=0x1.4f99d5469dbd7p+0
+    new pk=0x1.33a89e430b82bp+11 Vm=0x1.db22d0e560417p-5 Vn=0x1.ed916872b020ap-5 dH=0x1.97aecb73d5b12p+0
+
+=== V4 档案对照（非判据）：δ=0.5 两档对 ②/③ 代打印值 ===
+  old→② 代 dx=50.0：pk=2433.15K Vm=0.06400 Vn=0.06400mm³ ΔH=1.66710e+00J   档案 2433.15K 0.06400mm³ 1.66710e+00J
+  old→② 代 dx=25.0：pk=2565.18K Vm=0.06473 Vn=0.06473mm³ ΔH=1.58948e+00J   档案 2565.18K 0.06473mm³ 1.58948e+00J
+  new→③ 代 dx=50.0：pk=2433.15K Vm=0.06400 Vn=0.06400mm³ ΔH=1.66710e+00J   档案 2433.15K 0.06400mm³ 1.66710e+00J
+  new→③ 代 dx=25.0：pk=2565.18K Vm=0.06473 Vn=0.06473mm³ ΔH=1.58948e+00J   档案 2565.18K 0.06473mm³ 1.58948e+00J
+
+FAILS: ['V2@dx=50.0', 'V2@dx=25.0', 'V3@dx=25.0,δ=0.5', 'V3@dx=50.0,δ=0.5']
+probe exit=1
+elapsed=177s
+
+=== ADJUDICATION（发起人于跑后逐条记分；V1–V5 全部写在上面、跑前已定，此处不新增判据）===
+V1 **PASS**：δ=0.5 两档 `max|fv−round(fv)|` = 8.882e-16（dx=50）/ 2.998e-15（dx=25）< 1e-12，
+    正对照 3/3（δ=0 与 δ=0.25 给 5.000e-01 —— 那是 sdf 恰为 0 的刀锋面 `fv=0.5`，
+    不是 0/1 之间的中间份额；`partial` 计数因此是 1154/4610/4610 格）。
+V2 **FAILS（两档都红，且这是本轮最有用的读数）**：δ=0.5 上被加热的非空单元里
+    `cap_w != 1.0` 的有 **96 格（dx=50）/ 1136 格（dx=25）**；被加热非空单元上的
+    `cap_w` 区间（`.17g` 打印）＝ dx=50：`[0.99999999999999911, 1]`、
+    dx=25：`[0.999999999999997, 1]`。按 `(1−v)/2⁻⁵²` 换算＝ **1−4 ulp**（dx=50，
+    其十六进制原值 `0x1.ffffffffffff8p-1` 在起飞前的 CPU 单点干跑里打印过）与
+    **1−13.5 ulp**（dx=25，由 `.17g` 打印值反算，该档 hex 未单独打印 ⇒ 只报换算量级）。
+    ＝**半格对齐下 `solid_weight` 给的不是精确 1.0，而是 1−k·ulp**。
+    ⇒ 我原本准备的"δ=0.5 上 `x/cap_w ≡ x` 是代数恒等式"这一说法**被否证**。
+    正对照 PASS（δ=0/dx=25 有 4610 格 cap_w≠1）⇒ V2 看得见差异，不是空转。
+V3 **FAILS（但失败的方式把机理钉死了）**：δ=0.5 两档上 `pk`、`Vm`、`Vn` 三个观测量
+    **逐位相同**（`float.hex` 全等，例如 dx=25：`0x1.40a5afc3aca11p+11` 两边一致），
+    只有 `dH` 差 **1 ulp**（相对差 1.397e-16 / 1.332e-16）⇒ 判据要求"四个全同"故记 FAILS，
+    但不许把这条 FAILS 读成"δ=0.5 有信息"：差的数量级是末位比特。
+    正对照 PASS：δ=0 两档四个观测量**全部**逐位不同（例如 dx=25 峰值
+    old `0x1.35def435abe5ep+11` vs new `0x1.4060327c75720p+11`）⇒ 探针确实能区分口径。
+V4 **PASS**：old 的 δ=0.5 读数复现 ② 代打印值、new 的复现 ③ 代（8/8 相符，非判据）。
+V5 **PASS**：设备行 `jax.devices() = [CudaDevice(id=0)] backend=gpu` 在日志本体（第 3 轮 R4 整改兑现）。
+落盘记录：第 1 次落盘（00:33:46）在 V1/V2 结构段第一行 print 崩
+    （`float('0x1.ffff…p-1')` ＝ 用 `float()` 解析 `float.hex()` 串，应为 `float.fromhex()`），
+    **没有任何判据被判定 ⇒ 该次不参与记分**；只修读数解析，判据一字未改（`h2f()` 助手）。
+
+结论（登记给 §26.19 / #25 / #24）：
+1. 「δ=0.5·dx 不携带信息」这条规则**成立但只是近似**：真实表述是
+   「在该对齐上 #23 的口径变更只扰动**末位比特**（`dH` 1 ulp，场级见 4b 的 5e-15 相对差）」，
+   不是「逐位恒等」。判据 O1 里那一列**继续保留**（删＝放宽），只是不许把它当证据。
+2. **不新增物理缺陷**：1 ulp 的来源是 #19 线性 cut 份额 `clip(0.5−sdf/dx)` 在半格对齐上
+   落在 `1−k·ulp`（sdf 本身是浮点加减的产物）。数量级＝`max|ΔT| ≈ 1.4e-11 K`（4b 实测）
+   ⇒ 对任何验收数字无影响，但它使"精确逐位"类推理不可用，**归 #24 邻域登记**
+   （与"计数 × dx³ 继承拼写 ulp"同一类：都是**位级口径**，不是物理口径）。
+3. 本轮**没有**改变 A0 的红/绿，也**没有**给 #25 的形态半边（Vn 13.27%）提供新线索——
+   形态问题在 δ=0/0.25 这些**有信息**的对齐上，那里两副口径差 16.85%（4b 的场级对照）。
+补注：判据头里那句 `cap_w_min = 0x1.ffffffffffff8p-1 = 1−ulp` 是随手写法，精确值以 V2 的
+    **1−4 ulp** 为准（同一个十六进制串，换算见 `(1−v)/2⁻⁵²`）。头文字不改写（跑前登记原样保留）。
+
+=== 4b 补测（同夜，`am_t25r4b_fielddiff.log`）：把"四观测量相同"升级为"整场差在机器精度内" ===
+δ=0.5/dx=25：`peak` 场相对最大差 **5.318e-15**（`max|ΔT| = 1.364e-11 K`，2676/23400 格不等）、
+`final` 场 **4.663e-15**（1.182e-11 K，2915 格）；F1 **PASS**（阈值 1e-12）。
+正对照 δ=0/dx=25：`peak` **1.685e-01**、`final` **1.719e-01**，且 **20825/20825 格全部不等**
+⇒ F2 **PASS**（阈值 >1e-3）。F3：最大差那格的 `cap_w` **恰为 1.0**（差是从近邻扩散来的，
+不是该格自身除法的直接效应），`|ΔT|>0` 的格里 cap_w≠1 只占 648/2676 与 494/2915
+⇒ 与 V2 数到的 1136 格半格刀锋单元自洽，但**差异的传播是场级的**。
+⇒ 本 log 结论 1 的表述由此定稿：δ=0.5 对齐上 #23 的效应是 **1e-15 相对量级（≈1e-11 K）**，
+   观测量层面只有 `dH` 的末位比特，场层面所有格都动、但动在机器精度内。

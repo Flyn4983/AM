@@ -1,0 +1,207 @@
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests/ -q -rs
+TREE: head=d7404f4 dirty_src=0 dirty_all=1
+DATE: 2026-10-07 23:48:12 +0800
+NOTE: 这是 **#23 落地后的第一次全量**。前两把基线都已过期：（21:31，head c41d3b0＋
+      dirty 5＝改 #19 后、改 #26 前、改 #23 前）得 1 failed/217 passed/3 skipped in 3891.17s；
+      §26.17(a) 那条数字引用的就是它。本轮之间落了 #26（口径普查）与 #23（cut-cell 热容）。
+NOTE: 起飞树＝d7404f4 干净提交（dirty=0），满足「记分跑从已提交干净树起飞」。
+NOTE: 预期红灯 **2 条**，且两条都有本轮的逐位/同构对照支撑：
+      ①A0 ：失败点应在 assert2（Vn 13.270%），
+        不再是 assert1（峰值，#23 后 3.969%<5%）； 实测。
+      ② ②第二条（h=20000 压峰 0.963%<2%），
+        归因与
+        「测试一字未动」的登记处置见  → 任务 #27。
+      其余 216 条应为绿；**不得**出现新增 skip/xfail（skip 仍应恰为 3 条 PySide6）。
+NOTE: CPU 钉住＝正确性/验收通道（用户 10-07 指示：性能数字一律 RTX A6000，CPU 吞吐不作论据）。
+NOTE: -rs 只增报告（列 skip 理由），不改运行。
+.....F............
+===== 第 2 次落盘（第 1 次被发起人中途 kill，判据头已作废）=====
+CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests/ -q -rs
+TREE: head=d7404f4 dirty_src=0 dirty_all=1
+DATE: 2026-10-07 23:49:24 +0800
+RESTARTED: 上方第 1 次的判据头是**坏的**——启动器在双引号 echo 里裸写了反引号，bash 把
+  反引号内容当**命令替换**执行掉了（表现为「①A0 ：失败点应在 assert2」这种测试名与文件名
+  集体消失的行）。预注册头被吃掉字＝该次跑**不参与记分**，故 kill（当时进度 18 字符、1 个 F，
+  无结论）并从同一干净树 d7404f4 重发。与 §26.17(e)(1) 同根：**把带反引号的散文塞进双引号 shell
+  参数＝让 shell 解释它**；本次改法＝散文一律走**引用包好的 heredoc**（下面那段），不做任何展开。
+NOTE: 本次头（逐字，未经 shell 展开）——
+NOTE: 这是 #23 落地后的第一次全量。两把旧基线都已过期：`am_t2_fullsuite.log`（21:31，head c41d3b0＋dirty 5
+      ＝改 #19 后、改 #26 前、改 #23 前）得 `1 failed, 217 passed, 3 skipped in 3891.17s`；§26.17(a) 引用的
+      就是它。本轮之间落了 #26（口径普查）与 #23（cut-cell 热容）。
+NOTE: 起飞树＝`d7404f4`：提交后 `git status --porcelain` 实测 **0 项**，启动器写下本 log 后 TREE 行报 `dirty_src=0 dirty_all=1`（那 1 项就是本 log 文件自身，未跟踪）⇒ 记分树＝已提交干净树，满足「记分跑从已提交干净树起飞」。原写「dirty_all=0 于 kill 前实测」不准确（漏了 log 自身），此处更正。
+NOTE: 预期红灯 **2 条**，两条都有本轮的逐位/同构对照支撑：
+      ① `test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids`（A0）：失败点应在
+        **assert2**（`Vn` 13.270%），不再是 assert1（峰值；#23 后 3.969%<5%）。实测来源
+        `am_t23_impl_targeted.log`（23:15，同 head 树）与 `am_t23_capacity_closure_probe.log` 的 P1。
+      ② `test_boundary.py::test_convection_removes_energy` 的第 ② 第二条（h=20000 压峰 0.963% < 2%）：
+        归因与「测试一字未动」的登记处置见 `am_t27_convection_peak_probe.log` → 新任务 **#27**。
+      其余 216 条应为绿；**不得**新增 skip/xfail——skip 仍应恰为 3 条 PySide6（`test_gui_app`、
+      `test_gui_app2`、`test_monitoring`）。
+NOTE: 顺带盯两条**不该再动**的：`test_default_solver_numerical` / `test_e2e_chain` 与参考求解器那条
+      （`test_enthalpy_thermal.py:96` 的 `#26` 位点）——#23 改了 `rhs`，若它们里有人变红，那是新回归，
+      不能用「口径变更」当解释。
+NOTE: CPU 钉住＝正确性/验收通道（用户 10-07 指示：性能数字一律 RTX A6000，CPU 吞吐不作任何论据）。
+NOTE: -rs 只增报告（列 skip 理由），不改运行。
+.....F....................................................F............. [ 32%]
+....................................................................s... [ 65%]
+........................................................................ [ 98%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+________________________ test_convection_removes_energy ________________________
+
+    def test_convection_removes_energy():
+        """强对流降低末态温度；只有极强对流才降低**峰值**。
+    
+        A0 前的旧断言「h=200 W/m²K 使峰值下降」是**假**的：对流是表面通量，必须
+        除以 dx 摊成体积项才与 ∂H/∂t 同量纲（旧代码少除 dx，散热被低估 1/dx≈12500
+        倍）；修正后实测（0.4mm 试片 dx=80µm，5 面对流，T_inf=293K）：
+    
+            h          末态实体均值Δ    峰值Δ
+            200        −8.1 K          +0.03%
+            2000       −81.6 K         +0.10%
+            20000      −573.7 K        −5.39%
+    
+        物理：峰值由「脉冲剂量 + 蒸发封顶」在光斑中心局部决定，表面对流在正常工艺
+        量级（h≲10³）动不了它；但它扫完之后整体带走能量，末态温度显著下降。所以
+        守护点应是「能量被移走」，而不是「峰值被压」。
+        """
+        part = _box3d(size_mm=0.4, spacing_um=80.0)
+        plan = _plan()
+        # 口径＝#19 solid_mask（实测本夹具 Δn=0 ⇒ 可证无操作，am_t26_bare_sdf_census.log S1）。
+        # ⚠ `solid_mask` 返回 ∈{0,1} 的**同 dtype 数值**数组（contracts.py: `.astype(a.dtype)`），
+        # 不是 bool ⇒ 用作布尔索引前必须 `> 0.5`。
+        solid = np.asarray(solid_mask(np.asarray(part.sdf)) > 0.5)
+        res0 = solve_enthalpy_thermal(geometry=part, process=plan,
+                                      params={"material": "316L"})
+        mean0 = float(np.mean(np.asarray(res0.final_temperature)[solid]))
+        peak0 = float(np.max(np.asarray(res0.peak_temperature)))
+    
+        means, peaks = [], []
+        for h in (200.0, 2000.0, 20000.0):
+            strong = BoundaryCollection(
+                bcs=tuple(BoundaryCondition("convection", f, h, 293.0)
+                          for f in ("+Z", "+X", "-X", "+Y", "-Y")), ic=None)
+            res = solve_enthalpy_thermal(
+                geometry=part, process=plan,
+                params={"boundary_conditions": strong, "material": "316L"})
+            Tf = np.asarray(res.final_temperature)
+            assert np.isfinite(Tf).all() and np.isfinite(res.peak_temperature).all()
+            means.append(float(np.mean(Tf[solid])))
+            peaks.append(float(np.max(np.asarray(res.peak_temperature))))
+    
+        # ① 单调散热：h 越大末态越冷，且跨度可测（实测 2291→2283→2210→1718 K）
+        assert means == sorted(means, reverse=True), f"末态均值未随 h 单调下降：{means}"
+        assert mean0 - means[1] > 30.0, f"h=2000 仅降 {mean0 - means[1]:.1f}K（散热未生效？）"
+        assert mean0 - means[2] > 300.0, f"h=20000 仅降 {mean0 - means[2]:.1f}K"
+        # ② 常规工艺量级对流动不了峰值（蒸发封顶/剂量决定），极强对流才能压峰
+        assert abs(peaks[1] - peak0) / peak0 < 0.02, "h=2000 不应显著改变峰值"
+>       assert peaks[2] < peak0 - 0.02 * peak0, f"h=20000 应压低峰值：{peaks[2]} vs {peak0}"
+E       AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282
+E       assert 2908.771450618092 < (2937.060997302282 - (0.02 * 2937.060997302282))
+
+tests/test_boundary.py:184: AssertionError
+_____________ test_meltpool_converges_across_beam_resolving_grids ______________
+
+    def test_meltpool_converges_across_beam_resolving_grids():
+        """A0 的核心可验证承诺：**能分辨光斑的两档网格**给出同一熔池。
+    
+        判据（5%）**不放宽**；本测试自 #19 起为**已知红灯**，下面是它红的确切数字与归属，
+        不是解释性辩护。取数条件：试片 1.2×0.6×0.4mm、600W/0.8m·s⁻¹/r=100µm/η=0.45、
+        integrated 源、步数由 CFL 自动推导、CPU 钉住（CUDA_VISIBLE_DEVICES=""）。
+        证据：docs/evidence/2026-10-07/am_t2_a0_test_mirror.log、am_t2_a0_observable.log、
+        am_t2_a0_alignment.log、am_t2_domain_mass.log（HEAD af9fc89 + #19 工作树）。
+    
+        (1) 本测试自己的口径（δ=0：试片表面恰落在节点上，即 `_coupon` 的刀锋对齐）
+              dx=50µm   峰值 2349.07K  熔体积 0.05187mm³(415 体素)
+              dx=25µm   峰值 2478.97K  熔体积 0.05831mm³(3732 体素)
+              dx=12.5µm 峰值 2517.98K  熔体积 0.06778mm³
+            ⇒ 断言 1 峰值差 5.24%（超出判据 0.24 个百分点，pytest 在此即中止）；断言 2 单独评估为
+              熔体积差 11.04%（取自镜像探针 `am_t2_a0_test_mirror.log`，同口径同对齐）⇒ 两条**同红**。
+            加密不变冷（断言 3）仍通过。
+            2026-10-06 登记的旧数（峰值 2670.3/2617.8K、差 1.96%；体积 0.0687/0.0715mm³、差 3.92%）
+            是**旧严格掩膜 `sdf<0`** 下的数，已不可复现；旧绿里含一份口径补偿误差，见 (3)。
+    
+        (2) 换指标被跑前登记的 O1 判据否掉（`am_t2_a0_observable.py:90-125`：观测量入选
+            ⇔ 对**每一种 δ** 且**每一对相邻档**都 <5%，不许挑对齐、不许挑档对）：
+                 观测量     50↔25(δ∈{0,.25})  25↔12.5(δ∈{0,.25})  50↔25(δ=0.5)
+                 峰值 T            5.24%              1.55%            5.15%
+                 Vm(fv 加权)      10.70%             13.49%            1.13%
+                 Vn(体素计数)     11.04%             13.97%            1.13%
+                 ΔH(焓升)          9.74%              5.32%            4.66%
+            ⇒ **四项全不入选**：本轮没有可靠的网格收敛观测量，A0 保持红灯，不换指标。
+    
+        (3) 已量化的一阶成因（同一轮实测，不是推测）：#19 把实体掩膜改成容差 `sdf<1e-12` 后，
+            δ=0 的刀锋面被**整层计入**计算域，而 `thermal_enthalpy` 给部分填充体素配的是
+            **满体素热容**（右端项 `fv·dH/dt = lap + fv·Q − fv·cool` 里 `lap` 未除回 fv）。
+            于是域热容 / 设计体积 = 1.2695×(50µm) / 1.1298×(25µm) / 1.0637×(12.5µm)，而剂量
+            Σfv·dx³ 只有 1.0191 / 1.0048 / 1.0012×——**粗网格凭空多出 24.6%/12.4%/6.2% 的热容**
+            （O(dx)、随加密单调消失；旧 `sdf<0` 是另一侧的 0.8785/0.9384/0.9690×，两错反向，
+            所以旧档对差被补偿成"看似收敛"）。修法与前置条件登记为任务 **#23**（cut-cell 热容按
+            fv 加权 + 计算域取 fv>0 + 重验 CFL/Σfrac 守恒），它是 #10/A3 峰值与熔池形态对比的
+            可信度前置。
+            ⚠ 照实记边界：这只解释 δ=0 一侧；熔体积 Vm/Vn 在**每一种 δ** 下都超 5%（δ=0.25 的
+            50↔25 仍 9.8%），说明还至少有一个机制未被 #23 覆盖，不得宣称 #23 会转绿。
+    
+        (4) 对齐抖动量级（同档、三种 δ 的极差，`am_t2_a0_alignment.log`）：峰值 3.46%(50µm)/
+            3.36%(25µm)，即与档对差同量级 ⇒ 当前噪声地板不足以把"1.55% vs 5.24%"读成收敛结论。
+    
+        dx=100µm(=r) 档不在本判据内：求解器对它发「熔池形态不可信」警告（真实空间欠分辨）。
+        """
+        ext = (1.2e-3, 0.6e-3, 0.4e-3)
+        pl = _coupon_plan(ext)
+        out = []
+        for dx_um in (50., 25.):
+            dx = dx_um * 1e-6
+            g = _coupon(dx, ext)
+            th = solve_enthalpy_thermal(geometry=g, process=pl,
+                                        params={"material": "316L"})
+            # 口径：#19 后统一用 solid_mask（实测对本观测量：50µm 档 0 个体素、25µm 档 28 个体素
+            # =+0.76% 的差异；全域异或 901/3529 体素为阳性对照，见 am_t2_a0_test_mirror.log）
+            melted = (th.peak_temperature > get_material("316L").T_liquidus) & (solid_mask(g.sdf) > 0.5)
+            n = int(jnp.sum(melted))
+            assert n > 0, f"dx={dx_um}µm 应发生熔化（历史缺陷：加密反而不熔）"
+            out.append((float(jnp.max(th.peak_temperature)), n * dx ** 3 * 1e9))
+        pk_c, vol_c = out[0]
+        pk_f, vol_f = out[1]
+        assert abs(pk_c - pk_f) / max(pk_c, pk_f) < 0.05, f"峰值不收敛：{pk_c} vs {pk_f}"
+>       assert abs(vol_c - vol_f) / max(vol_c, vol_f) < 0.05, f"熔体积不收敛：{vol_c} vs {vol_f}"
+E       AssertionError: 熔体积不收敛：0.060249999999999984 vs 0.06946874999999998
+E       assert (0.009218749999999998 / 0.06946874999999998) < 0.05
+E        +  where 0.009218749999999998 = abs((0.060249999999999984 - 0.06946874999999998))
+E        +  and   0.06946874999999998 = max(0.060249999999999984, 0.06946874999999998)
+
+tests/test_enthalpy_thermal.py:368: AssertionError
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_gui_app.py:16: could not import 'PySide6': No module named 'PySide6'
+SKIPPED [1] tests/test_gui_app2.py:18: could not import 'PySide6': No module named 'PySide6'
+SKIPPED [1] tests/test_monitoring.py:285: could not import 'PySide6': No module named 'PySide6'
+2 failed, 216 passed, 3 skipped in 3818.21s (1:03:38)
+pytest exit=1
+elapsed=3839s
+exit=1
+
+===== 发起人收卷对账（2026-10-08 00:54，pytest 已退出后才追加 ⇒ 不污染被记分树）=====
+收：`2 failed, 216 passed, 3 skipped in 3818.21s (1:03:38)`，`pytest exit=1`、`elapsed=3839s`。
+逐条对上面跑前登记的判据：
+① A0 `test_meltpool_converges_across_beam_resolving_grids` **RED，位置＝assert2**（预期命中）。
+   打印的失败行＝`AssertionError: 熔体积不收敛：0.060249999999999984 vs 0.06946874999999998`，
+   相对差 =0.009218749999999998/0.06946874999999998 = **13.270%**，与 `am_t23_capacity_closure_probe.log`
+   P1 的 13.270% 及第 3 轮 O1 矩阵的 Vn 13.27% 同值。
+   **assert1（峰值）在 traceback 里没出现** ⇒ 该断言已转绿（③ 代 3.969% < 5%）⇒ 失败点确已从 assert1 移到 assert2，
+   **判据 5% 一字未改**（两条 assert 的字面阈值都在上面的引文里可见）。
+   体素计数换算复核（不是新测量，是除法）：`482·(50·1e-6)³·1e9 = 0.060249999999999984`、
+   `4446·(25·1e-6)³·1e9 = 0.06946874999999998` 均**逐位等于**打印值 ⇒ 计数只能是 482/4446（n 是 int，乘积已 bitwise 对上）。
+② `test_convection_removes_energy` **RED，位置＝第二条守护**：
+   `AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282` ⇒ 压峰仅 −0.963% < 2%。
+   两个数与 `am_t27_convection_peak_probe.log` 的 new 口径锚点**逐位相同**（该 log 的硬校项）。⇒ **#27 红灯复现，测试一字未动**。
+③ **红灯总数恰为 2**、身份与①②逐一对上 ⇒ **无第三条 ⇒ 无新回归**。因此跑前"顺带盯三条"那项按**排除法**成立：
+   collected 字符总数实测 **221**（进度行 `.EFs` 计数）＝基线 221 项，`216 passed` 覆盖了除①②以外的全部项，
+   故 `test_default_solver_numerical` / `test_e2e_chain` / 参考求解器那条（`test_enthalpy_thermal.py:96` 的 #26 位点）
+   **都在 216 里**（这是从总数减出来的点名证据，未单独跑 -v；若要逐名证据需另发定向跑）。
+④ skip **恰为 3 条且全是 PySide6**：`tests/test_gui_app.py:16`、`tests/test_gui_app2.py:18`、
+   `tests/test_monitoring.py:285`（-rs 打印的理由逐条为 `could not import 'PySide6'`）⇒ 无新增 skip/xfail。
+运行期树况（照实）：起飞树 `d7404f4`、`dirty_src=0`；跑的过程中 `src`/`tests` **零改动**（本轮只编辑
+`docs/`、`.workbuddy/`、`docs/evidence/` 下的档案文件）⇒ 上面这个记分＝③ 代代码（含 #23）的全量基线。
+并发：同一时间窗内在 RTX A6000 上跑了 #25 第 3/4/4b 轮三个 GPU 探针（`docs/evidence/2026-10-08/`），
+与本 CPU 记分跑不共享进程；两跑互不解释对方的数（设备无关性由 §25.7 U2 的 f64 逐位等值撑着）。
+下一步归档＝开发日志 §26.19(g)；#28（两处 docstring 换 ③ 代数字，断言不动）在此记分落地之后才允许动 `tests/`。
