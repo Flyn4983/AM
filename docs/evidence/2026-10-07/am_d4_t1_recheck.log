@@ -1,0 +1,32 @@
+=== D4/T1 复测：两种 dx 拼写在同一物理零件上是否同网格、同结果 ===
+
+-- dx=12.5 µm --
+  mul dx=1.2499999999999999e-05 shape=(97, 49, 33) ns=4180
+  lit dx=1.25e-05 shape=(97, 49, 33) ns=4180
+  V1 shape 相同 ⇒ PASS
+  V3 n_steps 相同 ⇒ PASS
+  mul peak=2586.5640 nml=38149 vol=0.074510 Lx=95
+  lit peak=2600.1498 nml=38825 vol=0.075830 Lx=95
+  V2 Δpeak=1.359e+01 Δvol=1.320e-03 ⇒ FAIL
+  V4 旧登记 nvox=161602 ns=4180 peak=2586.6 vol=0.0745 → 新 nvox=156849 ns=4180 peak=2586.6 vol=0.0745（体素数增删：-4753）
+
+-- dx=25.0 µm --
+  mul dx=2.4999999999999998e-05 shape=(49, 25, 17) ns=1045
+  lit dx=2.5e-05 shape=(49, 25, 17) ns=1045
+  V1 shape 相同 ⇒ PASS
+  V3 n_steps 相同 ⇒ PASS
+  mul peak=2617.7783 nml=4575 vol=0.071484 Lx=47
+  lit peak=2648.8474 nml=4766 vol=0.074469 Lx=47
+  V2 Δpeak=3.107e+01 Δvol=2.984e-03 ⇒ FAIL
+
+-- dx=50.0 µm --
+  mul dx=4.9999999999999996e-05 shape=(25, 13, 9) ns=262
+  lit dx=5e-05 shape=(25, 13, 9) ns=262
+  V1 shape 相同 ⇒ PASS
+  V3 n_steps 相同 ⇒ PASS
+  mul peak=2670.2642 nml=550 vol=0.068750 Lx=23
+  lit peak=2737.3729 nml=607 vol=0.075875 Lx=23
+  V2 Δpeak=6.711e+01 Δvol=7.125e-03 ⇒ FAIL
+
+=== 记分 ===
+FAILS: ['V2 dx=12.5 拼写间结果不同', 'V2 dx=25.0 拼写间结果不同', 'V2 dx=50.0 拼写间结果不同']

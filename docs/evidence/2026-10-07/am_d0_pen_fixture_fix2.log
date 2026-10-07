@@ -1,0 +1,44 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_process_constraint_reduces_penalty_in_joint _______________
+
+    def test_process_constraint_reduces_penalty_in_joint():
+        """联合优化中启用软约束后，工艺杠杆最终罚项显著低于未启用时（同病态初值）。
+    
+        注：本测试固定 ``hard_project=False``，专门验证**软罚项**本身的语义
+        （constraint_weight 把工艺推入可行域）。硬投影的语义由下面的
+        ``test_hard_projection_*`` 系列单独覆盖。
+    
+        起点用 :func:`_deep_keyhole_plan`（VED + 匙孔越界）而不是 ``_high_energy_plan``：
+        后者的"病态"在子盒下界抬升后只剩 0.78 的网格性罚项，且无约束轨迹自己就能归零，
+        末步比较会退化成空断言 ``0.0 < 0.0``（详见该 helper 的 docstring 与实测序列）。
+        """
+        geo = _small_geo()
+        kw = _LIGHT
+        # 同一起点：本档可表达的深匙孔/超窗工艺（能量密度与焓双双越界）
+        init = _deep_keyhole_plan(geo, params=kw)
+        res_free = optimize_geometry_process(
+            geo, material="316L", process_init=init, params=kw, n_steps=6,
+            learning_rate=0.05, smoothness=0.02, constraint_weight=0.0,
+            hard_project=False, verbose=False)
+        res_cons = optimize_geometry_process(
+            geo, material="316L", process_init=init, params=kw, n_steps=6,
+            learning_rate=0.05, smoothness=0.02, constraint_weight=20.0,
+            hard_project=False, verbose=False)
+        hist_free = res_free["constraint_penalty_history"]
+        hist_cons = res_cons["constraint_penalty_history"]
+        # 前提检查（不是放宽，而是把"同一起点确实病态"写成断言）：起点必须显著不可行
+        assert hist_free[0] > 0.5, f"起点并不病态，比较将退化为空断言: {hist_free}"
+        pen_free = hist_free[-1]
+        pen_cons = hist_cons[-1]
+        # 对照组检查：无约束轨迹若自己就回到可行域，末步比较就失去意义（本轮踩过一次，
+        # 症状是 pen_cons=0.000 >= pen_free=0.000）。此时该改的是**夹具/档位**，不是阈值。
+>       assert pen_free > 0.5, \
+            f"对照组（无约束）自己就可行，末步比较退化为空断言: free={hist_free} cons={hist_cons}"
+E       AssertionError: 对照组（无约束）自己就可行，末步比较退化为空断言: free=[3.269628035688605, 1.066024474589073, 0.2218249008629134, 0.0676537645228883, 0.0, 0.0] cons=[3.269628035688605, 0.9651299590476532, 0.2079051852445304, 0.0441587639946055, 0.0, 0.0]
+E       assert 0.0 > 0.5
+
+tests/test_dimensional_optimization.py:423: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_dimensional_optimization.py::test_process_constraint_reduces_penalty_in_joint
+1 failed, 19 deselected in 210.14s (0:03:30)

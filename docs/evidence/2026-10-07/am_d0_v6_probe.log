@@ -1,0 +1,16 @@
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:386: UserWarning: 演示档档位定价：名义工艺 dx=120.0µm > 2r=100.0µm，子盒半径下界已抬到 r≥dx/2=60.0µm，解算时同样按 dx/2 投影（能量守恒，形态/峰值不可用于标定）。要按标定档跑请加密网格或去掉 resolution_policy='demo'。
+  return _chain_schedule(geometry, process, material=material, cfl=cfl,
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py:386: UserWarning: 名义工艺在本网格上欠分辨：hatch_spacing=102.8µm、layer_thickness=40.0µm 小于体素 dx=120.0µm（道距/层厚至少要占一个体素才解得开）。时间调度已按**实际**曝光定价所以数值仍稳定，但逐层累积与熔池形态会失真：请加密网格或把工艺量抬到 ≥ dx。（搜索子盒仍取 ≥ dx 的可分辨下界。）
+  return _chain_schedule(geometry, process, material=material, cfl=cfl,
+== 1) demo 档闸门 5e6 voxel-step ==
+  dim pin5e6: n_steps=1408 vox=1000 voxel_steps=1.41e+06 v_lo=0.500 warns=2
+  e2e50 pin5e6: FAIL ValueError: 本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ 48.8 m/s，而设备上界只有 5 m/s（dx=50.0µm, 最坏路径长=392.2mm, 步数预算=320, 代价上界=5.00e+06 voxel-step
+  e2e150 pin5e6: n_steps=1733 vox=729 voxel_steps=1.26e+06 v_lo=0.500 warns=2
+  e2e030 pin5e6: n_steps=1306 vox=729 voxel_steps=9.52e+05 v_lo=0.500 warns=1
+
+== 2) 只对 laser_power 求导：thermal_tier 是否自动钉档 ==
+  tier keys: ['exposure_bound_s', 'max_steps', 'n_steps', 'resolution_policy'] bounds? True
+  value=1.9883 grad=1.222e-04 finite=True 26.9s
+
+== 3) e2e 50µm/0.9mm 在闸门下的报错信息 ==
+  ValueError: 本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ 48.8 m/s，而设备上界只有 5 m/s（dx=50.0µm, 最坏路径长=392.2mm, 步数预算=320, 代价上界=5.00e+06 voxel-step）。出路：粗化网格／加大预算／走 §25.8 的 D2 或 D3。

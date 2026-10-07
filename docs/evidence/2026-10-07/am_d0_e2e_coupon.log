@@ -1,0 +1,195 @@
+.......F.                                                                [100%]
+=================================== FAILURES ===================================
+_______________________ test_inverse_training_converges ________________________
+
+part = PartGeometry(sdf=Array([[[ 1.96410162e-04,  1.70156212e-04,  1.50000000e-04,
+          1.37228132e-04,  1.32842712e-04...     dtype=float64), origin=Array([-0.0002, -0.0002, -0.0002], dtype=float64), spacing=5e-05, dim=3, name='e2e_coupon')
+
+    def test_inverse_training_converges(part):
+        res = inv.train_process_predictor(
+            part, material="316L", n_steps=20, learning_rate=0.03,
+            n_hidden=16, seed=1, service_stress=150e6,
+            params={"n_grid": 20, "allowable_displacement": 1e-4})
+        hist = res["loss_history"]
+        assert len(hist) == 20
+        # 全程有限
+        assert all(np.isfinite(h) for h in hist), "训练损失出现非有限值"
+        # 单调（非严格）下降趋势：首尾下降比 > 1
+        drop = hist[0] / max(hist[-1], 1e-12)
+        assert drop > 1.05, f"损失未下降 (下降比={drop:.3f})"
+        # 训练后整条链仍可判定
+        plan = res["final_plan"]
+>       out = inv.simulate(part, plan, material="316L", service_stress=150e6,
+                           params={"n_grid": 24, "allowable_displacement": 1e-4})
+
+tests/test_e2e_chain.py:207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/amforge/inverse.py:287: in simulate
+    thermal = _run_thermal(thermal_solver, geometry=geometry, process=process,
+src/amforge/inverse.py:141: in _run_thermal
+    return solve_enthalpy_thermal(geometry=geometry, process=process, params=params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+geometry = PartGeometry(sdf=Array([[[ 1.96410162e-04,  1.70156212e-04,  1.50000000e-04,
+          1.37228132e-04,  1.32842712e-04...     dtype=float64), origin=Array([-0.0002, -0.0002, -0.0002], dtype=float64), spacing=5e-05, dim=3, name='e2e_coupon')
+process = ProcessPlan(laser_power=Array(2850.27863741, dtype=float64), scan_speed=Array(0.00111649, dtype=float64), layer_thickn...at64), powder_feed_rate=Array(0.00071066, dtype=float64), dwell_time=Array(13.23563295, dtype=float64), modality='SLM')
+params = {'material': '316L', 'resolution_policy': 'demo', 'n_steps': 6858, 'max_steps': 200000, ...}
+
+    @register_solver(
+        "thermal.enthalpy",
+        consumes=("PartGeometry", "ProcessPlan"),
+        produces="ThermalHistory",
+        stage="thermal",
+        modality=("SLM", "LSF"),
+        differentiable=True,
+        cost=20.0,
+        defaults={"material": "316L"},
+        doc="enthalpy 法相变热传导：移动高斯热源 + 固液潜热（高保真热解）；"
+            "用 select={'thermal':'thermal.enthalpy'} 显式启用。",
+    )
+    def solve_enthalpy_thermal(*, geometry, process, params=None):
+        """enthalpy 法相变热传导：移动激光热源 + 固液潜热。
+    
+        注册名 ``thermal.enthalpy``；consumes (geometry, process)；produces
+        ``ThermalHistory``。材料自 ``params['material']`` 解析（默认 316L）。
+        """
+        p = dict(params or {})
+        mat = get_material(p.get("material", "316L"))
+    
+        # 边界/初值条件（缺口 #20-②A）：经 params["boundary_conditions"] 可选喂入。
+        # 惰性导入以避免与 amforge.boundary 的循环依赖；缺省（None）时保持原
+        # 全局弱冷却行为，逐位不变、不破坏既有测试。
+        from amforge.boundary import (
+            BoundaryCollection, boundary_terms, initial_enthalpy_field, face_mask,
+        )
+        _bc_raw = p.get("boundary_conditions")
+        bcs = None
+        if _bc_raw is not None:
+            bcs = (_bc_raw if isinstance(_bc_raw, BoundaryCollection)
+                   else BoundaryCollection.from_dict(_bc_raw))
+    
+        rho = float(mat.rho_solid)
+        cp = float(mat.cp_solid)
+        k = float(mat.k_solid)
+        L = float(mat.latent_fusion)                       # 潜热 [J/kg]
+        T_amb = float(mat.T_ambient)
+        T_sol = float(mat.T_solidus)
+        T_liq = float(mat.T_liquidus)
+        T_boil = float(mat.T_boil)                         # 蒸发/沸点（峰值封顶上限）
+    
+        # 蒸发封顶强度：温度越过 (T_boil-200K) 后平滑介入，将峰值钳制在蒸气化上限
+        # 附近。c_evap 经标定使高功率（线能量≫合理窗）工况峰值落在 ~3000K 而非爆到
+        # 8000K+；低温熔化区不介入，故不影响正常相变与可微性。可由 params 覆盖。
+        c_evap = float(p.get("evap_coeff", 3.0e11))
+        T_evap_lo = T_boil - 200.0
+    
+        spacing = jnp.asarray(geometry.spacing, dtype=jnp.float64)  # tracer 安全
+        dx = spacing
+        mask = (geometry.sdf < 0.0).astype(jnp.float64)    # 仅在实体内部加热
+        # 线性化固相体积分数（cut-cell 份额）：|SDF|≤dx/2 的表面体素按被平面切出的
+        # 份额计。用它加权**源项**（而非二值 mask）可把"界面沉积份额"从 O(dx) 一阶
+        # 几何误差降到 O(dx²)——否则同一物理工况在不同网格上沉积的总剂量本身漂移。
+        fv = jnp.clip(0.5 - jnp.asarray(geometry.sdf, dtype=jnp.float64) / dx, 0.0, 1.0)
+        coords = geometry.coords()                          # (..., dim)
+    
+        # 工艺量（保持可微：以 tracer 形式进入热源位置/功率）
+        P = jnp.mean(jnp.atleast_1d(jnp.asarray(process.laser_power)))
+        r = jnp.mean(jnp.atleast_1d(jnp.asarray(process.beam_radius)))
+        eta = jnp.mean(jnp.atleast_1d(jnp.asarray(process.absorption)))
+        _v = jnp.mean(jnp.atleast_1d(jnp.asarray(process.scan_speed)))
+    
+        # 光源离散模型：
+        #   integrated（默认）—— 单元体积分高斯，Σ_i frac_i = 1 到机器精度，故沉积
+        #     能量剂量与 dx 无关，r<dx 时也**无需**人为展宽光束。不做任何网格补偿。
+        #   point —— 旧的中点取值模型（含 r_eff=max(r,dx) 展宽补丁、clip(v_ref/v) 与
+        #     heat_scale=1.4 两处粗网格标定旋钮），仅用于 A/B 对照与复现旧量级。
+        source_model = str(p.get("source_model", "integrated"))
+        if source_model not in ("integrated", "point"):
+            raise ValueError(
+                f"source_model 仅支持 'integrated' 或 'point'，收到 {source_model!r}")
+    
+        # 分辨率档位（D0 §25.10 的严重度分层）：
+        #   strict（缺省，标定档）—— dx>2r 直接报错：峰值/熔池形态无意义，不给数字。
+        #   demo（默认链/装配-GUI 档）—— 把光源半径抬到 dx/2 并**警告+记录**：能量仍守恒，
+        #     但输出不代表可标定的形态。抬半径不是"补偿旋钮"，而是把欠分辨工艺投影到
+        #     chain_schedule() 子盒下界（r ≥ dx/2）上，与优化器可达的那部分工艺盒一致。
+        policy = str(p.get("resolution_policy", "strict"))
+        if policy not in ("strict", "demo"):
+            raise ValueError(
+                f"resolution_policy 仅支持 'strict' 或 'demo'，收到 {policy!r}")
+    
+        # 熔深尺度（物理选择 ≈1.2 倍光束半径）
+        dp = jnp.maximum(r * 1.2, 1e-9)
+    
+        if source_model == "point":
+            r_src = jnp.maximum(r, dx)
+            dp = jnp.maximum(r_src * 1.2, dx)
+            # 热源强度归一化：∫Q dV = η P（连续意义下；离散中点取值不守恒 → 靠下面两旋钮补）
+            Q0 = eta * P / (math.pi * r_src * r_src * math.sqrt(2.0 * math.pi) * dp + 1e-18)
+            Q0 = Q0 * jnp.clip(0.8 / jnp.maximum(_v, 1e-9), 0.3, 3.0)
+            Q0 = Q0 * float(p.get("heat_scale", 1.4))
+        else:
+            r_src = r if policy == "strict" else jnp.maximum(r, 0.5 * dx)
+            if policy != "strict":
+                dp = jnp.maximum(dp, 0.6 * dx)   # 熔深尺度与抬升后的半径同源（1.2·dx/2）
+            Q0 = None
+            # P/v 的一阶效应由「曝光时长 = 路径长/v」自动体现，无需再乘 v_ref/v。
+            laser_power = eta * P * float(p.get("heat_scale", 1.0))
+    
+        hcool = float(p.get("h_cool", 0.5))                # 弱 Newton 冷却 [1/s]
+    
+        (n_layers, n_lines, _x_min, _y_min, _z_min, _x_ext, _y_ext, _z_ext,
+         _spacing_y, path_length) = _scan_topology(coords, process, dim=geometry.dim,
+                                                   solid=_footprint(geometry))
+    
+        alpha0 = k / (rho * cp + 1e-12)
+        cfl = float(p.get("cfl", 0.35))
+        dt_rk2 = _stability_limit_dx2(dx, geometry.dim, alpha0, 1.0)   # SSP-RK2 绝对上限
+        dt_target = dt_rk2 * cfl                                       # 精度目标
+    
+        # 曝光时长是**物理量**：t_exposure = 扫描路径长 / 扫描速度（层间 recoat 停留
+        # 时间的冷却尚未建模，见 docs 缺口清单）。dt = t_exposure/n_steps，于是 n_steps
+        # 只控制时间离散分辨率，加密网格或改步数都**不再**改写注入能量。
+        # （旧写法 dt=min(stability_dt, total·dx/(v·n_steps)) 使总曝光 = n_steps·stability_dt
+        #  ∝ n_steps·dx² —— 网格与步数直接改写能量剂量，实测表现为"越加密越冷"且全案
+        #  不熔化；这正是 2026-10-06 A0 要修的阻塞缺陷。）
+        t_exposure = path_length / jnp.maximum(_v, 1e-9)
+    
+        dt_c = _concrete(dt_target)
+        dt_r = _concrete(dt_rk2)
+        t_exp = _concrete(t_exposure)
+        # 静态曝光上界：trace 下 ``t_exposure`` 是 tracer（含 scan_speed/hatch_spacing），
+        # 但「本次调度最多要覆盖多长时间」是调用方在 eager 用 :func:`chain_schedule`
+        # 钉好的**静态量**。有了它，下面三条时间离散校核就能在 ``jax.grad``/``jit`` 内
+        # 照常执行——A0 之前 trace 下校核整体跳过，等于给显式解法留了一个「步数不足→
+        # 扩散发散→被蒸发封顶伪装成可行结果」的静默洞。
+        _bound = p.get("exposure_bound_s")
+        if _bound is not None:
+            t_bound = float(_bound)
+        else:
+            t_bound = t_exp
+        _ok = (dt_c is not None and dt_r is not None and t_bound is not None)
+        if _ok and t_exp is not None and t_exp > t_bound * (1.0 + 1e-9):
+>           raise ValueError(
+                f"params['exposure_bound_s']={t_bound:.3e}s 小于本算例的实际物理曝光 "
+                f"{t_exp:.3e}s：调度上界必须**覆盖**曝光，否则 dt 会越过稳定上限而发散。"
+                f"请用 chain_schedule() 重算或放大 exposure_margin。")
+E           ValueError: params['exposure_bound_s']=1.723e-01s 小于本算例的实际物理曝光 3.318e+01s：调度上界必须**覆盖**曝光，否则 dt 会越过稳定上限而发散。请用 chain_schedule() 重算或放大 exposure_margin。
+
+src/amforge/thermal_enthalpy.py:662: ValueError
+----------------------------- Captured stdout call -----------------------------
+  step   0  loss = 8.6880e-01
+  step   2  loss = 6.0394e-01
+  step   4  loss = 3.7149e-01
+  step   6  loss = 3.6147e-01
+  step   8  loss = 3.5940e-01
+  step  10  loss = 3.6052e-01
+  step  12  loss = 3.6030e-01
+  step  14  loss = 3.6012e-01
+  step  16  loss = 3.5991e-01
+  step  18  loss = 3.5959e-01
+  step  19  loss = 3.5938e-01
+=========================== short test summary info ============================
+FAILED tests/test_e2e_chain.py::test_inverse_training_converges - ValueError:...
+1 failed, 8 passed in 242.23s (0:04:02)

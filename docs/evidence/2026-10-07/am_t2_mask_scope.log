@@ -1,0 +1,60 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== 机制复核：整数倍 dx 时各几何的 sdf 近零统计（mul 拼写，dx=12.5µm）===
+  box(填满包围盒)           shape=(97, 49, 33)   nvox= 156849 sdf<0= 142880 sdf==0= 13969 |sdf|<1e-12= 18434 min|sdf|nonzero=5.421e-20
+  sphere(r=0.4mm)      shape=(81, 81, 81)   nvox= 531441 sdf<0= 137062 sdf==0=     3 |sdf|<1e-12=     6 min|sdf|nonzero=5.421e-20
+  cyl(r=0.3,h=0.4)     shape=(49, 49, 33)   nvox=  79233 sdf<0=  57248 sdf==0=  1921 |sdf|<1e-12=  3710 min|sdf|nonzero=5.421e-20
+
+=== dx=12.5 µm：三种掩膜约定的拼写不变性 + 空气纳入量 ===
+  box(填满包围盒)           nvox=156849
+    strict 计数 142880/138415  xor= 4465 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9690×真值
+    eps    计数 156849/156849  xor=    0 | 吃进空气     0/ 4785 = 固体的  0.00%/ 3.35% | 体积口径 mul: 1.0637×真值
+    half   计数 156849/156849  xor=    0 | 吃进空气     0/ 4785 = 固体的  0.00%/ 3.35% | 体积口径 mul: 1.0637×真值
+  sphere(r=0.4mm)      nvox=531441
+    strict 计数 137062/137059  xor=    3 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9986×真值
+    eps    计数 137065/137065  xor=    0 | 吃进空气     0/    3 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9986×真值
+    half   计数 143761/143761  xor=    0 | 吃进空气  6696/ 6699 = 固体的  4.89%/ 4.89% | 体积口径 mul: 1.0474×真值
+  cyl(r=0.3,h=0.4)     nvox=79233
+    strict 计数 57248/55459  xor= 1789 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9886×真值
+    eps    计数 59169/59169  xor=    0 | 吃进空气     0/   66 = 固体的  0.00%/ 0.12% | 体积口径 mul: 1.0218×真值
+    half   计数 62205/62205  xor=    0 | 吃进空气  3036/ 3102 = 固体的  5.30%/ 5.42% | 体积口径 mul: 1.0742×真值
+
+=== dx=25.0 µm：三种掩膜约定的拼写不变性 + 空气纳入量 ===
+  box(填满包围盒)           nvox=20825
+    strict 计数 17296/16215  xor= 1081 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9384×真值
+    eps    计数 20825/20825  xor=    0 | 吃进空气     0/ 1241 = 固体的  0.00%/ 7.18% | 体积口径 mul: 1.1298×真值
+    half   计数 20825/20825  xor=    0 | 吃进空气     0/ 1241 = 固体的  0.00%/ 7.18% | 体积口径 mul: 1.1298×真值
+  sphere(r=0.4mm)      nvox=68921
+    strict 计数 17074/17071  xor=    3 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9951×真值
+    eps    计数 17077/17077  xor=    0 | 吃进空气     0/    3 = 固体的  0.00%/ 0.02% | 体积口径 mul: 0.9953×真值
+    half   计数 18853/18853  xor=    0 | 吃进空气  1776/ 1779 = 固体的 10.40%/10.42% | 体积口径 mul: 1.0988×真值
+  cyl(r=0.3,h=0.4)     nvox=10625
+    strict 计数 6992/6555  xor=  437 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9660×真值
+    eps    计数 7497/7497  xor=    0 | 吃进空气     0/   34 = 固体的  0.00%/ 0.49% | 体积口径 mul: 1.0358×真值
+    half   计数 8313/8313  xor=    0 | 吃进空气   816/  850 = 固体的 11.67%/12.16% | 体积口径 mul: 1.1485×真值
+
+=== dx=50.0 µm：三种掩膜约定的拼写不变性 + 空气纳入量 ===
+  box(填满包围盒)           nvox=2925
+    strict 计数 2024/1771  xor=  253 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.8785×真值
+    eps    计数 2925/2925  xor=    0 | 吃进空气     0/  333 = 固体的  0.00%/16.45% | 体积口径 mul: 1.2695×真值
+    half   计数 2925/2925  xor=    0 | 吃进空气     0/  333 = 固体的  0.00%/16.45% | 体积口径 mul: 1.2695×真值
+  sphere(r=0.4mm)      nvox=9261
+    strict 计数 2106/2103  xor=    3 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9820×真值
+    eps    计数 2109/2109  xor=    0 | 吃进空气     0/    3 = 固体的  0.00%/ 0.14% | 体积口径 mul: 0.9834×真值
+    half   计数 2553/2553  xor=    0 | 吃进空气   444/  447 = 固体的 21.08%/21.23% | 体积口径 mul: 1.1904×真值
+  cyl(r=0.3,h=0.4)     nvox=1521
+    strict 计数 872/763  xor=  109 | 吃进空气     0/    0 = 固体的  0.00%/ 0.00% | 体积口径 mul: 0.9638×真值
+    eps    计数 1017/1017  xor=    0 | 吃进空气     0/   18 = 固体的  0.00%/ 2.06% | 体积口径 mul: 1.1240×真值
+    half   计数 1233/1233  xor=    0 | 吃进空气   216/  234 = 固体的 24.77%/26.83% | 体积口径 mul: 1.3628×真值
+
+=== 记分 ===
+FAILS: ['C2 dx=12.5 sphere(r=0.4mm): 半格约定吃进空气 4.89% (>2%)', 'C2 dx=12.5 cyl(r=0.3,h=0.4): 半格约定吃进空气 5.30% (>2%)', 'C2 dx=25.0 sphere(r=0.4mm): 半格约定吃进空气 10.40% (>2%)', 'C2 dx=25.0 cyl(r=0.3,h=0.4): 半格约定吃进空气 11.67% (>2%)', 'C2 dx=50.0 sphere(r=0.4mm): 半格约定吃进空气 21.08% (>2%)', 'C2 dx=50.0 cyl(r=0.3,h=0.4): 半格约定吃进空气 24.77% (>2%)']

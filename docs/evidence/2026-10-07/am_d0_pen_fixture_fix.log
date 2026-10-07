@@ -1,0 +1,43 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_process_constraint_reduces_penalty_in_joint _______________
+
+    def test_process_constraint_reduces_penalty_in_joint():
+        """联合优化中启用软约束后，工艺杠杆最终罚项显著低于未启用时（同病态初值）。
+    
+        注：本测试固定 ``hard_project=False``，专门验证**软罚项**本身的语义
+        （constraint_weight 把工艺推入可行域）。硬投影的语义由下面的
+        ``test_hard_projection_*`` 系列单独覆盖。
+    
+        起点用 :func:`_deep_keyhole_plan`（VED + 匙孔越界）而不是 ``_high_energy_plan``：
+        后者的"病态"在子盒下界抬升后只剩 0.78 的网格性罚项，且无约束轨迹自己就能归零，
+        末步比较会退化成空断言 ``0.0 < 0.0``（详见该 helper 的 docstring 与实测序列）。
+        """
+        geo = _small_geo()
+        kw = _LIGHT
+        # 同一起点：本档可表达的深匙孔/超窗工艺（能量密度与焓双双越界）
+        init = _deep_keyhole_plan(geo, params=kw)
+        res_free = optimize_geometry_process(
+            geo, material="316L", process_init=init, params=kw, n_steps=6,
+            learning_rate=0.05, smoothness=0.02, constraint_weight=0.0,
+            hard_project=False, verbose=False)
+        res_cons = optimize_geometry_process(
+            geo, material="316L", process_init=init, params=kw, n_steps=6,
+            learning_rate=0.05, smoothness=0.02, constraint_weight=20.0,
+            hard_project=False, verbose=False)
+        hist_free = res_free["constraint_penalty_history"]
+        hist_cons = res_cons["constraint_penalty_history"]
+        # 前提检查（不是放宽，而是把"同一起点确实病态"写成断言）：起点必须显著不可行
+        assert hist_free[0] > 0.5, f"起点并不病态，比较将退化为空断言: {hist_free}"
+        pen_free = hist_free[-1]
+        pen_cons = hist_cons[-1]
+        # 软约束把工艺推入可行域：启用后罚项远小于未启用时
+>       assert pen_cons < pen_free, \
+            f"约束未降低罚项: pen_cons={pen_cons:.3f} >= pen_free={pen_free:.3f}"
+E       AssertionError: 约束未降低罚项: pen_cons=0.000 >= pen_free=0.000
+E       assert 0.0 < 0.0
+
+tests/test_dimensional_optimization.py:403: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_dimensional_optimization.py::test_process_constraint_reduces_penalty_in_joint
+1 failed, 19 deselected in 180.47s (0:03:00)

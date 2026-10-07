@@ -1,0 +1,78 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+=== F1/F2：布尔掩膜 vs 线性 cut 份额的体积口径 ===
+
+-- dx=12.5 µm --
+  box(填满包围盒)           [mul] strict= 0.9690× eps= 1.0637× half= 1.0637× frac= 1.0012×
+  box(填满包围盒)           [lit] strict= 0.9387× eps= 1.0637× half= 1.0637× frac= 1.0012×
+    F3 份额逐体素最大变化 max|Δw| = 1.732e-14（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    box(填满包围盒) strict 拼写间体积口径差 = 3.028% （布尔掩膜的整层翻转）
+    box(填满包围盒) frac 拼写间相对差 = 3.590e-16 ⇒ F2 PASS
+    box(填满包围盒) frac 偏差(mul) = +0.119% ⇒ F1 PASS
+  sphere(r=0.4mm)      [mul] strict= 0.9986× eps= 0.9986× half= 1.0474× frac= 1.0003×
+  sphere(r=0.4mm)      [lit] strict= 0.9985× eps= 0.9986× half= 1.0474× frac= 1.0003×
+    F3 份额逐体素最大变化 max|Δw| = 2.176e-14（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    sphere(r=0.4mm) frac 拼写间相对差 = 0.000e+00 ⇒ F2 PASS
+    sphere(r=0.4mm) frac 偏差(mul) = +0.028% ⇒ F1 PASS
+  cyl(r=0.3,h=0.4)     [mul] strict= 0.9886× eps= 1.0218× half= 1.0742× frac= 1.0012×
+  cyl(r=0.3,h=0.4)     [lit] strict= 0.9577× eps= 1.0218× half= 1.0742× frac= 1.0012×
+    F3 份额逐体素最大变化 max|Δw| = 1.299e-14（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    cyl(r=0.3,h=0.4) strict 拼写间体积口径差 = 3.089% （布尔掩膜的整层翻转）
+    cyl(r=0.3,h=0.4) frac 拼写间相对差 = 0.000e+00 ⇒ F2 PASS
+    cyl(r=0.3,h=0.4) frac 偏差(mul) = +0.115% ⇒ F1 PASS
+
+-- dx=25.0 µm --
+  box(填满包围盒)           [mul] strict= 0.9384× eps= 1.1298× half= 1.1298× frac= 1.0048×
+  box(填满包围盒)           [lit] strict= 0.8797× eps= 1.1298× half= 1.1298× frac= 1.0048×
+    F3 份额逐体素最大变化 max|Δw| = 8.660e-15（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    box(填满包围盒) strict 拼写间体积口径差 = 5.865% （布尔掩膜的整层翻转）
+    box(填满包围盒) frac 拼写间相对差 = 1.795e-16 ⇒ F2 PASS
+    box(填满包围盒) frac 偏差(mul) = +0.477% ⇒ F1 PASS
+  sphere(r=0.4mm)      [mul] strict= 0.9951× eps= 0.9953× half= 1.0988× frac= 1.0007×
+  sphere(r=0.4mm)      [lit] strict= 0.9950× eps= 0.9953× half= 1.0988× frac= 1.0007×
+    F3 份额逐体素最大变化 max|Δw| = 8.882e-15（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    sphere(r=0.4mm) frac 拼写间相对差 = 0.000e+00 ⇒ F2 PASS
+    sphere(r=0.4mm) frac 偏差(mul) = +0.066% ⇒ F1 PASS
+  cyl(r=0.3,h=0.4)     [mul] strict= 0.9660× eps= 1.0358× half= 1.1485× frac= 1.0039×
+  cyl(r=0.3,h=0.4)     [lit] strict= 0.9056× eps= 1.0358× half= 1.1485× frac= 1.0039×
+    F3 份额逐体素最大变化 max|Δw| = 6.495e-15（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    cyl(r=0.3,h=0.4) strict 拼写间体积口径差 = 6.037% （布尔掩膜的整层翻转）
+    cyl(r=0.3,h=0.4) frac 拼写间相对差 = 1.143e-16 ⇒ F2 PASS
+    cyl(r=0.3,h=0.4) frac 偏差(mul) = +0.392% ⇒ F1 PASS
+
+-- dx=50.0 µm --
+  box(填满包围盒)           [mul] strict= 0.8785× eps= 1.2695× half= 1.2695× frac= 1.0191×
+  box(填满包围盒)           [lit] strict= 0.7687× eps= 1.2695× half= 1.2695× frac= 1.0191×
+    F3 份额逐体素最大变化 max|Δw| = 4.330e-15（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    box(填满包围盒) strict 拼写间体积口径差 = 10.981% （布尔掩膜的整层翻转）
+    box(填满包围盒) frac 拼写间相对差 = 1.795e-16 ⇒ F2 PASS
+    box(填满包围盒) frac 偏差(mul) = +1.910% ⇒ F1 PASS
+  sphere(r=0.4mm)      [mul] strict= 0.9820× eps= 0.9834× half= 1.1904× frac= 1.0038×
+  sphere(r=0.4mm)      [lit] strict= 0.9806× eps= 0.9834× half= 1.1904× frac= 1.0038×
+    F3 份额逐体素最大变化 max|Δw| = 4.441e-15（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    sphere(r=0.4mm) strict 拼写间体积口径差 = 0.140% （布尔掩膜的整层翻转）
+    sphere(r=0.4mm) frac 拼写间相对差 = 1.928e-16 ⇒ F2 PASS
+    sphere(r=0.4mm) frac 偏差(mul) = +0.384% ⇒ F1 PASS
+  cyl(r=0.3,h=0.4)     [mul] strict= 0.9638× eps= 1.1240× half= 1.3628× frac= 1.0132×
+  cyl(r=0.3,h=0.4)     [lit] strict= 0.8433× eps= 1.1240× half= 1.3628× frac= 1.0132×
+    F3 份额逐体素最大变化 max|Δw| = 3.220e-15（布尔掩膜在同一对上会整层翻转，见上表 strict/half 列）
+    cyl(r=0.3,h=0.4) strict 拼写间体积口径差 = 12.047% （布尔掩膜的整层翻转）
+    cyl(r=0.3,h=0.4) frac 拼写间相对差 = 2.286e-16 ⇒ F2 PASS
+    cyl(r=0.3,h=0.4) frac 偏差(mul) = +1.320% ⇒ F1 PASS
+
+=== F1 收敛性：frac 偏差应随 dx 变细而减小 ===
+  box(填满包围盒)           dx=50/25/12.5 偏差 = +1.910% / +0.477% / +0.119% ⇒ 单调减小 PASS
+  sphere(r=0.4mm)      dx=50/25/12.5 偏差 = +0.384% / +0.066% / +0.028% ⇒ 单调减小 PASS
+  cyl(r=0.3,h=0.4)     dx=50/25/12.5 偏差 = +1.320% / +0.392% / +0.115% ⇒ 单调减小 PASS
+
+=== 记分 ===
+FAILS: 无 —— 线性 cut 份额把体积口径的一阶偏差压到 <2% 且随 dx 收敛，同时天然拼写无关（F2）

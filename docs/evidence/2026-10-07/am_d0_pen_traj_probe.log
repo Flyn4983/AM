@@ -1,0 +1,36 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/inverse.py:142: UserWarning: 体素 dx=120.0µm 大于光束半径 r=61.8µm：横向仅约 1.0 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 档熔宽偏低 ~45%、熔体积偏低 ~36%）。定量熔池形态请取 dx≤r/2。
+  return solve_enthalpy_thermal(geometry=geometry, process=process, params=params)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/inverse.py:142: UserWarning: 演示档（resolution_policy='demo'）：体素 dx=120.0µm > 2r=120.0µm，光源半径已抬到 dx/2=60.0µm 以使该网格上解得开。能量守恒（Σfrac=1）不受影响，但**峰值与熔池形态不代表物理**，不得用于标定或形态判据；标定档请用缺省 resolution_policy='strict'。
+  return solve_enthalpy_thermal(geometry=geometry, process=process, params=params)
+/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/inverse.py:142: UserWarning: 体素 dx=120.0µm 大于光束半径 r=60.0µm：横向仅约 1.0 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 档熔宽偏低 ~45%、熔体积偏低 ~36%）。定量熔池形态请取 dx≤r/2。
+  return solve_enthalpy_thermal(geometry=geometry, process=process, params=params)
+[tier] scan_speed=(0.3, 5.0) beam_radius=(6e-05, 0.0015) layer_thickness=(0.00012, 0.001) hatch_spacing=(0.00012, 0.002)
+
+=== A 现夹具量级(P900/v0.6/lt60→floor/r60/A0.5)
+    pen_init=0.7835  ved=1.042e+11  ved_penalty=0  normalized_enthalpy=33.51  overlap_penalty=0  layer_penalty=0.6667  keyhole_penalty=0.1169
+    pen_free=[0.7835, 0.4189, 0.2221, 0.0777, 0.0, 0.0]
+    pen_cons=[0.7835, 0.4189, 0.2095, 0.033, 0.0, 0.0]   （用时 184s）
+    [判据] 末步比较 pen_cons<0.0: False | 末步可行 pen_cons<0.2: True | 累计 sum_cons=1.4449 < sum_free=1.5022: True | 逐步单调 hc<=hf 全部: True
+
+=== B 中度匙孔(P1600/v0.45/r_floor/A0.6)
+    pen_init=3.0640  ved=2.469e+11  ved_penalty=0.6461  normalized_enthalpy=82.54  overlap_penalty=0  layer_penalty=0.6667  keyhole_penalty=1.751
+    pen_free=[3.064, 5.2727, 8.1687, 7.5796, 7.1226, 6.1493]
+    pen_cons=[3.064, 0.8639, 0.2081, 0.0436, 0.0, 0.0]   （用时 167s）
+    [判据] 末步比较 pen_cons<6.1493: True | 末步可行 pen_cons<0.2: True | 累计 sum_cons=4.1796 < sum_free=37.3569: True | 逐步单调 hc<=hf 全部: True
+
+=== C 深匙孔+超窗(P3800/v_lo/r_floor/A0.85)
+    pen_init=15.8680  ved=8.796e+11  ved_penalty=4.864  normalized_enthalpy=340.1  overlap_penalty=0  layer_penalty=0.6667  keyhole_penalty=10.34
+    pen_free=[15.868, 10.9324, 16.8641, 23.1627, 20.8966, 16.4069]
+    pen_cons=[15.868, 7.5297, 3.2597, 1.1963, 0.2966, 0.066]   （用时 209s）
+    [判据] 末步比较 pen_cons<16.4069: True | 末步可行 pen_cons<0.2: True | 累计 sum_cons=28.2163 < sum_free=104.1307: True | 逐步单调 hc<=hf 全部: True

@@ -1,0 +1,10 @@
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+______________ test_soft_constraint_alone_drives_process_feasible ______________
+tests/test_dimensional_optimization.py:471: in test_soft_constraint_alone_drives_process_feasible
+    assert hc[0] > 0.5, f"起点应当显著不可行: {hc}"
+E   AssertionError: 起点应当显著不可行: [0.3387290320952405, 0.0, 0.0, 0.5195751625610665, 0.6315194341842396, 0.42912565360938904, 0.10538539795772617, 0.0]
+E   assert 0.3387290320952405 > 0.5
+=========================== short test summary info ============================
+FAILED tests/test_dimensional_optimization.py::test_soft_constraint_alone_drives_process_feasible
+1 failed, 1 passed, 19 deselected in 407.39s (0:06:47)

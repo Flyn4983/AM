@@ -1,0 +1,36 @@
+# D0 acceptance run — environment record (written before the run)
+2026-10-07 16:15:19 CST
+interpreter: Python 3.12.3 @ /tmp/amvenv/bin/python
+repo HEAD: 8cdd4c2
+--- uncommitted tree state (the run scores THIS tree, not HEAD) ---
+ M "docs/\345\274\200\345\217\221\346\227\245\345\277\227.md"
+ M src/amforge/geometry.py
+ M src/amforge/inverse.py
+ M src/amforge/process.py
+ M src/amforge/thermal_enthalpy.py
+ M tests/test_dimensional_optimization.py
+ M tests/test_e2e_chain.py
+?? docs/evidence/2026-10-07/
+?? "docs/\345\217\202\350\200\203\350\265\204\346\226\231\346\235\245\346\272\220\344\270\216\350\256\270\345\217\257\345\244\207\345\277\230_2026-10-07.md"
+?? tests/test_geometry_voxelization.py
+--- versions ---
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+jax 0.11.0 | numpy 2.4.6 | optax 0.2.8
+backend after CUDA_VISIBLE_DEVICES=: cpu
+devices: [CpuDevice(id=0)]
+--- nvidia-smi before ---
+2622 MiB, 29 %
+--- command ---
+CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests/ -q  >  am_d0_fullsuite.log
+--- baseline to beat ---
+32 failed, 173 passed, 3 skipped in 1894.88s (0:31:34)  [/tmp/am_pytest_full_a0.log]

@@ -1,0 +1,7 @@
+### test_hard_projection_in_joint_yields_feasible_plan  11:33:11
+.                                                                        [100%]
+1 passed, 19 deselected in 211.98s (0:03:31)
+### test_process_constraint_reduces_penalty_in_joint  11:36:47
+=========================== short test summary info ============================
+FAILED tests/test_dimensional_optimization.py::test_process_constraint_reduces_penalty_in_joint
+1 failed, 19 deselected in 197.18s (0:03:17)

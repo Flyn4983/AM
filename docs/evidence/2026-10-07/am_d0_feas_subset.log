@@ -1,0 +1,35 @@
+.F.....                                                                  [100%]
+=================================== FAILURES ===================================
+_______________ test_process_constraint_reduces_penalty_in_joint _______________
+
+    def test_process_constraint_reduces_penalty_in_joint():
+        """联合优化中启用软约束后，工艺杠杆最终罚项显著低于未启用时（同病态初值）。
+    
+        注：本测试固定 ``hard_project=False``，专门验证**软罚项**本身的语义
+        （constraint_weight 把工艺推入可行域）。硬投影的语义由下面的
+        ``test_hard_projection_*`` 系列单独覆盖。
+        """
+        geo = _small_geo()
+        kw = _LIGHT
+        # 同一起点：高能量病态工艺（未熔合/匙孔区）
+        init = _high_energy_plan(geo)
+        res_free = optimize_geometry_process(
+            geo, material="316L", process_init=init, params=kw, n_steps=6,
+            learning_rate=0.05, smoothness=0.02, constraint_weight=0.0,
+            hard_project=False, verbose=False)
+        res_cons = optimize_geometry_process(
+            geo, material="316L", process_init=init, params=kw, n_steps=6,
+            learning_rate=0.05, smoothness=0.02, constraint_weight=20.0,
+            hard_project=False, verbose=False)
+        pen_free = res_free["constraint_penalty_history"][-1]
+        pen_cons = res_cons["constraint_penalty_history"][-1]
+        # 软约束把工艺推入可行域：启用后罚项远小于未启用时
+>       assert pen_cons < pen_free, \
+            f"约束未降低罚项: pen_cons={pen_cons:.3f} >= pen_free={pen_free:.3f}"
+E       AssertionError: 约束未降低罚项: pen_cons=0.000 >= pen_free=0.000
+E       assert 0.0 < 0.0
+
+tests/test_dimensional_optimization.py:364: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_dimensional_optimization.py::test_process_constraint_reduces_penalty_in_joint
+1 failed, 6 passed, 13 deselected in 703.38s (0:11:43)

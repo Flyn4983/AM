@@ -1,0 +1,20 @@
+dx= 12.5 [mul] nvox=156849 ns=4180 solid(sdf<0)=142880 solid(sdf<dx/2)=156849 peak=2586.5640 vol_strict=0.074510 vol_tol=0.074510
+dx= 12.5 [lit] nvox=156849 ns=4180 solid(sdf<0)=138415 solid(sdf<dx/2)=156849 peak=2600.1498 vol_strict=0.075830 vol_tol=0.075830
+dx= 25.0 [mul] nvox=20825 ns=1045 solid(sdf<0)=17296 solid(sdf<dx/2)=20825 peak=2617.7783 vol_strict=0.071484 vol_tol=0.071484
+dx= 25.0 [lit] nvox=20825 ns=1045 solid(sdf<0)=16215 solid(sdf<dx/2)=20825 peak=2648.8474 vol_strict=0.074469 vol_tol=0.074469
+dx= 50.0 [mul] nvox=2925 ns=262 solid(sdf<0)=2024 solid(sdf<dx/2)=2925 peak=2670.2642 vol_strict=0.068750 vol_tol=0.068750
+dx= 50.0 [lit] nvox=2925 ns=262 solid(sdf<0)=1771 solid(sdf<dx/2)=2925 peak=2737.3729 vol_strict=0.075875 vol_tol=0.075875
+
+=== W1/W2：固体集合的拼写不变性 ===
+  dx= 12.5: 严格掩膜差异=4465 个 | 容差掩膜差异=0 个 | 计数 142880/138415 → 156849/156849
+    W1 PASS(已知敏感) | W2 PASS ⇒ _footprint 约定可直接用于 #19
+  dx= 25.0: 严格掩膜差异=1081 个 | 容差掩膜差异=0 个 | 计数 17296/16215 → 20825/20825
+    W1 PASS(已知敏感) | W2 PASS ⇒ _footprint 约定可直接用于 #19
+  dx= 50.0: 严格掩膜差异=253 个 | 容差掩膜差异=0 个 | 计数 2024/1771 → 2925/2925
+    W1 PASS(已知敏感) | W2 PASS ⇒ _footprint 约定可直接用于 #19
+
+=== W4：三档 vol 极差按口径对比 ===
+  vol_strict: mul 拼写三档 = 0.074510 / 0.071484 / 0.068750  极差=8.38%
+  vol_strict: lit 拼写三档 = 0.075830 / 0.074469 / 0.075875  极差=1.89%
+  vol_tol: mul 拼写三档 = 0.074510 / 0.071484 / 0.068750  极差=8.38%
+  vol_tol: lit 拼写三档 = 0.075830 / 0.074469 / 0.075875  极差=1.89%

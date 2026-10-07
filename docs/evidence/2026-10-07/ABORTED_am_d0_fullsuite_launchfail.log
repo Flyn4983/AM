@@ -1,0 +1,6 @@
+#  launch failure (kept as record, NOT a test run)
+#  time: 2026-10-07 16:15:09
+#  cause: launched with bare 'python'; this shell's PATH has no python
+#         (env does not persist across tool calls). Interpreter is /tmp/amvenv/bin/python.
+nohup: 无法运行命令 'python': 没有那个文件或目录
+#  action: re-launched with absolute interpreter -> am_d0_fullsuite.log

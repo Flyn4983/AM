@@ -1,0 +1,51 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+
+### e2e_sphere_50um  shape=(25, 25, 25) dx=50µm 工艺: P=287.7W v=1.000m/s hatch=103µm lt=40µm r=50µm
+  no-budget cfl=0.35               n_steps=   31223 vox=  15625 voxel_steps=4.88e+08 cpu~  487.9s t_bound=7.8430e-01s path=0.3922m v_lo=0.500 hatch_lo=51µm lt_lo=50µm r_lo=25µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  no-budget cfl=1.00               n_steps=   10928 vox=  15625 voxel_steps=1.71e+08 cpu~  170.8s t_bound=7.8430e-01s path=0.3922m v_lo=0.500 hatch_lo=51µm lt_lo=50µm r_lo=25µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=0.35           FAIL ValueError: 本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ 122 m/s，而设备上界只有 5 m/s（dx=50.0µm, 最坏路径长=392.2mm, 步数预算=128, 代价上界=2.00e+06 voxel-step）。出路：粗化网格／加大预算／走 §25.8 的 D2 或 D
+  pin mvs=2e+06 cfl=1.00           FAIL ValueError: 本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ 42.7 m/s，而设备上界只有 5 m/s（dx=50.0µm, 最坏路径长=392.2mm, 步数预算=128, 代价上界=2.00e+06 voxel-step）。出路：粗化网格／加大预算／走 §25.8 的 D2 或 
+  pin mvs=8e+06 cfl=0.35           FAIL ValueError: 本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ 30.5 m/s，而设备上界只有 5 m/s（dx=50.0µm, 最坏路径长=392.2mm, 步数预算=512, 代价上界=8.00e+06 voxel-step）。出路：粗化网格／加大预算／走 §25.8 的 D2 或 
+  pin mvs=8e+06 cfl=1.00           FAIL ValueError: 本网格的显式热解预算内没有可积的工艺窗口：需要 scan_speed ≥ 10.7 m/s，而设备上界只有 5 m/s（dx=50.0µm, 最坏路径长=392.2mm, 步数预算=512, 代价上界=8.00e+06 voxel-step）。出路：粗化网格／加大预算／走 §25.8 的 D2 或 
+
+### e2e_sphere_100um  shape=(13, 13, 13) dx=100µm 工艺: P=276.5W v=1.000m/s hatch=103µm lt=40µm r=50µm
+  no-budget cfl=0.35               n_steps=    3898 vox=   2197 voxel_steps=8.56e+06 cpu~    8.6s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  no-budget cfl=1.00               n_steps=    1365 vox=   2197 voxel_steps=3.00e+06 cpu~    3.0s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=0.35           n_steps=     910 vox=   2197 voxel_steps=2.00e+06 cpu~    2.0s t_bound=9.1436e-02s path=0.1958m v_lo=2.141 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1', '演示档预算压缩工艺窗口：scan_speed 下界由 0']
+  pin mvs=2e+06 cfl=1.00           n_steps=     910 vox=   2197 voxel_steps=2.00e+06 cpu~    2.0s t_bound=2.6125e-01s path=0.1958m v_lo=0.749 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1', '演示档预算压缩工艺窗口：scan_speed 下界由 0']
+  pin mvs=8e+06 cfl=0.35           n_steps=    3641 vox=   2197 voxel_steps=8.00e+06 cpu~    8.0s t_bound=3.6584e-01s path=0.1958m v_lo=0.535 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1', '演示档预算压缩工艺窗口：scan_speed 下界由 0']
+  pin mvs=8e+06 cfl=1.00           n_steps=    1365 vox=   2197 voxel_steps=3.00e+06 cpu~    3.0s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+
+### e2e_sphere_150um  shape=(9, 9, 9) dx=150µm 工艺: P=273.7W v=1.000m/s hatch=103µm lt=40µm r=50µm
+  no-budget cfl=0.35               n_steps=    1733 vox=    729 voxel_steps=1.26e+06 cpu~    1.3s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=150µm lt_lo=150µm r_lo=75µm warn=['演示档档位定价：名义工艺 dx=150.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  no-budget cfl=1.00               n_steps=     607 vox=    729 voxel_steps=4.43e+05 cpu~    0.4s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=150µm lt_lo=150µm r_lo=75µm warn=['演示档档位定价：名义工艺 dx=150.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=0.35           n_steps=    1733 vox=    729 voxel_steps=1.26e+06 cpu~    1.3s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=150µm lt_lo=150µm r_lo=75µm warn=['演示档档位定价：名义工艺 dx=150.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=1.00           n_steps=     607 vox=    729 voxel_steps=4.43e+05 cpu~    0.4s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=150µm lt_lo=150µm r_lo=75µm warn=['演示档档位定价：名义工艺 dx=150.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=8e+06 cfl=0.35           n_steps=    1733 vox=    729 voxel_steps=1.26e+06 cpu~    1.3s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=150µm lt_lo=150µm r_lo=75µm warn=['演示档档位定价：名义工艺 dx=150.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=8e+06 cfl=1.00           n_steps=     607 vox=    729 voxel_steps=4.43e+05 cpu~    0.4s t_bound=3.9160e-01s path=0.1958m v_lo=0.500 hatch_lo=150µm lt_lo=150µm r_lo=75µm warn=['演示档档位定价：名义工艺 dx=150.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+
+### dim_small_120um  shape=(10, 10, 10) dx=120µm 工艺: P=274.2W v=1.000m/s hatch=103µm lt=40µm r=50µm
+  no-budget cfl=0.35               n_steps=    1408 vox=   1000 voxel_steps=1.41e+06 cpu~    1.4s t_bound=2.0366e-01s path=0.1018m v_lo=0.500 hatch_lo=120µm lt_lo=120µm r_lo=60µm warn=['演示档档位定价：名义工艺 dx=120.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  no-budget cfl=1.00               n_steps=     493 vox=   1000 voxel_steps=4.93e+05 cpu~    0.5s t_bound=2.0366e-01s path=0.1018m v_lo=0.500 hatch_lo=120µm lt_lo=120µm r_lo=60µm warn=['演示档档位定价：名义工艺 dx=120.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=0.35           n_steps=    1408 vox=   1000 voxel_steps=1.41e+06 cpu~    1.4s t_bound=2.0366e-01s path=0.1018m v_lo=0.500 hatch_lo=120µm lt_lo=120µm r_lo=60µm warn=['演示档档位定价：名义工艺 dx=120.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=1.00           n_steps=     493 vox=   1000 voxel_steps=4.93e+05 cpu~    0.5s t_bound=2.0366e-01s path=0.1018m v_lo=0.500 hatch_lo=120µm lt_lo=120µm r_lo=60µm warn=['演示档档位定价：名义工艺 dx=120.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=8e+06 cfl=0.35           n_steps=    1408 vox=   1000 voxel_steps=1.41e+06 cpu~    1.4s t_bound=2.0366e-01s path=0.1018m v_lo=0.500 hatch_lo=120µm lt_lo=120µm r_lo=60µm warn=['演示档档位定价：名义工艺 dx=120.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=8e+06 cfl=1.00           n_steps=     493 vox=   1000 voxel_steps=4.93e+05 cpu~    0.5s t_bound=2.0366e-01s path=0.1018m v_lo=0.500 hatch_lo=120µm lt_lo=120µm r_lo=60µm warn=['演示档档位定价：名义工艺 dx=120.0µm > 2r', '名义工艺在本网格上欠分辨：hatch_spacing=1']
+
+### powderbed_cube_100um  shape=(6, 6, 6) dx=100µm 工艺: P=326.8W v=1.000m/s hatch=103µm lt=40µm r=50µm
+  no-budget cfl=0.35               n_steps=     693 vox=    216 voxel_steps=1.50e+05 cpu~    0.1s t_bound=6.9600e-02s path=0.0348m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  no-budget cfl=1.00               n_steps=     243 vox=    216 voxel_steps=5.25e+04 cpu~    0.1s t_bound=6.9600e-02s path=0.0348m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=0.35           n_steps=     693 vox=    216 voxel_steps=1.50e+05 cpu~    0.1s t_bound=6.9600e-02s path=0.0348m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=2e+06 cfl=1.00           n_steps=     243 vox=    216 voxel_steps=5.25e+04 cpu~    0.1s t_bound=6.9600e-02s path=0.0348m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=8e+06 cfl=0.35           n_steps=     693 vox=    216 voxel_steps=1.50e+05 cpu~    0.1s t_bound=6.9600e-02s path=0.0348m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
+  pin mvs=8e+06 cfl=1.00           n_steps=     243 vox=    216 voxel_steps=5.25e+04 cpu~    0.1s t_bound=6.9600e-02s path=0.0348m v_lo=0.500 hatch_lo=100µm lt_lo=100µm r_lo=50µm warn=['名义工艺在本网格上欠分辨：hatch_spacing=1']
