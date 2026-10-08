@@ -17,31 +17,42 @@
     "their_cost_min_per_track": 14.0,
     "bc": "顶面 Neumann alpha*u；左右前后底全绝热；无对流、无辐射、无蒸发"
   },
+  "spot_convention": {
+    "contract": "ProcessPlan.beam_radius ＝ **1/e² 半径** r_b（σ = r_b/2）",
+    "single_source": "src/amforge/beam.py（spot_sigma / planar_decay / inplane_integral）",
+    "beam_radius_m": 4.2499999999999996e-05,
+    "resolved_by": "#22/T4（2026-10-08）：改前 amforge 默认路径按 1/e 解 ⇒ 与 diffmech 差 √2",
+    "evidence": "docs/evidence/2026-10-08/am_t4_spot_probe_{pre,post}.log"
+  },
   "beam_radius_by_solver_m": {
-    "meltpool.py|c=1": 3.005203820042827e-05,
+    "beam.py|c=2": 4.2499999999999996e-05,
     "meltpool.py|c=2": 4.2499999999999996e-05,
-    "thermal_enthalpy.py|c=1": 3.005203820042827e-05
+    "thermal_enthalpy.py|c=2": 4.2499999999999996e-05
   },
   "beam_census": [
     {
-      "site": "meltpool.py:752",
+      "site": "beam.py:32",
       "coef": 2.0
     },
     {
-      "site": "meltpool.py:877",
+      "site": "meltpool.py:753",
       "coef": 2.0
     },
     {
-      "site": "meltpool.py:1547",
-      "coef": 1.0
+      "site": "meltpool.py:878",
+      "coef": 2.0
     },
     {
-      "site": "thermal_enthalpy.py:268",
-      "coef": 1.0
+      "site": "meltpool.py:1553",
+      "coef": 2.0
     },
     {
-      "site": "thermal_enthalpy.py:271",
-      "coef": 1.0
+      "site": "thermal_enthalpy.py:301",
+      "coef": 2.0
+    },
+    {
+      "site": "thermal_enthalpy.py:304",
+      "coef": 2.0
     }
   ],
   "normalization": {
@@ -53,37 +64,37 @@
   "switches_to_match_benchmark": [
     {
       "item": "Newton 弱冷却（基准无）",
-      "anchor": "thermal_enthalpy.py:628",
+      "anchor": "thermal_enthalpy.py:676",
       "knob": "params[\"thermal\"][\"h_cool\"]=0"
     },
     {
       "item": "蒸发/反冲散热封顶（基准无）",
-      "anchor": "thermal_enthalpy.py:572",
+      "anchor": "thermal_enthalpy.py:611",
       "knob": "params[\"thermal\"][\"evap_coeff\"]=0"
     },
     {
       "item": "heat_scale 手工倍率（必须留 1.0）",
-      "anchor": "thermal_enthalpy.py:594",
+      "anchor": "thermal_enthalpy.py:641",
       "knob": "保持缺省 1.0"
     },
     {
       "item": "表面对流（基准无，FVM 链）",
-      "anchor": "meltpool.py:131",
+      "anchor": "meltpool.py:132",
       "knob": "MeltPoolConfig.h_convection=0"
     },
     {
       "item": "辐射 Stefan-Boltzmann（基准无，FVM 链）",
-      "anchor": "meltpool.py:799",
+      "anchor": "meltpool.py:800",
       "knob": "AMMaterial.emissivity=0（仅对照时）"
     },
     {
       "item": "Fresnel 增强（基准无，FVM 链）",
-      "anchor": "meltpool.py:123",
+      "anchor": "meltpool.py:124",
       "knob": "MeltPoolConfig.fresnel_boost=0"
     },
     {
       "item": "Beer-Lambert 遮挡（基准为面吸收）",
-      "anchor": "meltpool.py:168",
+      "anchor": "meltpool.py:169",
       "knob": "MeltPoolConfig 置大 ⇒ 只顶部吸收"
     }
   ],

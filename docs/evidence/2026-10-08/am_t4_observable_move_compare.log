@@ -1,0 +1,78 @@
+# ===========================================================================
+# #22/T4 可观测移动量探针 —— **跨树对比（compare）**记录＝本任务的**验收面**
+# ===========================================================================
+# CMD:
+#   cd /home/shy/桌面/…/AM-Qoder && CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 \
+#       /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t4_observable_move.py compare \
+#           /tmp/am_t4_move_pre.log /tmp/am_t4_move_post.log \
+#       > /tmp/am_t4_move_compare.log 2>&1      # 退出码 0
+#   compare 只吃两份 log 里的 `JSON {…}` 行（全精度），**不再跑一遍求解器** ⇒ 两副树
+#   的数各自锁死在捕获时刻，不会因为主工作树后续又动了而漂移。
+# TREE:
+#   REPO = 主工作树（c9e0e8b ＋ 5 项改动）    设备 = [CpuDevice(id=0)]
+#   三份 log 的脚本 md5 必须相同 ⇒ M0（否则不是同一把尺子，Δ 无意义）。
+# ---------------------------------------------------------------------------
+# 判据与结果：**M0 / M1 / M2 / M3 全 PASS**
+#   M0 = OK 三份 md5 相同（pre=post=self=5d12a4264209b6aeaca0fc6678dfb165）
+#   M1 = OK **越界改动检测**：缺省 integrated 档（不经 beam）的 final=2902.7429226992699、
+#          peak=3323.1250312774309 在两副树上**逐位相同**。这条是"只场面内三处"的**正面**
+#          证明——`git status` 只能证明文件没被改，证不了行为没被改；反过来 A03 那种
+#          "只改文字"的声明必须由一台跑真实求解器的机器来兜。
+#   M2 = OK fdm 峰值 +33.61 %（方向**可预判**：面积 ÷2 ∧ 总功率守恒 ⇒ 面内功率密度 ×2）
+#          ∧ fdm/point 移动量非零；熔深 **+24.79 %** 与跑前预测的"变浅"**反号** ⇒ 见
+#          post log NOTE N1，该实测数移交 **#33** 作定量前提。
+#   M3 = OK 两副树 16 个浮点读数全有限（NaN/inf 会在 Δ 里伪装成"没变"或"爆炸"）
+# ---------------------------------------------------------------------------
+# 移动量全表（pre → post）：
+#   fdm.peak             3446.053395      → 4604.23736        **+33.61 %**
+#   fdm.depth            0.0001876464322  → 0.0002341598886   **+24.79 %**（预测反号）
+#   fdm.n_melt           276              → 360               **+30.43 %**
+#   fdm.sum_T            7309853.914      → 7437533.995        +1.75 %
+#   enthalpy_point.peak  3222.253978      → 3491.181412        +8.35 %
+#   enthalpy_point.final 2910.51167       → 2906.606777        −0.13 %
+#   enthalpy_integrated  两个量逐位相同（M1）
+# ---------------------------------------------------------------------------
+# NOTE N1（**改前对"两条已登记红灯"的预测在这里被同一批数据否决**）：主探针 post log 的
+#   NOTE N1 已更正——那两条红灯走缺省 integrated 档，被本 M1 证明逐位不动，打印值与
+#   改前基线（am_t23_impl_targeted／am_t27_fullsuite／am_t28_targeted）逐字符相同。
+#   ⇒ "口径改了 ⇒ 旧数必动"是**整体推断**，M1 把它降级成"只有经 beam 的路径才动"。
+# NOTE N2（sum_T 只 +1.75 % 而峰值 +33.61 %，两者不矛盾）：sum_T 是全场求和，被 3071 个
+#   实体体素里**远离光斑**的冷区主导；峰值与 n_melt 才是熔池附近的量。⇒ 汇报移动量
+#   必须**分位置**给，给一个全场和会把物理变化稀释成看起来没变（"平均值掩盖分布"）。
+# ===========================================================================
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+== T4/#22 可观测移动量探针 ==
+phase   = compare
+REPO    = /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder
+devices = [CpuDevice(id=0)]
+本脚本 md5 = 5d12a4264209b6aeaca0fc6678dfb165
+
+M0 三份 md5 相同（同一把尺子量两副树）                        OK  pre=5d12a4264209b6aeaca0fc6678dfb165 post=5d12a4264209b6aeaca0fc6678dfb165 self=5d12a4264209b6aeaca0fc6678dfb165
+
+-- M1 缺省 integrated 档（A03，本轮**不该**动）必须逐位相同 --
+   final  pre=2902.7429226992699  post=2902.7429226992699  逐位相同
+   peak   pre=3323.1250312774309  post=3323.1250312774309  逐位相同
+M1 OK 越界改动检测（默认热解档一个 bit 都不许动）
+
+-- M2 被改路径的移动量（方向照实记 ⇒ 见 docstring 的预测被推翻）--
+   fdm.peak     3446.053395 → 4604.23736  Δ=+33.61%
+   fdm.depth    0.0001876464322 → 0.0002341598886  Δ=+24.79%
+   fdm.n_melt   276 → 360  Δ=+30.43%
+   fdm.sum_T    7309853.914 → 7437533.995  Δ=+1.75%
+   enthalpy_point.peak     3222.253978 → 3491.181412  Δ=+8.35%
+   enthalpy_point.final    2910.51167 → 2906.606777  Δ=-0.13%
+M2 OK fdm 峰值上升（实测 +33.61%）∧ 移动量非零（熔深方向**不预判**：实测 +24.79%，与跑前预测的「变浅」反号 ⇒ 记进 #33 前提）
+
+M3 OK 两副树共 16 个浮点读数全有限
+
+汇总（compare 判据 M0/M1/M2/M3）：PASS

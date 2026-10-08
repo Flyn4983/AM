@@ -1,35 +1,49 @@
-===== #24/T3 全量回归记分（CPU 钉住，交付树）=====
-CMD: CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 /tmp/amvenv/bin/python -m pytest tests -q
-DATE: 结束于 2026-10-08 13:01:17 +0800（正文 `in 3848.51s` ⇒ 起于 ≈11:57；本头部为归档时补记，运行时未抓取命令行）
-TREE: head=65c8cc3 dirty_src=10（与 am_t3_intsnap_probe_post.log 同一副树；实测 src/tests 下 11:17:20 之后零文件被改）
-TALLY: 2 failed, 245 passed, 3 skipped in 3848.51s (1:04:08)  reg_exit=1
+===== #22/T4 全量回归记分（CPU 钉住，交付树）=====
+CMD: cd <repo> && CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 \
+     nohup /tmp/amvenv/bin/python -m pytest tests -q -p no:cacheprovider > /tmp/am_t4_full_regression.log 2>&1 &
+DATE: 正文 `in 3697.10s`；日志文件 mtime＝2026-10-08 17:36:41，等待进程观测到退出＝17:37:04 ⇒ 起于 ≈16:35:24
+TREE: head=c9e0e8b；src/tests 脏项 5（`src/amforge/meltpool.py`、`src/amforge/thermal_enthalpy.py`、
+      `tests/test_enthalpy_thermal.py` 改，`src/amforge/beam.py`、`tests/test_beam_convention.py` 新增）
+      同树证明＝`find src tests -newermt "2026-10-08 16:35:00" -type f -not -path "*__pycache__*"` 在
+      16:57:15 / 17:38 / **17:44:20** 三次实测均＝**0 行**（回归期间与归档前后都未再动 src/tests；
+      #35 那条过期注释因此**留到下轮**再改，以免作废本件的"同一副树"证明）
+      树指纹（16:57:15 与 17:38 各取一次，两次逐字符相同）＝
+      md5(concat of per-file md5, src/**.py)=3330d37f441756b9dce9ed41f4656ee0，
+      md5(concat of per-file md5, src+tests 的 .py)=b87e460d98fe8326445f17cad677f911
+TALLY: 2 failed, 252 passed, 3 skipped in 3697.10s (1:01:37)
 NOTE: N1 两条红灯**必须是已登记的那两条、且打印值逐字不变**（不许放宽、不许换指标、不许新增 skip/xfail）：
 NOTE:      tests/test_boundary.py::test_convection_removes_energy                 （#27）
-NOTE:      tests/test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids
-NOTE:        → `熔体积不收敛：0.060249999999999984 vs 0.06946874999999998`（与 #28 定向日志逐字相同 ⇒ A0 未移动）
-NOTE: N2 基线对账：245 passed ＝ 基线 216 ＋ 本轮新增 29（`tests/test_intsnap_counts.py` 实测收集 29 条）
-NOTE: N3 「248 收集 vs 250 结局」的缺口已当场查平（不是异常）：
-NOTE:      实测 `pytest tests --collect-only` ＝ 248 条；进度行字符实测 `. =245 / F =2 / s =1`＝248；
-NOTE:      汇总行的 3 skipped ＝ 上述 1 条运行期 `test_mbd.py:135` ＋ **2 条模块级 importorskip**
-NOTE:      （`tests/test_gui_app.py:16`、`tests/test_gui_app2.py:18` 的 importorskip——实测 `-rs` 只报这两条：
-NOTE:        `SKIPPED [1] tests/test_gui_app.py:16: could not import 'PySide6'` 与 app2 同款；
-NOTE:        两文件的 vtk importorskip（:17/:19）在 PySide6 之后就轮不到，且 **vtk 本机实为已装**（import 成功），
-NOTE:        故不得写成「PySide6/vtk 缺失」。模块级 skip 发生在收集期 ⇒ **不进** collect-only 计数、**不占**进度字符）
-NOTE:      ⇒ 245＋2＋1＝248 收集项，＋2 模块级 skip＝250 结局；两侧同时闭合，无未解释项。
-NOTE: N4 首跑被我自己的 `timeout 5400` 截断（45 个字符后停止，按 PID 2492629/2492628 停的，未按命令行模式 pkill），
-NOTE:    截断件留存为 /tmp/am_t3_full_reg_partial_truncated.log；本件是 `timeout 14400` 的重跑，非拼接。
-NOTE: N5 诚实边界：本件正文**不含** JAX 设备回退签名（stderr 未并入），故「CPU 钉住」的依据是补记的启动环境
-NOTE:    `CUDA_VISIBLE_DEVICES=""`；本轮**不产任何吞吐/加速数字**（性能一律只在 A6000 上测），故此件不需要设备清单行。
-NOTE: N7 **本轮（#22/T4，见 am_t4_full_regression.log N4）更正 N3 的一处归属**：那 1 条运行期 skip 实为
-NOTE:    `tests/test_monitoring.py:285` 的 `pytest.importorskip("PySide6")`，**不是** `test_mbd.py:135`。
-NOTE:    证据＝2026-10-08 17:43–17:44 两轮实测 `import newton` 本机 **失败**（ModuleNotFoundError）⇒ :135 走 `raises` 分支
-NOTE:    并通过（定向 `-rs`＝7 passed、无 SKIPPED）；定向复核打印 `SKIPPED [1] tests/test_monitoring.py:285:`
-NOTE:    `could not import 'PySide6'`。原 N3 那条归属**未经 `-rs` 定点复核**，属推断；本轮位置映射另发现
-NOTE:    进度行宽实测＝**72/行**（不是 68），按位置反推测试前先量行宽。数量对账不受影响（skipped 仍＝3）。
-.....F....................................................F............. [ 29%]
-........................................................................ [ 58%]
-.........................s.............................................. [ 87%]
-................................                                         [100%]
+NOTE:        → `h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282`
+NOTE:      tests/test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids（A0）
+NOTE:        → `熔体积不收敛：0.060249999999999984 vs 0.06946874999999998`
+NOTE:      两条与 `am_t3_full_regression.log`（#24 那轮）及本轮 `am_t4_spot_probe_post.log` **逐字符相同**
+NOTE:      （实测 `grep -c` 三个字符串在三份文件里各命中 ≥1）⇒ #22 对这两条红灯是 **no-op**，A0 未移动。
+NOTE: N2 基线对账：252 passed ＝ 上一轮 245 ＋ 本轮新增 **7**（`tests/test_beam_convention.py` 实测收集 7 条）。
+NOTE: N3 计数四路闭合（本轮在**无并发压力**下重测，与 #24 轮那次 `tail -3` 读成 252 的教训同源）：
+NOTE:      ① 汇总行结局＝2＋252＋3＝**257**；
+NOTE:      ② 进度字符＝72+72+72+39＝**255**（`. =252 / F =2 / s =1`，逐字符实测）；
+NOTE:      ③ `pytest tests --collect-only -q` 本轮＝**255**（`grep -cE '^tests/.*::'` 与末行
+NOTE:        `255 tests collected in 1.01s` 两路一致，rc=0）；
+NOTE:      ④ 255 收集 ＋ **2 条模块级** importorskip（`test_gui_app.py:16`、`test_gui_app2.py:18`；
+NOTE:        模块级 skip 发生在收集期 ⇒ 不进收集计数、不占进度字符，却计入汇总行 skipped）＝257 结局。
+NOTE: N4 **更正上一轮归档件的一处归属**：`am_t3_full_regression.log` 头部 N3 把那 1 条运行期 skip 记成
+NOTE:    `test_mbd.py:135`。本轮实测：`import newton` 本机 **失败**（`ModuleNotFoundError`），该测试走
+NOTE:    `pytest.raises(RuntimeError)` 分支并**通过**（定向 `-rs`＝7 passed，无 SKIPPED）；真正的运行期
+NOTE:    skip 是 **`tests/test_monitoring.py:285` 的 `pytest.importorskip("PySide6")`**，由两条独立证据钉住：
+NOTE:      (a) 位置映射＝`s` 在进度流第 177 个字符（1-based），收集序第 177 项正是
+NOTE:          `test_monitoring.py::test_monitoring_gui_construct_and_logic`；
+NOTE:      (b) 定向复核打印 `SKIPPED [1] tests/test_monitoring.py:285: could not import 'PySide6'`。
+NOTE:    ⇒ 三条 skip 全为 PySide6 相关（2 模块级＋1 测试内），与「无新增 skip」不冲突（数量 3＝3）。
+NOTE:    ⚠ 方法教训：**进度行宽不是 68**（本机终端下＝72/行），按位置反推测试前必须先量各行宽，
+NOTE:    否则会把结论指到相邻的另一个文件（我第一次就映射成了 `test_meltpool_vof.py`，靠定向 `-rs` 8 passed 否掉）。
+NOTE: N5 诚实边界：本件正文**不含** JAX 设备回退签名（stderr 未并入），「CPU 钉住」的依据是启动环境
+NOTE:    `CUDA_VISIBLE_DEVICES=""`；本轮**不产任何吞吐/加速数字**（性能一律只在 A6000 上测）⇒ 无需设备清单行。
+NOTE: N6 启动器未回显 pytest 退出码（`nohup … &` 直接重定向），故本件**不写** `reg_exit=`；
+NOTE:    由汇总行含 2 failed 可知 rc＝1，但那是**推断**而非实测，故按 N6 单独标注。
+............F....................................................F...... [ 28%]
+........................................................................ [ 56%]
+................................s....................................... [ 84%]
+.......................................                                  [100%]
 =================================== FAILURES ===================================
 ________________________ test_convection_removes_energy ________________________
 
@@ -194,9 +208,8 @@ E       assert (0.009218749999999998 / 0.06946874999999998) < 0.05
 E        +  where 0.009218749999999998 = abs((0.060249999999999984 - 0.06946874999999998))
 E        +  and   0.06946874999999998 = max(0.060249999999999984, 0.06946874999999998)
 
-tests/test_enthalpy_thermal.py:389: AssertionError
+tests/test_enthalpy_thermal.py:391: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_boundary.py::test_convection_removes_energy - AssertionErro...
 FAILED tests/test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids
-2 failed, 245 passed, 3 skipped in 3848.51s (1:04:08)
-reg_exit=1
+2 failed, 252 passed, 3 skipped in 3697.10s (1:01:37)

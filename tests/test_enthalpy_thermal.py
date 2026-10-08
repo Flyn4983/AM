@@ -106,7 +106,9 @@ def test_latent_heat_lowers_peak_temperature():
     r = float(jnp.mean(plan.beam_radius))
     eta = float(jnp.mean(plan.absorption))
     dp = max(r * 1.2, dx)
-    Q0 = eta * P / (3.14159265 * r * r * (2.0 * 3.14159265) ** 0.5 * dp)
+    # 面内积分因子＝π r²/2（契约的 **1/e²** 半径口径，σ=r/2；#22 把生产 `_moving_source`
+    # 从这里曾经的 π r²（＝1/e 口径）改到位，本参考求解器**同批跟上**，否则 ηP 会翻倍。
+    Q0 = eta * P / (0.5 * 3.14159265 * r * r * (2.0 * 3.14159265) ** 0.5 * dp)
     alpha0 = k / (rho * cp)
     dt = 0.35 * dx * dx / (2.0 * 3 * alpha0)
     pos, _ = _build_scan_positions(coords, plan, dx, n_steps=80, dim=part.dim)

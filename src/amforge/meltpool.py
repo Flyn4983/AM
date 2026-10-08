@@ -56,6 +56,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from amforge.beam import inplane_integral, planar_decay
 from amforge.core.contracts import MeltPoolResult, PartGeometry, ProcessPlan, ThermalHistory
 from amforge.core.registry import register_adapter, register_solver
 from amforge.materials import AMMaterial, get_material
@@ -1534,19 +1535,24 @@ def _laser_source_fdm(coords, x_t, *, rb, A_eff, P, absorption_depth, dx):
 
     面内二维高斯 + 沿深度指数衰减（取代旧的表面高斯-z 近似）：
 
-        q(x,y,z) = A_eff · P · exp(−r²/rb²) · exp(−z_d/δ) / (π·rb²·δ)
+        q(x,y,z) = A_eff · P · exp(−ρ²/(2σ²)) · exp(−z_d/δ) / (2π·σ²·δ),  σ = rb/2
 
-    其中 ``z_d = −z``（网格 z 向下为负，取非负），``δ = absorption_depth``。
+    其中 ``z_d = −z``（网格 z 向下为负，取非负），``δ = absorption_depth``，
+    ``rb`` 按契约是 **1/e² 半径**（面内形状与归一化的唯一出处＝`amforge.beam`）。
     归一化使 ∫q dV = A_eff·P（总吸收功率守恒），且表面 (z_d=0) 吸收最强、
     随深度指数衰减——比表面高斯更贴近真实激光穿透。``A_eff`` 为总吸收分数
     （含 Fresnel/表面反射），``δ`` 为有效吸收深度（受网格分辨率限制，取数倍体素）。
     全程纯 jnp 运算，可被 ``jax.grad`` 穿透。
+
+    历史（#22）：面内曾写成 exp(−ρ²/rb²)，即把 `rb` 当 **1/e** 半径，比本模块 VOF
+    表面强度（同文件里就是 1/e² 写法）与 diffmech 宽 √2；归一化 `π·rb²` 与那个
+    旧写法自洽，所以功率守恒一直"看起来是对的"——错的是**束宽**，不是守恒。
     """
     planar2 = (coords[..., 0] - x_t) ** 2 + coords[..., 1] ** 2
     zd = jnp.maximum(-coords[..., 2], 0.0)                       # 进入材料深度（正）
-    planar = jnp.exp(-planar2 / jnp.maximum(rb * rb, 1e-18))
+    planar = planar_decay(planar2, rb)
     depth_decay = jnp.exp(-zd / jnp.maximum(absorption_depth, dx))
-    norm = (jnp.pi * rb * rb) * jnp.maximum(absorption_depth, dx) + 1e-18
+    norm = inplane_integral(rb) * jnp.maximum(absorption_depth, dx) + 1e-18
     return A_eff * P * planar * depth_decay / norm
 
 

@@ -72,6 +72,7 @@ import jax
 import jax.numpy as jnp
 from jax.scipy.special import erf
 
+from amforge.beam import inplane_integral, planar_decay
 from amforge.core.contracts import (
     PartGeometry,
     ProcessPlan,
@@ -281,20 +282,26 @@ def _build_scan_positions(coords, process, dx, *, n_steps, dim, solid=None):
 
 
 def _moving_source(positions_t, cell_centers, Q0, r, dp):
-    """单时刻体积热源：可分离 3D 高斯 Q(x) = Q0·exp(−ρ²_xy/r²)·exp(−z²/(2 dp²))。
+    """单时刻体积热源：可分离 3D 高斯 Q = Q0·exp(−ρ²_xy/(2σ²))·exp(−z²/(2 dp²))，
+    其中面内 σ = 输入半径的一半（契约口径＝**1/e² 半径**，唯一出处见 `amforge.beam`）。
 
     面内与轴向各自单调衰减（恒 ≤ Q0，无放大项），对任意几何（含厚 z 方向）
-    均稳定；∫Q dV = Q0·π r²·dp√(2π) = ηP（与 Q0 归一化一致）。dim>=3 走
+    均稳定；∫Q dV = Q0·(π r²/2)·dp√(2π) = ηP（与 Q0 归一化一致）。dim>=3 走
     面内+轴向双高斯；dim==2 退化为纯面内热斑（仍为数值热固结）。
+
+    历史（#22）：这里曾写成 exp(−ρ²/r²)，即把输入数当 **1/e** 半径用，面内宽度比
+    `_cell_integrated_source`（本模块的**缺省**档）与 diffmech 的 1/e² 写法宽 √2
+    （面积宽 2×）⇒ 同一份工艺参数在两个求解器里不是同一束光。实测证据：
+    `docs/evidence/2026-10-08/am_t4_spot_probe_pre.log`。
     """
     planar = cell_centers[..., :2] - positions_t[:2]
     planar2 = jnp.sum(planar ** 2, axis=-1)
     if cell_centers.shape[-1] >= 3:
         z2 = (cell_centers[..., 2] - positions_t[2]) ** 2
-        decay = jnp.exp(-planar2 / jnp.maximum(r * r, 1e-18)) * \
+        decay = planar_decay(planar2, r) * \
                 jnp.exp(-z2 / jnp.maximum(2.0 * dp * dp, 1e-18))
     else:
-        decay = jnp.exp(-planar2 / jnp.maximum(r * r, 1e-18))
+        decay = planar_decay(planar2, r)
     return Q0 * decay
 
 
@@ -302,10 +309,15 @@ def _cell_integrated_source(position_t, cell_centers, power, r, dp, dx):
     """单元体积分热源：Q_i = power · frac_i / dV，frac_i 为高斯在单元 i 上的解析积分。
 
     与 ``_moving_source``（中点取值）用**同一个空间形状**——面内
-    ``exp(−ρ²/r²)``（等效 σ=r/√2 的高斯）+ 轴向 ``exp(−z²/(2·dp²))``（σ=dp）——
+    ``exp(−2ρ²/r²)``（σ=r/2 的高斯，契约的 1/e² 口径）+ 轴向 ``exp(−z²/(2·dp²))``（σ=dp）——
     但每个单元截获的份额按 erf 差值精确积分：
 
         frac_axis = ½ [erf((c+dx/2 − p)/σ) − erf((c−dx/2 − p)/σ)]
+
+    注意上式的 `σ` 是代码里的 `s_in`，它对应高斯标准差的 **√2 倍**：
+    `exp(−ρ²/s_in²) = exp(−ρ²/(2σ_std²))` ⇒ `σ_std = s_in/√2 = r/2`。旧文字曾把这个
+    写成「等效 σ=r/√2」，与本函数的**实际宽度**差 √2（也与自己声称的"和
+    `_moving_source` 同形状"矛盾）；#22 用二阶矩实测把它对齐到行为上。
 
     三方向可分离相乘，故 Σ_i frac_i = 1（到机器精度），**与 dx、r 的比值无关**。
     于是粗网格不再"漏能量"、细网格不再"稀释峰值"，且 r<dx 时无需人为展宽光束
@@ -648,8 +660,9 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
     if source_model == "point":
         r_src = jnp.maximum(r, dx)
         dp = jnp.maximum(r_src * 1.2, dx)
-        # 热源强度归一化：∫Q dV = η P（连续意义下；离散中点取值不守恒 → 靠下面两旋钮补）
-        Q0 = eta * P / (math.pi * r_src * r_src * math.sqrt(2.0 * math.pi) * dp + 1e-18)
+        # 热源强度归一化：∫Q dV = Q0·(π r²/2)·dp·√(2π) = ηP（连续意义下；离散中点取值
+        # 不守恒 → 靠下面两旋钮补）。面内积分因子的唯一出处＝`beam.inplane_integral`（#22）。
+        Q0 = eta * P / (inplane_integral(r_src) * math.sqrt(2.0 * math.pi) * dp + 1e-18)
         Q0 = Q0 * jnp.clip(0.8 / jnp.maximum(_v, 1e-9), 0.3, 3.0)
         Q0 = Q0 * float(p.get("heat_scale", 1.4))
     else:

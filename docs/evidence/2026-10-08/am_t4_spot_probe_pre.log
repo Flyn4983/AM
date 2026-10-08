@@ -1,0 +1,191 @@
+# ===========================================================================
+# #22/T4 光斑口径探针 —— **改前（pre）**记录（正式口径；取代同日 13:4x 首次捕获与
+# 14:0x 的第二次捕获，两次都因为**尺子本身又改了一版**而作废 ⇒ 见 NOTE N5/N6）
+# ===========================================================================
+# CMD:
+#   git worktree add --detach /tmp/am_pre_wt c9e0e8b      # 分离头指针，**不占主工作树**
+#   cp docs/evidence/2026-10-08/am_t4_spot_probe.py /tmp/am_pre_wt/docs/evidence/2026-10-08/
+#   cd /tmp/am_pre_wt && CUDA_VISIBLE_DEVICES="" PYTHONPATH=src JAX_ENABLE_X64=1 \
+#       /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t4_spot_probe.py pre   # 退出码 0
+#   理由：主工作树在 post 阶段必然带改动（beam.py 新增＋两条求解器改写＋新测试），pre
+#   只能打在**干净的 HEAD 树**上；用分离工作区而不是 `git stash`（共享工作区里禁裸 stash）。
+# TREE:
+#   REPO（探针自证）= /tmp/am_pre_wt      HEAD = c9e0e8b（＝分片 14，#24 收口）
+#   dirty_src = 0  []                     设备 = [CpuDevice(id=0)]（CUDA_VISIBLE_DEVICES="" 钉住）
+#   探针 md5 = 16e1b004dcd99b118e8670cb85cd2b1e（正文末行自证；post 必须同 md5，
+#              否则两阶段不是同一颗尺子 ⇒ 不可比。实测两份 log 末行逐字相同）
+# TALLY:
+#   门槛汇总（pre 硬门）: PASS 判了=['K0-S','K0','K0b','K1','K2','K5','K7'] 失败=[] 缺席=[]
+#   K0-S= OK：估计器 8 副拼写全命中（含**修复后**的 beam.planar_decay 写法）
+#   K0  = OK：口径敏感命中 **46 行**／登记 **50 行**（＋**8** 项计划新增），未登记=[]、
+#           登记未命中=[] ⇒ 前向（每个命中已登记）与后向（每条登记仍在普查里）双向闭合
+#   K0b = OK：58 项 marker 逐条绑定——pre 用**行号键**（旧原文必须正好在登记行，同时兜住
+#           "登记表抄错行号"），且本轮新加的第二副牙：8 项**计划新增行**在 pre 必须
+#           **不存在**（只判"post 有"是半条门，它允许那些行本来就在树里）
+#   K1（正对照，只 pre 判）= OK：偏√2=['A01','A02','A05'] 已合=['A03','D13','D14']
+#   K2 = OK：A04/A06 的归一化文本与实测面内积分一致（都写 π r²、实测 A/πR²=1.000000000）；
+#           可直接测的功率守恒 ΣQ·dV/(ηP)：A05=0.999030412、D13=1.000000000、D14=1.000000000
+#   K5 = OK：σ=D4/4=2.125000e-05 m、c2=D4/2=4.250000e-05 m、c1=√2σ=3.005204e-05 m、
+#           两输入同 σ=True、R_c1/R_c2=1/√2=True、同数 σ 比=√2=True、面积比=2×True
+#   K7 = OK：两条已登记红灯的 assert 行原文与 HEAD 逐字相同（阈值/指标未换）
+# ---------------------------------------------------------------------------
+# 读数（口径分裂的**大小**，二阶矩实测 σ=√(⟨ρ²⟩/2)，与拼写无关）：
+#   A01/A02/A05（`thermal_enthalpy._moving_source` 两分支、`meltpool._laser_source_fdm`）
+#     σ_实测 = 3.005203820e-05 = R/√2 ⇒ σ/(R/2) = **1.414213562**（＝√2，面积差 2×）
+#   A03（`_cell_integrated_source`＝**缺省** source_model="integrated"）
+#     σ_实测 = 2.125283314e-05 ⇒ σ/(R/2) = **1.000133324**（已合契约；1.3e-4 是中点求积
+#     的离散偏差，n=401 vs n=801 之差落在 K3 前置的 1e-3 内 ⇒ 不是物理）
+#   D13/D14（diffmech `gaussian_heat_source`/`moving_gaussian_source`）= **1.000000000**
+#   ⇒ 同一个 `beam_radius` 输入数在**默认熔池求解器**（meltpool.fdm，A05）与
+#     **默认热解求解器**（thermal.enthalpy 的 integrated 档，A03）之间就差 √2（面积 2×）。
+# ---------------------------------------------------------------------------
+# NOTE N1（普查的**净新增可见性**）：估计器词汇从 7 个扩到 10 个（加 planar2/rsq/r_src）
+#   后才看见 6 行：thermal_enthalpy:291/294/297/652、meltpool:1545、am_microstructure:558、
+#   particle_am:1205。其中 294/297/652 就是**要改的三条 c1**——旧词汇（只认 beam_radius/
+#   r_b/rb/r2/…）把它们**整条漏掉** ⇒ K0 的"登记未命中"把它们报成 VOID。教训形态：尺子的
+#   词汇缺口会伪装成"树是干净的"；K0-S 自检（含修复后拼写）＋ K0 双向对账是同一枚硬币。
+# NOTE N2（**文字与行为差 √2**，新发现）：`_cell_integrated_source` 的 docstring 写
+#   「面内 exp(−ρ²/r²)（等效 σ=r/√2 的高斯）」，但它把 erf 参数写成 `Δ/s_in` 且
+#   `s_in = r/√2` ⇒ 实际 σ = s_in/√2 = **r/2**：该函数**行为已合契约、文字不合**，
+#   而且文字声称"与 _moving_source 同一个空间形状"——那句在当前树下是**假的**
+#   （两者差 √2），改完才第一次为真。判据＝实测 σ（A03=1.000133）站在行为这边
+#   ⇒ 本轮改文字不改行为（登记表 A09）。这就是"契约说 1/e²、代码按 1/e 解、文档照抄
+#   代码的错"的三层脱节。
+# NOTE N3（首次 pre 是**红的**，且红在探针自己身上；四处探针缺陷）：
+#   ① SPOT 词汇缺 planar2/rsq/r_src ⇒ K0 报 A01/A02/A04 VOID；
+#   ② K5 把「同一输入数的宽度比 √2」与「描述同一 σ 的输入数比 1/√2」混为一谈 ⇒
+#      自己给自己立了条过不去的门槛；
+#   ③ K7 的两条 needle 是**凭记忆编的**（`assert peak_low <`／`assert t_last` 在 HEAD
+#      里根本不存在）⇒ 判据自身失效；改为从 `grep -n assert` 实测抄录
+#      （test_boundary.py:203 对流压峰、test_enthalpy_thermal.py:384/388/389/390）；
+#   ④ gate() 用整条长标题当 key ⇒ HARD 查不到 ⇒ 汇总行打印「判了=[] 缺席=全部」而
+#      **总判仍是绿**（若没盯 `缺席` 一眼这就是个哑门）。
+#   四处改完才是本 log。归档理由：#24 的「门槛必须可被正确实现达到」第一次以**门槛
+#   作者踩到自己立的杠**的形式显形——pre 红不等于树红，必须先分辨红在哪一侧。
+# NOTE N4（范围声明）：本轮只动**面内**口径（5 行代码＋4 行文字），σ_z=1.2·r、max(rb,dx)、
+#   0.5·dx、dx>2r、1.5·rb、1.8·rb、heat_scale=1.4、clip(0.8/v)、α=0.54 一律不改 ⇒ K6
+#   12/12 读数全部移交 **#33**；D08/D15 的「1/(πR²) 配 ∫exp(−2ρ²/R²)=πR²/2 ⇒ 整因子差 2」
+#   是**另一件事**（分布归一，非口径）⇒ 另立条目 #34，见开发日志 §26.25。
+# NOTE N5（第二次作废：post 的行号键必然失效）：首次在干净 HEAD 工作区重跑 post 才暴露
+#   ——本轮要在两个文件顶部各加一行 import ⇒ 同文件全部登记行整体平移；且改成
+#   `planar_decay(planar2, r)` 的行不再含 exp()/π ⇒ 天然退出命中集。故 K0 在 post 改判
+#   「文本键前向门（未登记⇒VOID）＋行号漂移读数」，后向的实质保证移交 K0b（旧写法整
+#   文件消失∧新写法存在）与 K4（c1 残留＝0 ∧ beam 单点出处 ∧ 越界文件门）。
+# NOTE N6（第三次作废：post 的两个**假**红灯，红在门上不在树上）：post 首跑（md5 6314f787）
+#   硬门 FAIL=['K0','K2']，两条都是探针自己的缺陷，不是树的缺陷——
+#   ① **K2 报「半修！」是假的**：`area_factor_claimed` 仍按**登记行号**读归一化文本，
+#      而 import 行让行号整体下移 ⇒ 读到无关文本、回落成"声称 π r²"，与实测 A/πR²=0.5
+#      冲突 ⇒ 把**已经改对**的 A04/A06 判成半修。修法＝定位方式随口径走（post 按
+#      `post_marker` 找行、pre 按登记行；都找不到 ⇒ 返回空串，让回落方向仍然是**红**）。
+#      这条与 N5 同族：**凡是按行号绑定的读法，改完代码必然失真**——普查能换文本键，
+#      窗口读取也要换；只换一半就得到"看起来在抓半修、其实在报行数"的门。
+#   ② **K0 的 5 行未登记是真的"没登记"，不是误报**：`src/amforge/beam.py:5/32/37`（新模块
+#      自己的契约行与两处写法本体）＋ `meltpool.py:1547`、`thermal_enthalpy.py:318`（本轮
+#      新增的**历史/澄清段**，它们引用了旧写法）。引用不豁免——普查的意义是"每一行带
+#      口径的行都要有归属"，故登记为 planned 行 Z04–Z08（＋原 Z01–Z03），post 前向门据此
+#      认领、pre 断言其不存在。**不改写文字去绕开尺子**（那等于把命中清单当成可协商项）。
+#   尺子第三次变 ⇒ 两颗 md5 重新对齐：本 log 与 post 同为 16e1b004。
+# ===========================================================================
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+== T4/#22 光斑口径探针 ==
+phase   = pre
+REPO    = /tmp/am_pre_wt
+devices = [CpuDevice(id=0)]
+dirty_src = 0  []
+外证  D4σ=8.500000e-05 m ⇒ σ=D4/4=2.125000e-05 m；c2 半径=D4/2=4.250000e-05 m；c1 半径=√2σ=3.005204e-05 m
+实测网格  HALF=2.404163e-04 m（=8·c1 半径）、n=401（另跑 n=801 自检收敛）
+K0-S 估计器自检（8 副拼写全命中，含修复后的正确拼写）                                   OK  未命中=[]
+
+-- K0 普查：口径敏感命中 46 行；登记 50 行（＋8 项计划新增）--
+   [登记] src/amforge/core/contracts.py:275: * self.beam_radius ** 3)
+   [登记] src/amforge/inverse.py:834: w = 2.0 * plan.beam_radius * jnp.sqrt(1.0 + jnp.maximum(dH, 0.0) / 8.0)
+   [登记] src/amforge/meltpool.py:751: r2 = ((xs[:, None] - xL) ** 2 + (ys[None, :] - yL) ** 2)
+   [登记] src/amforge/meltpool.py:752: I = (2.0 * P / (jnp.pi * r_b ** 2)) * jnp.exp(-2.0 * r2 / r_b ** 2)   # [W/m²]
+   [登记] src/amforge/meltpool.py:878: / process.beam_radius ** 2)
+   [登记] src/amforge/meltpool.py:1322: c2 = beam_radius ** 2 / (8.0 * alpha)          # c² = r_b²/(8α)
+   [登记] src/amforge/meltpool.py:1332: expo = -(2.0 / beam_radius ** 2) * (
+   [登记] src/amforge/meltpool.py:1340: / (rho_cp * jnp.pi ** 1.5 * alpha * beam_radius))
+   [登记] src/amforge/meltpool.py:1545: planar2 = (coords[..., 0] - x_t) ** 2 + coords[..., 1] ** 2
+   [登记] src/amforge/meltpool.py:1547: planar = jnp.exp(-planar2 / jnp.maximum(rb * rb, 1e-18))
+   [登记] src/amforge/meltpool.py:1549: norm = (jnp.pi * rb * rb) * jnp.maximum(absorption_depth, dx) + 1e-18
+   [登记] src/amforge/process.py:216: denom = jnp.sqrt(jnp.pi * alpha * scan_speed * beam_radius ** 3)
+   [登记] src/amforge/thermal_enthalpy.py:291: planar2 = jnp.sum(planar ** 2, axis=-1)
+   [登记] src/amforge/thermal_enthalpy.py:294: decay = jnp.exp(-planar2 / jnp.maximum(r * r, 1e-18)) * \
+   [登记] src/amforge/thermal_enthalpy.py:297: decay = jnp.exp(-planar2 / jnp.maximum(r * r, 1e-18))
+   [登记] src/amforge/thermal_enthalpy.py:315: s_in = jnp.maximum(r, 1e-12) / math.sqrt(2.0)
+   [登记] src/amforge/thermal_enthalpy.py:652: Q0 = eta * P / (math.pi * r_src * r_src * math.sqrt(2.0 * math.pi) * dp + 1e-18)
+   [登记] src/diffmech/methods/am/am_microstructure.py:558: dist2 = jnp.sum(diff ** 2, axis=-1) + 1e-30
+   [登记] src/diffmech/methods/am/am_microstructure.py:560: w = jnp.exp(-dist2 / (2.0 * (2.0 * dx) ** 2))
+   [登记] src/diffmech/methods/am/am_thermal.py:126: r2 = cfg.beam_radius ** 2
+   [登记] src/diffmech/methods/am/am_thermal.py:127: pi_r2 = float(np.pi) * r2
+   [登记] src/diffmech/methods/am/am_thermal.py:171: q = (2.0 * absorbed) / pi_r2 * jnp.exp(-2.0 * rsq / r2)
+   [登记] src/diffmech/methods/am/particle_am.py:665: r2 = cfg.beam_radius ** 2
+   [登记] src/diffmech/methods/am/particle_am.py:666: pi_r2 = jnp.pi * r2
+   [登记] src/diffmech/methods/am/particle_am.py:679: q = (2.0 * absorbed) / pi_r2 * jnp.exp(-2.0 * rsq / r2)
+   [登记] src/diffmech/methods/am/particle_am.py:1188: r2 = cfg.beam_radius ** 2
+   [登记] src/diffmech/methods/am/particle_am.py:1192: pi_R2 = jnp.pi * r2
+   [登记] src/diffmech/methods/am/particle_am.py:1203: ring_R2 = (1.8 * cfg.beam_radius) ** 2
+   [登记] src/diffmech/methods/am/particle_am.py:1204: beam_intensity = jnp.exp(-2.0 * rsq / r2)
+   [登记] src/diffmech/methods/am/particle_am.py:1205: catchment = (1.0 / (jnp.pi * ring_R2)) * jnp.exp(-2.0 * rsq / ring_R2)
+   [登记] src/diffmech/methods/am/powder_bed.py:675: d_melt = 1.2 * rb * jnp.sqrt(jnp.maximum(ved_ / ved_ref, 1e-12))
+   [登记] src/diffmech/methods/fvm/thermal.py:404: pi_r2 = math.pi * r2
+   [登记] src/diffmech/methods/fvm/thermal.py:409: q2d = (2.0 * absorbed) / pi_r2 * jnp.exp(-2.0 * rsq / r2)
+   [登记] src/diffmech/methods/fvm/thermal.py:443: q2d = (2.0 * absorbed) / (math.pi * r2) * jnp.exp(-2.0 * rsq / r2)
+   [登记] src/diffmech/preprocess/mesh_primitives.py:160: r2 = (cc[..., 0] - cx) ** 2 + (cc[..., 1] - cy) ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:178: r2 = (cc[..., 0] - cx) ** 2 + (cc[..., 1] - cy) ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:179: mask = (r2 >= r_inner * r_inner) & (r2 <= r_outer * r_outer)
+   [登记] src/diffmech/preprocess/mesh_primitives.py:203: r2 = (cc[..., 0] - hx) ** 2 + (cc[..., 1] - hy) ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:250: r2 = (cc[..., 0]) ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:254: in_notch = r2 + (cc[..., 1]) ** 2 <= notch_radius * notch_radius
+   [登记] src/diffmech/preprocess/mesh_primitives.py:257: r2 + (cc[..., 1] - width / 2.0) ** 2 <= notch_radius * notch_radius
+   [登记] src/diffmech/preprocess/mesh_primitives.py:261: r2 + (cc[..., 1] + width / 2.0) ** 2 <= notch_radius * notch_radius
+   [登记] src/diffmech/preprocess/mesh_primitives.py:296: r2 = cc[..., 0] ** 2 + cc[..., 1] ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:304: r2 = cc[..., 0] ** 2 + cc[..., 2] ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:312: r2 = cc[..., 1] ** 2 + cc[..., 2] ** 2
+   [登记] src/diffmech/preprocess/mesh_primitives.py:336: r2 = cc[..., 0] ** 2 + cc[..., 1] ** 2
+K0 普查完备（未登记／行号漂 ⇒ VOID）                                          OK  未登记=[] 登记未命中=[]
+K0b 文本绑定（两副口径，共 58 项）                                            OK  异常=[]
+
+-- 二阶矩实测：σ_实测 与契约 σ=R/2 之比（量的不是拼写，是实际多宽）--
+   [A01] σ=3.005203820e-05  σ/(R/2)=1.414213562  ΣQ·dV/(ηP)=  —    src/amforge/thermal_enthalpy.py:294
+   [A02] σ=3.005203820e-05  σ/(R/2)=1.414213562  ΣQ·dV/(ηP)=  —    src/amforge/thermal_enthalpy.py:297
+   [A05] σ=3.005203820e-05  σ/(R/2)=1.414213562  ΣQ·dV/(ηP)=0.999030412  src/amforge/meltpool.py:1547
+   [A03] σ=2.125283314e-05  σ/(R/2)=1.000133324  ΣQ·dV/(ηP)=  —    src/amforge/thermal_enthalpy.py:315
+   [D13] σ=2.125000000e-05  σ/(R/2)=1.000000000  ΣQ·dV/(ηP)=1.000000000  src/diffmech/methods/fvm/thermal.py:409
+   [D14] σ=2.125000000e-05  σ/(R/2)=1.000000000  ΣQ·dV/(ηP)=1.000000000  src/diffmech/methods/fvm/thermal.py:443
+K1 pre 正对照（见到 c1 位点偏 √2，且已有位点为 1.0）                              OK  偏√2=['A01', 'A02', 'A05'] 已合=['A03', 'D13', 'D14']
+   [A04] 归一化（登记行652）实际写着 π r²（⇒ 要求 A/πR²=1.0）；实测 A/πR²=1.000000000 ⇒ 一致
+   [A06] 归一化（登记行1549）实际写着 π r²（⇒ 要求 A/πR²=1.0）；实测 A/πR²=1.000000000 ⇒ 一致
+K2 内部一致性（衰减实测积分 == 源码实际写的归一化因子）＋ 功率守恒                            OK  异常=[]
+K3 改前不判（post 专属）
+K4 改前不判（post 专属）
+K5 绝对期望（σ=D4/4=21.25µm、c2=D4/2=42.5µm、c1=√2σ、同数 σ 比=√2、面积比=2×）   OK  √2σ=True D4/4=True D4/2=True 两输入同σ=True R_c1/R_c2=1/√2=True 同数σ比=√2=True 面积比=2×True
+
+-- K6 出域不变量读数（本轮一律不改 ⇒ #33 靶表）--
+   在  σ_z：dp = 1.2·r（thermal_enthalpy :646）
+   在  σ_z：dp = 1.2·r_src（point 档 :650）
+   在  σ_z：dp = max(r_eff·1.2, dx)（fdm :1631）
+   在  r_eff = max(rb, dx)（fdm :1630）
+   在  r_src = max(r, dx)（point :649）
+   在  demo 档抬半径 0.5·dx（:656）
+   在  分辨率报错门 dx > 2.0·r_nom（:453）
+   在  熔盒尺度 max(R, 1.5·beam_radius)（:1360）
+   在  point 档旋钮 heat_scale 缺省 1.4（:654）
+   在  point 档旋钮 clip(0.8/v, 0.3, 3.0)（:653）
+   在  集粉宽度 1.8·beam_radius（diffmech :1203）
+   在  熔深经验 1.2·rb（diffmech powder_bed :675）
+   读数 同一输入 R=4.250000e-05：σ_xy 改前=3.005204e-05 → 改后=2.125000e-05（÷√2）；σ_z 由 1.2·R 决定＝5.100000e-05 **本轮不动** ⇒ 长宽比 σ_z/σ_xy 1.697056 → 2.400000（×√2）⇒ #33
+K7 已登记红灯的 assert 行原文逐字未动（阈值/指标未换）                                OK  异常=[]
+
+门槛汇总（pre 硬门）: PASS 判了=['K0-S', 'K0', 'K0b', 'K1', 'K2', 'K5', 'K7'] 失败=[] 缺席=[]
+探针 md5 = 16e1b004dcd99b118e8670cb85cd2b1e
