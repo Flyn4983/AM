@@ -1,0 +1,158 @@
+===== #27 蒸发封顶选型探针（CPU 钉住，**只测不改**：src/ 与 tests/ 一字未动）=====
+CMD: cd <repo> && nohup env CUDA_VISIBLE_DEVICES="" JAX_ENABLE_X64=1 \
+     /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t27_evap_sink_probe.py \
+     > /tmp/am_t27_evap_sink_probe.log 2>&1 &
+     （PYTHONPATH 由探针内部对每个子进程注入 src；父进程只做判据与算术）
+DATE: 正文 `elapsed=943s`；抓取件 mtime＝2026-10-08 20:12:08 ⇒ 起于 ≈19:56:45
+      （`find src tests -newermt "2026-10-08 19:38:00" -type f -not -path "*__pycache__*"` 在 20:08 实测 **0 行**
+      ⇒ 从早于起跑 19 分钟起，src/tests 就没有文件被写过）
+TREE: head=56ad25b；`git status --porcelain -- src tests` 实测 **0 行**（本轮唯一脏项＝本探针 .py 与新归档件）
+      ⇒ 所谓"只测不改"由该计数证明，不由措辞证明。HK 封顶＝探针里 monkeypatch `TE._evap_sink`
+      （rhs 在 trace 期按全局名解析），生产文件零字节变动。
+PROBE: docs/evidence/2026-10-08/am_t27_evap_sink_probe.py（md5 由 `md5sum` 取，非手抄）＝
+       dda561322c5d502e69158e37c355c342
+DEVICE: CUDA_VISIBLE_DEVICES=''（用户 2026-10-08 指示「先不要占用GPU」）；每次子进程启动打印
+        `cuInit(0) failed: CUDA_ERROR_NO_DEVICE … Falling back to cpu` ＝ 回落 CPU 的正面证据。
+        ⚠ G0 要求与 pytest 锚点**逐位**相同 ⇒ 本件天然只能在单一设备上读，跨设备比较无效。
+NOTE: N1 **本件是第二次跑**：首跑（`/tmp/am_t27_evap_sink_probe.log.partial-run1`，105 行，18:26）在
+NOTE:    G3 测量臂崩溃 ⇒ 无处置打印、无归档件。两处**探针侧**修复，判据一字未动：
+NOTE:      ① `zs = np.where(melted.any(axis=(0,1)))` 返回**元组**而非数组 ⇒ `zs.size` 抛
+NOTE:         `AttributeError: 'tuple' object has no attribute 'size'`（CHILD 第 181 行）⇒ 补 `[0]`；
+NOTE:      ② S-particle 场景原来只按**生产 import 口径**（顶层 `diffmech.…`）调一次 ⇒ 该调用被
+NOTE:         `particle_am.py:1183` 的 isinstance 守卫挡在 :1184 ⇒ S11 位点判 MISS。现同场景内**两副口径
+NOTE:         各调一次**并打印 `alias_same_class`，于是位点变 unit-only，而"生产路径返回零"这一事实
+NOTE:         改由 N3 的读数直接承载 ⇒ **分类变化的因果是探针改动，不是生产路径变通**（照实登记）。
+NOTE:    首跑已得且本跑**逐位复现**的读数＝G0a/G0b/G0c、G1a/G1b/G1c+V1、G2 四臂全表、G2c、G4a/G4b
+NOTE:    （⇒ 同一副树、同一口径、可复现）；本跑新增＝G3 三臂与末尾处置打印。
+NOTE: N2 G0＝量的到底是红灯那条测试的夹具吗？peak0 实测 2937.060997302282、peaks(h=20000) 实测
+NOTE:    2908.771450618092，两数与 `am_t4_full_regression.log` 里 pytest 打印的那一对锚点**逐字符相同**
+NOTE:    （实测该整串 `2908.771450618092 vs 2937.060997302282` 在那份归档件里命中 3 行）；末态均值
+NOTE:    2720.8020 命中登记的 2720.8±0.05 ⇒ PASS。峰值落点 idx=[2,3,6] 的 fv=0.5000000000000003
+NOTE:    且自由面=1.0 ⇒ #27 登记的"刀锋面"机制在本探针口径下**被正面看见**，不是推测。
+NOTE: N3 S-particle 读数（本轮新增，＝新任务 **#36** 的证据）：
+NOTE:    `{"part": [0.0, 0], "part_srcalias": [0.00035000000000000005, 2], "alias_same_class": false}`
+NOTE:    ⇒ 生产口径（顶层别名）Σ=0.0／非零 0，与守卫同类（`src.` 别名）Σ=3.5e-4／非零 2，
+NOTE:    两个 `LSFConfig` **不是同一个类对象** ⇒ LSF/DED 粉体质量在真实调用链上**从不累加**。
+NOTE: N4 **G3 的形态读数退化，禁止当"封顶与 #33 解耦"的证据**：三臂 width=depth=length=0.92 mm、
+NOTE:    area_top=0.8464 mm²、Vn=0.7787 mm³ **完全相同**，而 0.7787 mm³ ÷ dx³(=6.4e-5 mm³)＝**12167
+NOTE:    ＝ n_solid** ⇒ 整个盒子都在 T_liquidus 之上，形态量已饱和到"＝盒子本身"，"0.00% 移动"是
+NOTE:    **退化**而非结论（打印行 `>T_lo? True` 三臂同真，是同一件事的第二条证据）。
+NOTE:    有信息的两列反而动了：peak 3740.0→3669.6（hk，−1.88%）→11441.8 K（off，+205.9%）；
+NOTE:    E 11.2066→9.1443（−18.4%）→26.3591 J（+135%）。⇒ ① #18 落地后必须在**熔道不触边**的
+NOTE:    真 A3 夹具上重跑本臂；② 即便 tuned 封顶也放行 3740 K＞T_boil＝3090 K ⇒ "封顶＝沸点墙"
+NOTE:    这个物理身份**在任何一副口径下都没被证成**，替换成 HK 也不会自动获得它（外部靶仍在 #10/A3）。
+NOTE: N5 处置按跑前登记的规则套判（本件末尾四行原文）：G0/G1a/G1c/G4a/G4b/G5a 全 True、V1 False、
+NOTE:    G2a＝hk ∧ hk_surf ∧ off 满足、tuned 不满足 ⇒ 判「**可采纳**：以无自由参数的物理封顶替换经验封顶，
+NOTE:    进实现轮」；实现轮义务＝①全量回归（不得新增 skip/xfail、A0 断言不动）②A3 外部靶核对
+NOTE:    ③新增显式 `evap_model="tuned"|"hk"|"none"` 选择器（`am_a3_fixture.json` 要求封顶可置 0 才能对齐
+NOTE:    基准，而无参数公式**没有**置 0 旋钮）④诚实登记 hk 把峰值抬到 3362 K（+14.48%，＞T_boil）。
+NOTE: N6 本轮**没有**改 `tests/test_boundary.py`（守护 2% 一字不动，红灯保留）；#27 仍 in_progress，
+NOTE:    关闭它的只能是实现轮＋外部靶，不是这份探针。
+== #27/#33 蒸发封顶选型探针（**只测不改**：src/ 与 tests/ 一字不动）==
+device = ''（CPU 钉住：G0 要逐位比 pytest 锚点 ⇒ 跨设备无效）
+
+[G5] #33 的 15 位点执行覆盖（sys.settrace，行粒度，只记本仓库文件）
+  [S-default] 9s 命中行数=1425  {}
+  [S-point] 9s 命中行数=1421  {}
+  [S-demo] 9s 命中行数=1432  {}
+  [S-chain] 4s 命中行数=1265  {"chain": "{'n_steps': 165, 'exposure_bound_s': 0.01056, 'cfl': 0.35, 'max_steps': 200000, 'bounds': {'laser_po"}
+  [S-fdm] 8s 命中行数=1339  {"fdm_depth": 0.0002336826941667562}
+  [S-powderbed] 4s 命中行数=1213  {"pb": ["balling_indicator", "coordination_number", "denudation_width", "lof_indicator", "packing_density", "porosity", "spatter_fraction", "surface_roughness"]}
+  [S-length] 3s 命中行数=1163  {"len": 7.500000000000001e-05}
+  [S-criteria] 3s 命中行数=1164  {"pr": 452.2298130868295}
+  [S-inverse] 3s 命中行数=1198  {"pen": 0.33333333333333304}
+  [S-particle] 5s 命中行数=1215  {"part": [0.0, 0], "part_srcalias": [0.00035000000000000005, 2], "alias_same_class": false}
+
+  G5a 正对照：S-default 命中 S01-sigma（行 [658]，resolve=ok）⇒ PASS（仪器有效）
+
+  site       现树位置                          resol  覆盖场景                              分类
+  S01-sigma  thermal_enthalpy.py:658       ok     S-default,S-point,S-demo          live-solver
+  S02-sigma  thermal_enthalpy.py:662       ok     S-point                           live-solver
+  S03-sigma  meltpool.py:1637              ok     S-fdm                             live-solver
+  S04-lift   meltpool.py:1636              ok     S-fdm                             live-solver
+  S05-lift   thermal_enthalpy.py:661       ok     S-point                           live-solver
+  S06-lift   thermal_enthalpy.py:669       ok     S-default,S-demo                  live-solver
+  S07-lift   thermal_enthalpy.py:465       ok     S-chain                           live-solver
+  S08-knob   meltpool.py:1361              ok     S-fdm,S-length                    live-solver
+  S09-knob   thermal_enthalpy.py:667       ok     S-point                           live-solver
+  S10-knob   thermal_enthalpy.py:666       ok     S-point                           live-solver
+  S11-knob   particle_am.py:1203           ok     S-particle                        unit-only
+  S12-knob   powder_bed.py:675             ok     S-powderbed                       live-solver
+  S13-crit   contracts.py:274              ok     S-fdm,S-powderbed,S-inverse       live-solver
+  S14-crit   process.py:216                ok     S-criteria                        unit-only
+  S15-crit   inverse.py:834                ok     S-inverse                         unit-only
+
+[G0/G2/G4] 对流夹具（0.4mm / dx=80µm / 4 层 200W·1.0m·s⁻¹ / 5 面对流）
+    [conv/tuned] 15s shape=[8, 8, 8] dx=80µm n_solid=216 sink_fn=_evap_sink
+    [conv/hk] 15s shape=[8, 8, 8] dx=80µm n_solid=216 sink_fn=patched_sink
+    [conv/hk_surf] 10s shape=[8, 8, 8] dx=80µm n_solid=216 sink_fn=patched_sink
+    [conv/off] 10s shape=[8, 8, 8] dx=80µm n_solid=216 sink_fn=_evap_sink
+    [inj/off] 10s shape=[8, 8, 8] dx=80µm n_solid=216 sink_fn=_evap_sink
+
+  G0a peak0 == 2937.060997302282？实测 2937.060997302282 ⇒ PASS
+  G0b peaks(h=20000) == 2908.771450618092？实测 2908.771450618092 ⇒ PASS
+  G0c 末态均值(h=0) == 2720.8±0.05？实测 2720.8020 ⇒ PASS
+  峰值落点 idx=[2, 3, 6] fv=0.5000000000000003 自由面=1.0 （n_solid=216，`_evap_sink`→_evap_sink）
+
+[G1] 两把封顶同表（dx=80µm，T_lo=2890K；Q_peak=8.104e+13 W/m³＝生产热源函数在顶面附近抽样取的**上界参照**）
+  G1a 量纲自检：手算 4.553196445e+12 vs 实现 4.553196445e+12 ⇒ 相对差 0.000e+00（<1e-9 OK）；自检点 arg=+0.000000 限幅未生效 OK ⇒ PASS
+
+    T[K]        tuned           HK   HK/tuned  tuned/Qp%    HK/Qp%      fv0.5旧      fv0.5新      dHK/dT
+    1700    0.000e+00    1.076e+07        nan    0.00000   0.00001   5.382e+06   1.076e+07   1.834e+05
+    2000    0.000e+00    8.243e+08        nan    0.00000   0.00102   4.122e+08   8.243e+08   1.012e+07
+    2500    0.000e+00    1.104e+11        nan    0.00000   0.13621   5.520e+10   1.104e+11   8.626e+08
+    2700    0.000e+00    4.685e+11        nan    0.00000   0.57815   2.343e+11   4.685e+11   3.133e+09
+    2890    0.000e+00    1.533e+12        nan    0.00000   1.89211   7.667e+11   1.533e+12   8.931e+09
+    2937    1.970e+12    2.007e+12     1.0189    2.43085   2.47683   1.004e+12   2.007e+12   1.131e+10
+    3000    1.897e+13    2.841e+12     0.1498   23.40327   3.50610   1.421e+12   2.841e+12   1.534e+10
+    3090    6.000e+13    4.553e+12     0.0759   74.03461   5.61824   2.277e+12   4.553e+12   2.315e+10
+    3200    9.300e+13    7.811e+12     0.0840  114.75364   9.63822   3.906e+12   7.811e+12   3.699e+10
+    3500    1.830e+14    2.857e+13     0.1561  225.80556  35.25383   1.429e+13   2.857e+13   1.127e+11
+    4000    3.330e+14    1.599e+14     0.4801  410.89208 197.28837   7.994e+13   1.599e+14   4.805e+11
+  G1c 绝对预期：HK(2700)=4.685e+11>0、HK(T_liq)=1.585e+07>0、tuned 在 T≤T_lo 恒 0 ⇒ PASS
+  V1：HK(T_liq)/Q_peak = 0.00002% < 0.1% ⇒ 未触发：正常熔化区可忽略
+  clip 冻结区：arg=−50 解出 T=756.5K（低于它 dS/dT=0、S≡const）；本次网格上 dHK/dT 全为有限正值 ⇒ OK；T_ambient=293K 是否在冻结区之上＝否（预热区梯度被 clip 冻结，值已达 1e-19 量级 ⇒ 无物理影响）
+
+[G2] 四臂压峰（守护阈值 2% **一字不动**）
+  arm            peak0   Δh200%   Δh2000%   Δh20000%     守护       末态Δ均值K  n>T_lo
+  tuned        2937.06    0.042     0.261     -0.963    red      -755.93      78
+  hk           3362.42   -0.014    -0.163     -7.553   PASS      -696.42     100
+  hk_surf      4040.58   -0.117    -1.269    -20.888   PASS      -832.02     108
+  off          4979.17   -0.554    -5.306    -35.386   PASS     -1666.45     216
+  G2a 决定性（原守护）：hk 满足、hk_surf 满足、tuned 不满足（＝现红灯）
+  G2b 反向对照：arm=off 的 Δpeak%(h=20000) = -35.386% ⇒ 无封顶时该守护 PASS（'夹具本来就压不动' vs '封顶掩盖'的分界）
+
+  G2c 副作用（h=0 一臂，相对 tuned）：
+    hk       peak +14.48%  mean_final_solid -1.89%  vn +0.00%  vm +0.00%   peak=3362.4K Vn=0.111mm³
+    hk_surf  peak +37.57%  mean_final_solid +3.61%  vn +0.00%  vm +0.00%   peak=4040.6K Vn=0.111mm³
+    off      peak +69.53%  mean_final_solid +34.78%  vn +0.00%  vm +0.00%   peak=4979.2K Vn=0.111mm³
+
+[G4] 能量闭合（E = Σ H(T_final)·fv·dx³；E_inj 用 h_cool=0 无封顶**实测**）
+  E0(预热 373K)=2.703967e-02 J；E_inj(实测, h_cool=0/无封顶)=1.371483e+00 J ⇒ PASS；该臂峰值=4979.2K
+  tuned    E=1.050885e+00 搬走 3.476378e-01 J ＝ 注入的 25.348%（闭合 PASS；上界 1.371e+00）
+  hk       E=1.030341e+00 搬走 3.681814e-01 J ＝ 注入的 26.845%（闭合 PASS；上界 1.371e+00）
+  hk_surf  E=1.092298e+00 搬走 3.062243e-01 J ＝ 注入的 22.328%（闭合 PASS；上界 1.371e+00）
+  G4b 可微性 ∂peak/∂P：{'tuned': {'n_steps': 361, 'dpeak_dP': -0.06008389465370609, 'finite': True}, 'hk': {'n_steps': 361, 'dpeak_dP': 0.38296534965170004, 'finite': True}} ⇒ PASS
+
+[G3] A3 单道**代理**（285W/0.96m·s⁻¹/r_b=42.5µm/α=0.54/dx=40µm/h_cool=0）
+  ⚠ 代理：#18 未落地 ⇒ 18 道夹具版跑不了；且夹具 BC 明写「无蒸发」⇒ 本臂**不参与**外部靶判定。
+    [a3/tuned] 298s shape=[33, 33, 33] dx=40µm n_solid=12167 sink_fn=_evap_sink
+    [a3/hk] 285s shape=[33, 33, 33] dx=40µm n_solid=12167 sink_fn=patched_sink
+    [a3/off] 245s shape=[33, 33, 33] dx=40µm n_solid=12167 sink_fn=_evap_sink
+  arm       peak[K]  >T_lo?   width   depth   length   area_top       Vn        E[J]
+  tuned      3740.0    True    0.92    0.92     0.92     0.8464   0.7787 1.12066e+01
+  hk         3669.6    True    0.92    0.92     0.92     0.8464   0.7787 9.14430e+00
+  off       11441.8    True    0.92    0.92     0.92     0.8464   0.7787 2.63591e+01
+    width_mm: tuned→hk +0.00% ；tuned→off +0.00%
+    depth_mm: tuned→hk +0.00% ；tuned→off +0.00%
+    area_top_mm2: tuned→hk +0.00% ；tuned→off +0.00%
+    vn: tuned→hk +0.00% ；tuned→off +0.00%
+
+[处置规则套判（跑前写死）]
+  G0=True  G1a=True  G1c=True  V1=False  G4a=True  G4b=True  G5a=True
+  G2a：tuned=False hk=True hk_surf=True off=True
+  判「**可采纳**」：arm=hk 让原守护在一字不动的前提下成立 ∧ G4a 闭合 ∧ V1 未触发 ⇒ 进实现轮（全量回归 + A3 外部靶核对 + 新增显式 evap_model 选择器，因为 am_a3_fixture.json 要求封顶可置 0 才能对齐基准，而无参数公式没有置 0 旋钮）。
+  #33 侧：15 位点＝live-solver 12 / unit-only 3 / MISS 0 / MOVED 0；期望场景命中率 15/15 ⇒ 分类可用
+  G3 侧：换封顶对 A3 代理读数的最大移动幅度 0.00%（>1% ⇒ 与 #33 的宽度/面积靶**必须同批**）
+
+elapsed=943s
