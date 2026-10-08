@@ -1,0 +1,90 @@
+===== #34/#36 LSF/DED 粉源取证探针（选型轮，**只测不改**）=====
+CMD: CUDA_VISIBLE_DEVICES="" JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t34_t36_lsf_probe.py
+DATE: 2026-10-08 20:54:22 +0800（归档时间；探针实际跑毕于 2026-10-08 20:40）
+TREE: head=146c27c（分片 16＝改前发布态）。改前证据自洽：本日志 K6b 普查行号 particle_am.py[1181,1236] / server.py[557] 与 `git show HEAD:` 的同名命中行号逐字相同 ⇒ 探针读到的就是 HEAD 内容；现树（改后）该三处已删，见复核件 C0。
+PROBE-MD5: 20298784ec60（am_t34_t36_lsf_probe.py）
+DEVICE: CPU 钉死（用户 2026-10-08 指示「继续，先不要占用GPU」）
+NOTE: 判据头（D1–D4 与阈值 1e-6 均跑前写死于脚本内，非事后追认）——
+NOTE: D1 #36（`from src.` 让 isinstance 守卫恒假）是否为真 bug 且在产品链上生效
+NOTE: D2 #34 归一因子差 2 是否被后续 discrete_sum 重归一约掉（no-op）
+NOTE: D3 docstring 的质量守恒宣称（Σ ṁ == mdot_total）违反量是否 > 1e-6 ⇒ 决定是否扩到截断顺序
+NOTE: D4 #33 口径耦合系数（1.8 环、0.2/0.8 混合）本轮一字不动
+NOTE: 配套改后复核件＝am_t34_t36_post_fix_check.py（参照数由该件从本日志解析）
+== #34/#36 LSF 粉源取证探针（**只测不改**：src/ 与 tests/ 一字不动）==
+   REPO＝/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder
+   device 钉 CPU（CUDA_VISIBLE_DEVICES=''，用户 2026-10-08 指示「先不要占用GPU」）
+
+[K6] 回归网边界与全树普查（实测，不靠措辞）
+  K6a pyproject testpaths 行＝['testpaths = ["tests"]']
+      tests: 255 tests collected in 1.15s
+      tests_diffmech: 415 tests collected, 21 errors in 0.70s
+  K6b 全树 `src.` 前缀导入（含 tests_diffmech/examples）＝3 行
+      src/diffmech/methods/am/particle_am.py:1181:    from src.diffmech.methods.am.process import LSFConfig
+      src/diffmech/methods/am/particle_am.py:1236:    from src.diffmech.methods.am.process import LSFConfig
+      src/diffmech/server.py:557:    from src.diffmech.methods.am.am_api import _PROCESS_BOUNDS
+      涉及文件＝['src/diffmech/methods/am/particle_am.py', 'src/diffmech/server.py']
+  K6c 收集网（tests/）内引用 lsf 粉源的测试文件数＝0；tests_diffmech（网外）＝0 ⇒ **网内零覆盖**（此路径的既有断言全在回归网之外）
+
+[K0/K1/K2/K3/K1c] 子进程实测（两副 import 口径 × 6 副点云）
+  夹具：ṁ_total = powder_feed_rate × deposition_efficiency = 3.500000e-04 kg/s（LSFConfig 默认 5e-4 × 0.7）
+  K1b 两个 LSFConfig 同类？False（diffmech.methods.am.process vs src.diffmech.methods.am.process）⇒ PASS(守卫口径确实分裂)
+  K4 docstring 集粉环＝1.5× vs 代码＝1.8× ⇒ 差 20.0%；1.8 与 0.2/0.8 混合权重均属 #33 口径耦合旋钮（本轮不动）
+
+  cloud       N         生产Σs   非零         同类Σs   非零    确定   K2a   K2b(2×因子)  K2c(环1.5)
+  A2x2        2   0.0000e+00    0   3.5000e-04    2    OK    OK         逐位同      有差(应)
+  grid17    289   0.0000e+00    0   3.4998e-04  261    OK    OK         逐位同      有差(应)
+  line25     25   0.0000e+00    0   3.5000e-04   25    OK    OK         逐位同      有差(应)
+  g3d11     363   0.0000e+00    0   3.5000e-04  363    OK    OK         逐位同      有差(应)
+  tight      81   0.0000e+00    0   3.5000e-04   81    OK    OK         逐位同      有差(应)
+  wide      441   0.0000e+00    0   3.4995e-04   41    OK    OK         逐位同      有差(应)
+  K0a 正对照（同类口径 Σ>0 ⇒ 夹具本身有信息量）⇒ PASS
+  K0b 确定性（重复调用逐位同）⇒ PASS
+  K1a 生产口径 Σs≡0 ∧ 非零≡0 ⇒ PASS(=#36 缺陷已测到)
+  K2a 本地重写式逐位复现生产（6/6）⇒ PASS(比对仪器有效)
+  K2b 解析正确值 2/(πR²) 与生产逐位相同 ⇒ PASS(=#34 因子差确为 no-op)
+  K2c 正对照：环系数 1.8→1.5 必须不同 ⇒ PASS
+
+[K3] 质量记账（docstring："total ṁ over all particles equals mdot_total"）
+  cloud    r_max/mm         现序Σs      亏缺%        参考序Σs      闭合相对差     非零(现/参)
+  A2x2         0.05 3.500000e-04  -0.0000 3.500000e-04   1.55e-16         2/2
+  grid17       8.49 3.499814e-04   0.0053 3.500000e-04   1.55e-16     261/261
+  line25       4.00 3.500000e-04   0.0000 3.500000e-04   0.00e+00       25/25
+  g3d11        5.66 3.500000e-04   0.0000 3.500000e-04   0.00e+00     363/363
+  tight        1.41 3.500000e-04  -0.0000 3.500000e-04   1.55e-16       81/81
+  wide        28.28 3.499542e-04   0.0131 3.500000e-04   1.55e-16       41/41
+  K3a 最大亏缺 1.3089e-04（阈值 1e-6 跑前写死）⇒ **实质违反不变量**：实现轮须改截断顺序
+  K3c 参考序（先截断后归一）最差闭合 1.55e-16 ⇒ PASS(1e-12 内闭合)
+
+[K1c] `_step_lsf_common`（桩注入 ⇒ 隔离 DEM/MPM/SPH 机械步，只考粉源）
+  cfg 口径=plain  Δmass 逐位不变=True  ΣΔmass=0.000000e+00 kg ΔT 和=0.000000e+00 K 活化前移=False
+  cfg 口径=src    Δmass 逐位不变=False ΣΔmass=3.500000e-08 kg ΔT 和=1.654696e+01 K 活化前移=False
+  K1c 生产口径＝质量/温度/活化三者全不变 ⇒ PASS(缺陷在产品链上生效，不只是返回值 0)
+  K1c 正对照＝同类口径下质量确实增加（ΣΔ=3.500e-08 kg）⇒ PASS
+
+[K2d] 死变量与假注释（AST 名字计数，非目测）
+  name              出现    赋值  判定
+  pi_R2              1     1  死变量（只赋值不用）
+  ring_R2            4     1  被读用
+  mdot_total         2     1  被读用
+  discrete_sum       3     1  被读用
+  catchment          2     1  被读用
+  K2d `pi_R2` 只被赋值一次、再无引用 ⇒ PASS(死变量)
+  K2d 正对照 `ring_R2` 被读用（4>1）⇒ PASS(计数仪器能区分死/活)
+  相关原文（3 行）：
+      cloud (≈ 1.5 × beam_radius) weighted by the local beam intensity so
+      # Normalization: ∫ 1/(π R²) exp(-2 r²/R²) over 2D = 1.
+      # particle case robustly so total ṁ over all particles equals mdot_total.
+  解析事实：∫₀^∞ exp(−2r²/R²)·2πr dr = πR²/2 ⇒ 归一 prefactor 应为 2/(πR²)，注释写的 1/(πR²) 差 2 倍
+
+[K5] server.py:557 的 `src.` **值**导入（与 isinstance 守卫不同类）
+  两副口径的 am_api 是否同一模块对象＝False （['diffmech.methods.am.am_api', 'src.diffmech.methods.am.am_api']）⇒ 重复实例化确认（模块级状态被复制两份）
+  `_PROCESS_BOUNDS`：键序相同＝True、7 键逐值相同＝True ⇒ 当前**行为**无害（只做成员检查）；文件内出现 5 次 `_PROCESS_BOUNDS`
+  server.py 已在模块级导入 am_api＝True、且同文件已用 `am_api._PROCESS_KEYS` 属性口径＝True ⇒ 修法＝删局部 import，统一改 `am_api._PROCESS_BOUNDS`
+
+[处置]（跑前写死的 D1–D4 套判）
+  {"K0a": true, "K0b": true, "K1a": true, "K1b": true, "K1c_defect": true, "K1c_control": true, "K2a": true, "K2b": true, "K2c": true, "K2d_dead": true, "K2d_control": true, "K3a_over_1e-6": true, "K3c_closure": true, "K5_dup": true, "K5_harmless": true, "K6c_zero_in_net": true, "worst_loss": 0.00013089420807643748, "worst_closure": 1.5488602464078636e-16}
+  D1 #36＝真 bug 且在产品链上生效 ⇒ 成立 ⇒ 实现轮：3 处 import 口径一次改完＋新测试进收集网
+  D2 #34＝因子差确为 no-op ⇒ 成立 ⇒ 实现轮只改假注释＋死变量，**不碰任何系数**
+  D3 是否把 #34 扩到截断顺序＝**扩**（亏缺 > 1e-6）
+  D4 #36 修复会让该路径首次真正执行 ⇒ 任何系数改动都必须与 #36 同批；本轮结论：系数一字不动
+  关闭条件（实现轮）＝①3 处 import 口径一次改完 ②新测试进 `tests/`（收集网内），含正对照「LSF 一步之后质量必须严格增大」＋「SLMConfig 必须恒零」③全量不新增红/skip/xfail ④#34 侧只改注释与死变量（＋按 D3 决定是否动截断顺序）

@@ -1,0 +1,34 @@
+===== #39 正向步进链施粉取证（只测不改；rc=0；R1 零 ∧ R2 命中 1.18e-16 ∧ R3/R3a 零 ∧ R4 零）=====
+CMD: CUDA_VISIBLE_DEVICES="" JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t39_server_lsf_route_probe.py
+TREE: head=146c27c（分片 16）＋#34/#36 的未提交改动 3 行（本件跑在同一棵树上；日志首行把脏项数列了出来）
+PROBE-MD5: 664aef8a4c64
+DATE: 2026-10-08 21:07:55 +0800（落盘 mtime）
+DEVICE: CPU 钉死（用户 2026-10-08 指示「继续，先不要占用GPU」）
+NOTE: 与 #36 的区别＝机制：#36 是 import 口径分裂让守卫恒假（已修）；#39 是**选路缺失**
+NOTE:   ⇒ `step_am_server` 的分发键只有 method（dem/mpm/sph），cfg.kind=LSF/Clad 不参与 ⇒ 正向链从不施粉。
+NOTE: 本件不 import diffmech.server（R5 实测不可导入，另立 #40）⇒ R1/R2 用**照抄 server 会话配方**复现 state，
+NOTE:   路由那一半由 R3（server.py 引用 0 行）＋R3a（函数体内 lsf 行数 0，AST 定界 114 行）承载。
+NOTE: 夹具仅 3 粒子（circle r=0.1/spacing 0.05）⇒ 本件判"有无施粉"，不判形态/温度合理性（等 #18/#10 的靶）。
+== #39 正向步进链施粉取证（只测不改）==
+   REPO＝/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder；device 钉 CPU（用户 2026-10-08「先不要占用GPU」）
+  tree＝146c27c；src/tests 脏项＝3 行（＝#34/#36 既有改动，本件不新增任何改动）
+
+[R3] `step_lsf_am*` 引用：src/ 内＝7 行（server.py＝0 行）；tests/examples/docs＝11 行
+      src/diffmech/methods/am/am_api.py:45:    step_lsf_am_scan,
+      src/diffmech/methods/am/am_api.py:184:        solver_final, am_final = step_lsf_am_scan(
+      src/diffmech/methods/am/particle_am.py:1278:def step_lsf_am(
+      src/diffmech/methods/am/particle_am.py:1311:def step_lsf_am_scan(
+      src/diffmech/methods/am/particle_am.py:1321:    """Scan ``n_steps`` of :func:`step_lsf_am` via ``jax.lax.scan``."""
+      src/diffmech/methods/am/particle_am.py:1328:        s_state2, am_s2 = step_lsf_am(
+      src/diffmech/methods/am/particle_am.py:1360:    "lsf_powder_deposition_profile", "step_lsf_am", "step_lsf_am_scan",
+  R3a `step_am_server` 体内（AST 定界，114 行）含 'lsf' 的行数＝0；分发键＝['if method == "mpm":', 'elif method == "dem":', 'elif method == "sph":']
+
+[R5] `import diffmech.server` ⇒ 可导入＝False；ModuleNotFoundError: No module named 'sse_starlette'
+
+  夹具（照抄 server 配方）：n_particles=3 cfg=LSFConfig ṁ=3.500000e-04 dt=1.0e-05 ⇒ ṁ·dt=3.500000e-09 kg
+[R1] 产品调用形状一步 Σ Δmass=0.000000000e+00 kg（对 ṁ·dt 的比=0.000e+00）⇒ 真缺陷成立：正向链不施粉
+[R2] 同副 state 走 LSF 步进器 Σ Δmass=3.500000000e-09 kg，相对差 1.182e-16；ΔT 和=1.409141e+03 K；质量>基准的粒子数=1/3 ⇒ PASS（粉源在真几何夹具上确实出料 ⇒ 缺的只是接线）
+[R4] SLMConfig 经 LSF 步进器 Σ Δmass=0.000000000e+00（严格零＝True）；SLMConfig 有 powder_feed_rate 属性＝False
+
+[处置] R1 零 ∧ R2 命中 ∧ R4 零 ∧ R3(server 引用=0) ∧ R3a(体内 lsf=0) ⇒ **#39 判为路由缺失型真缺陷**（与 #36 口径分裂不同机制，不并轮修）
+  ⚠ R5 的环境事实单独登记：HTTP 后端依赖（fastapi/sse_starlette/uvicorn）在 pyproject 与 requirements-gui.txt 中均未声明。

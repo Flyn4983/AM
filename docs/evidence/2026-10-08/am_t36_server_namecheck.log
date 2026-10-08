@@ -1,0 +1,55 @@
+===== #36 的 server.py 半边：静态名称解析取证（终局 rc=0，N0–N4 全 PASS；首轮 rc=1 的 N4 FAIL 是本件仪器缺陷，原样保留）=====
+CMD: CUDA_VISIBLE_DEVICES="" JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python docs/evidence/2026-10-08/am_t36_server_namecheck.py
+DATE: 2026-10-08 21:28:40 +0800
+TREE: head=146c27c ＋本轮未提交脏项 3 行（particle_am.py / server.py / tests/test_lsf_deposition.py）
+SCRIPT-MD5: 6937ac9ea916
+DEVICE: CPU 钉死（用户 2026-10-08 指示「继续，先不要占用GPU」）；stderr 里的 CUDA_ERROR_NO_DEVICE 噪声与既往各轮同源
+WHY: server.py 因 #40（缺 sse_starlette）不可导入 ⇒ 默认回归网**覆盖不到**本轮对它的那 5 行改动，
+WHY:   于是改用 AST 静态取证：顶层是否真绑定了名字 am_api、以及每一处 am_api.<attr> 在真模块上是否存在。
+WHY:   这不是运行时证明；运行时证明要等 #40 关闭后补一条导入测试。
+判据（跑前写死）：N0 正对照（塞一个不存在的属性，检查器必须只报那一个）｜N1 AST 顶层 import 绑定含 am_api
+判据:   ｜N2 文件里全部 am_api.<attr> 在真模块 diffmech.methods.am.am_api 上存在
+判据:   ｜N3 两种拼写是**两个模块对象**、且 _PROCESS_BOUNDS 身份不同而内容相等（把 #36 值导入那半从代数论证升级为实测）
+判据:   ｜N4 现树 src. 前缀导入=0 行 **且** HEAD:server.py 同正则命中>0 行（对照列）
+
+注：SCRIPT-MD5 记的是**修好正则之后**的终版脚本；首轮脚本与终版只差 CENSUS_RE 一行＋sh_in 的 stderr 打印
+    ⇒ 首轮读数不可与终版逐位复现，因此把首轮的 FAIL 原文单独留下，作为仪器缺陷的标本而不是结果。
+
+----- 首轮（rc=1）-----
+  | REPO=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder
+  | SERVER-MD5=f87898aa98c5
+  | CUDA_VISIBLE_DEVICES='' (钉 CPU)
+  | [N0] 正对照 bogus-missing==[['_NO_SUCH_ATTRIBUTE_T36']] => PASS
+  | [N1] 顶层绑定含 am_api => True（顶层 import 名 38 个）
+  | [N2] am_api.<attr> 共 4 个，真模块上缺失 [] => PASS
+  |        attrs=['_PROCESS_BOUNDS', '_PROCESS_KEYS', '_make_cfg', 'particle_layer_path_lengths']
+  | [N3] 双拼写导入 err='' 同一模块对象=False 同一 __dict__=False _PROCESS_BOUNDS 同一对象=False 内容相等=True => PASS
+  |        说明：改前的值导入拿到的是**另一份模块副本**里的 dict（内容同、身份异）
+  | [N4] 现树 src. 前缀导入=0 行；HEAD:server.py 同正则命中=0 行 => FAIL
+  | 
+  | [处置] FAILS=['N4']
+  [首轮读数] [N4] 现树=0 行 且 HEAD 命中=0 行 ⇒ FAILS=['N4']
+  [成因] GNU grep -E 不认 (?:…) 这种 PCRE 写法：它把模式判成「表达式以 ? 开头」，只往 stderr 打警告、
+  [成因]   命中数=0 且 rc=1 ⇒ 普查得到的 0 是**假 0**。N4 里「HEAD 同正则必须命中 >0」那条对照列
+  [成因]   正是为这一刻写的，它把仪器缺陷从"树干净"里分了出来（与 #22 同一课：尺子的词汇表缺口会冒充结果）。
+  [成因] 附带一条环境事实：脚本的 sys.path[0] 是脚本所在目录、仓库根不在其中 ⇒ N3 显式把 REPO 插进 sys.path
+  [成因]   再测「src. 前缀命名空间导入是否成功」；err='' 且拿到独立模块对象＝#36 在生产里的环境条件被复现。
+
+----- 终局（CENSUS_RE 改 POSIX 捕获组；rc=0）-----
+  | REPO=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder
+  | SERVER-MD5=f87898aa98c5
+  | CUDA_VISIBLE_DEVICES='' (钉 CPU)
+  | [N0] 正对照 bogus-missing==[['_NO_SUCH_ATTRIBUTE_T36']] => PASS
+  | [N1] 顶层绑定含 am_api => True（顶层 import 名 38 个）
+  | [N2] am_api.<attr> 共 4 个，真模块上缺失 [] => PASS
+  |        attrs=['_PROCESS_BOUNDS', '_PROCESS_KEYS', '_make_cfg', 'particle_layer_path_lengths']
+  | [N3] 双拼写导入 err='' 同一模块对象=False 同一 __dict__=False _PROCESS_BOUNDS 同一对象=False 内容相等=True => PASS
+  |        说明：改前的值导入拿到的是**另一份模块副本**里的 dict（内容同、身份异）
+  | [N4] 现树 src. 前缀导入=0 行；HEAD:server.py 同正则命中=1 行 => PASS
+  |        HEAD：557:    from src.diffmech.methods.am.am_api import _PROCESS_BOUNDS
+  | 
+  | [处置] N0∧N1∧N2∧N3∧N4 => server.py 半边改名后仍可解析（静态可证，运行时等 #40）
+
+[处置] N0∧N1∧N2∧N3∧N4 全绿 ⇒ server.py 本轮改动（删除 1 处 src. 值导入＋把 4 处使用改成 am_api. 限定）在静态上可解析，
+       且「值导入另建模块副本」那一半由代数论证升级为实测（身份异、内容相等）。
+       运行侧仍欠一条导入测试，已登记进 #40 的关闭条件。

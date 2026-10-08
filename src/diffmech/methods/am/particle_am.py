@@ -1168,7 +1168,7 @@ def lsf_powder_deposition_profile(position: jnp.ndarray,
 
     The powder is co-axially injected into the melt pool; its effective
     spatial shape is approximated as a double Gaussian — a wider catchment
-    cloud (≈ 1.5 × beam_radius) weighted by the local beam intensity so
+    cloud (1.8 × beam_radius) weighted by the local beam intensity so
     powder preferentially deposits right under the laser where the melt
     pool is.  The integrated mass rate over the domain is
 
@@ -1178,7 +1178,6 @@ def lsf_powder_deposition_profile(position: jnp.ndarray,
     volume to get a proper volumetric source, or simply add dm = s * dt
     directly to each particle's mass.
     """
-    from src.diffmech.methods.am.process import LSFConfig
     # Guard against plain SLM configs — in that case the source is zero.
     if not isinstance(cfg, LSFConfig):
         return jnp.zeros(position.shape[0])
@@ -1188,8 +1187,6 @@ def lsf_powder_deposition_profile(position: jnp.ndarray,
     r2 = cfg.beam_radius ** 2
     # Total mass rate [kg/s]
     mdot_total = cfg.powder_feed_rate * cfg.deposition_efficiency
-    # Normalization: ∫ 1/(π R²) exp(-2 r²/R²) over 2D = 1.
-    pi_R2 = jnp.pi * r2
     if dim == 2:
         dx = position[:, 0] - laser_xy[0]
         dz = position[:, 1] - z_active
@@ -1199,22 +1196,22 @@ def lsf_powder_deposition_profile(position: jnp.ndarray,
         dy = position[:, 1] - laser_xy[1]
         dz = position[:, 2] - z_active
         rsq = dx * dx + dy * dy + dz * dz
-    # Catchment profile: wider ring radius around the beam
+    # Catchment profile: wider ring radius around the beam.  The analytic
+    # normalisation of exp(-2 r²/R²) over 2D is 2/(π R²); the prefactor below
+    # carries no information because discrete_sum renormalises afterwards.
     ring_R2 = (1.8 * cfg.beam_radius) ** 2
     beam_intensity = jnp.exp(-2.0 * rsq / r2)
     catchment = (1.0 / (jnp.pi * ring_R2)) * jnp.exp(-2.0 * rsq / ring_R2)
     # Probability density shaped by beam intensity ∝ where the melt pool is.
     shape = catchment * (0.2 + 0.8 * beam_intensity)
-    # Integral of shape across all particles in the continuous limit is
-    # approximately unity; discrete sum normalization handles the discrete
-    # particle case robustly so total ṁ over all particles equals mdot_total.
+    # Suppress powder outside a finite catchment ring *before* renormalising:
+    # deposition_efficiency already accounts for powder that misses the pool,
+    # so mass dropped by this mask must not also be lost from the sum.
+    shape = jnp.where(rsq > 4.0 * ring_R2, 0.0, shape)
     discrete_sum = jnp.sum(shape)
     # If nothing is near the laser — output exactly 0 everywhere (avoid 0/0).
     norm = jnp.where(discrete_sum > 1e-18, 1.0 / discrete_sum, 0.0)
-    s_per_particle = mdot_total * norm * shape
-    # Suppress powder outside a finite catchment ring for numerical cleanliness.
-    s_per_particle = jnp.where(rsq > 4.0 * ring_R2, 0.0, s_per_particle)
-    return s_per_particle
+    return mdot_total * norm * shape
 
 
 def _step_lsf_common(
@@ -1233,7 +1230,6 @@ def _step_lsf_common(
     for the mechanical/thermal parts — LSF only differs by an *incremental*
     mass-addition and activation-front update.
     """
-    from src.diffmech.methods.am.process import LSFConfig
     solver_new, am_new = method_step_fn(
         solver_state, am_state, dt, t, solver_cfg, cfg,
         paths, layer_start_times, layer_durations,

@@ -554,15 +554,13 @@ def _adam_step(
 @app.post("/am/session/{sid}/opt")
 async def run_optimization_stream(sid: str, req: OptRequest):
     """Run gradient-based Adam optimization, streaming history over SSE."""
-    from src.diffmech.methods.am.am_api import _PROCESS_BOUNDS
-
     s = _get_session(sid)
     dt = float(req.dt if req.dt is not None else s.dt)
     pvars = tuple(req.process_vars) if req.process_vars else (
         "laser_power", "scan_speed", "beam_radius", "absorption", "preheat_temp",
     )
     for k in pvars:
-        if k not in _PROCESS_BOUNDS:
+        if k not in am_api._PROCESS_BOUNDS:
             raise HTTPException(status_code=400, detail=f"unknown process var {k!r}")
 
     def yield_json(d):
@@ -573,8 +571,8 @@ async def run_optimization_stream(sid: str, req: OptRequest):
         with s.lock:
             base_cfg = s.problem.cfg
             x_arr = [float(getattr(base_cfg, k)) for k in pvars]
-            lo = jnp.asarray([_PROCESS_BOUNDS[k][0] for k in pvars], dtype=jnp.float64)
-            hi = jnp.asarray([_PROCESS_BOUNDS[k][1] for k in pvars], dtype=jnp.float64)
+            lo = jnp.asarray([am_api._PROCESS_BOUNDS[k][0] for k in pvars], dtype=jnp.float64)
+            hi = jnp.asarray([am_api._PROCESS_BOUNDS[k][1] for k in pvars], dtype=jnp.float64)
             x = jnp.asarray(x_arr, dtype=jnp.float64)
             m = jnp.zeros_like(x)
             v = jnp.zeros_like(x)
@@ -629,7 +627,7 @@ async def run_optimization_stream(sid: str, req: OptRequest):
                 "diagnostics": result.get("diagnostics", {}),
                 "param_values": {k: nx[i] for i, k in enumerate(pvars)},
                 "grads": {k: float(result["grads"].get(k, 0.0)) for i, k in enumerate(pvars)},
-                "bounds": {k: list(_PROCESS_BOUNDS[k]) for k in pvars},
+                "bounds": {k: list(am_api._PROCESS_BOUNDS[k]) for k in pvars},
             }
             yield {"event": "iter", "data": yield_json(frame)}
         yield {"event": "done", "data": yield_json({"max_iter": int(req.max_iter)})}

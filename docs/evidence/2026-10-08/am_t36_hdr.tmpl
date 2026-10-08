@@ -1,0 +1,50 @@
+===== #34/#36 全量回归记分（CPU 钉住，交付树）=====
+CMD（实测自 /proc/2624190/cmdline，非手抄）: @CMDLINE@
+ENV（实测自 /proc/2624190/environ）: @ENVLINE@ ⇒ `CUDA_VISIBLE_DEVICES=` 为空＝CPU 钉住（本轮用户令：先不占 GPU）
+LAUNCH: @LSTART@（`ps -o lstart= -p 2624190` 现取）；正文墙钟 @WALL@
+TREE: head=@HEADSHA@；`git -c core.quotePath=false status --porcelain -- src tests`＝@DIRTY@ 项
+      （本片的 2 处 src 改动：`particle_am.py`、`server.py`＋新增 `tests/test_lsf_deposition.py`）
+      同树证明＝回归期间 src/tests 无一次写入：
+      `find src tests -newermt "2026-10-08 20:47:00" -type f -not -path "*__pycache__*"`
+      于 21:42:44（跑中）与 @POSTTIME@（跑后）两次实测均＝**@NEWER@ 行**；
+      树指纹两次逐字符相同＝md5(concat per-file md5, src/**.py)=@FPSRC@，
+      md5(concat per-file md5, src+tests 的 .py)=@FPALL@
+TALLY: @TALLY@
+NOTE: N1 计数四路闭合：
+NOTE:      ① 汇总行结局 @O1@＝@NFAIL@ failed＋@NPASS@ passed＋@NSKIP@ skipped；
+NOTE:      ② 进度字符（@NLINES@ 行）. ＝@CDOT@／F ＝@CF@／s ＝@CS@ ⇒ @O2@；
+NOTE:      ③ `-rA` 短汇总行 PASSED=@RPASS@／FAILED=@RFAIL@／SKIPPED=@RSKIP@ ⇒ @O3@；
+NOTE:      ④ 跑后 `pytest --collect-only -q` 末行＝"@COLLOUT@" ⇒ collected=@COLL@。
+NOTE:      闭合关系：collected @COLL@ ＋ 2 条**模块级** importorskip（`test_gui_app.py:16`、
+NOTE:      `test_gui_app2.py:18`；收集期 skip ⇒ 不进收集计数、不占进度字符、却计入汇总行 skipped）
+NOTE:      ＝汇总行结局 @O1@；进度字符 @O2@＝collected @COLL@（模块级 skip 不占进度字符）。
+NOTE:      ⇒ 闸门 G2（四路互洽＋同树＋指纹）＝@CONSIST@；
+NOTE:      扰动正对照＝把 collected 故意少算 1 再走同一闸门 ⇒ @PERT2@（闸门能红，PASS 非空转）。
+NOTE:      基线对账：上一轮 255 collected／252 passed（`am_t4_full_regression.log`）⇒ 本轮净增 @NEWT@ 条＝
+NOTE:      `tests/test_lsf_deposition.py` 实收 @NEWT@ 条（改前那份文件是 4 failed／2 passed，见
+NOTE:      `am_t34_t36_test_lsf_deposition_pre_fix.log`）⇒ passed @NPASS@＝252＋@NEWT@。
+NOTE: N2 两条登记红灯**必须逐字节未变**（A0 不许放宽、#27 那条不许换指标）：
+NOTE:      `grep "^E       AssertionError: "` 在参照件（am_t4_full_regression.log）与本件各 @NREF@／@NNEW@ 行，
+NOTE:      `diff` 结果＝@REDS@；扰动正对照＝把 h=20000 那行末位改 1 ulp（2908.771450618092→…093）后
+NOTE:      同一 `diff` 反而 @PERT@ ⇒ 这把尺子能红，故 "@REDS@" 不是空转。
+NOTE:      红灯身份闸门 G3＝@G3@（测试名**不是手抄**：参照件正文 FAILURES 段下划线标题现取＝
+NOTE:      @REFNAMES@；本件 `-rA` 的 FAILED 行现取＝@NEWNAMES@）。
+NOTE: N3 skip 身份取自 `-rA` 的 SKIPPED 行原文（**不按位置反推**——行宽随终端变，上一轮就栽过一次）：
+@SKID@
+NOTE: N4 诚实边界：本轮**不产任何吞吐/加速数字**（性能一律只在 A6000 上测）；设备依据＝上面 ENV 行
+NOTE:      实测的空 `CUDA_VISIBLE_DEVICES`，不是从命令行猜的。stderr 与 stdout 同源（`2>&1`），
+NOTE:      正文无 JAX 回退/CPU 设备行 ⇒ 无反证。
+NOTE: N5 启动器未回显 pytest 退出码（`nohup … > log 2>&1 &` 里没有 `echo exit=$?`），故本件**不写**
+NOTE:      `reg_exit=`；由汇总行含 @NFAIL@ failed 可知 rc＝1，那是**推断**而非实测。
+NOTE:      ⚠ 自纠（本轮第 8 条）：「退出码要在启动时抓」这条在 memory 里已有，仍在本次启动器上复发。
+NOTE: N6 本件头部由 `/tmp/am_t36_arc.sh` 生成（模板＋环境注入，**无手抄数值**）。该仪器在本轮的
+NOTE:      **干跑**（合成 log）上暴露两处自身缺陷并当场改掉，照实记＝本轮第 9、10 条自纠：
+NOTE:      ① G0 守卫原写 `pgrep -f "pytest -q -rA -p no:cacheprovider"` ⇒ **匹配到我自己的包装 shell**
+NOTE:         （计数 2、误判"仍在跑"），改为 `ps -eo pid,comm,args` 且要求 `comm ~ /^python/`；
+NOTE:         正对照＝对真实在跑的回归进程该计数＝**1**（21:47 实测，与 0 的归档态可区分）。
+NOTE:      ② G2 闭合式误写成"② 进度字符＝① 汇总行结局"，真关系是 ②＝collected、①＝collected＋2
+NOTE:         ⇒ 首跑**拒绝归档**（闸门确实能红，不是空转）。改关系式后重跑＝@CONSIST@。
+NOTE:      生成器与模板按原名入库（`am_t36_arc.sh`＋`am_t36_hdr.tmpl`，同目录）；本件是**那一次**的产物，
+NOTE:      重跑需先照 CMD/ENV 行重新起跑，并重新采集 `/tmp` 侧三个输入（`am_t36_tree_pre.txt` 跑前指纹、
+NOTE:      `am_t36_cmdline.txt`、`am_t36_env.txt` 取自 /proc），脚本里有 DRY/NOG0/NOG2 三个干跑开关。
+----- 以下为本件正文（原 /tmp log 逐字节，未编辑）-----

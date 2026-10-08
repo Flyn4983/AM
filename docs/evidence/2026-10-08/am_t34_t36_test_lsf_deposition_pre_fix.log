@@ -1,0 +1,105 @@
+===== tests/test_lsf_deposition.py 的**改前**记分（同一份文件在 HEAD 实现上 4 failed / 2 passed）=====
+CMD: CUDA_VISIBLE_DEVICES="" JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python -m pytest tests/test_lsf_deposition.py -q -rA -p no:cacheprovider
+DATE: 2026-10-08 20:45:13 +0800（取自 /tmp 原件 mtime）
+TREE: head=146c27c（分片 16＝实现未改的 src/）＋新测试文件 tests/test_lsf_deposition.py（MD5 b35d6b6de469）
+SAME-FILE-PROOF: 测试文件 mtime=2026-10-08 20:45:04 早于本记分落盘 2026-10-08 20:45:13，此后未再编辑（现 mtime 仍为 2026-10-08 20:45:04）；且本日志 -rA 行的 6 个测试名与现文件的 `^def test_` 名单逐字相同（diff 空，6/6）⇒ 改前 4 failed/2 passed 与改后 6 passed 出自同一份测试字节。
+DEVICE: CPU 钉死
+NOTE: 这份记录的作用是**判别力证据**：同一份测试在改前红 4 条、改后 6 passed（见 am_t34_t36_post_fix_check.log C5）
+NOTE:   ⇒ 新测试不是"跟着实现一起写绿的空壳"。改前红的四条＝闭合、一步质量增大、feed 梯度、普查。
+NOTE: 改前的 2 passed＝「SLM 恒零」（改前因全零而**平凡成立**，改后仍成立 ⇒ 它的角色是防守卫放宽，不是缺陷探测）
+NOTE:   ＋「本地守卫用模块级类」；已在 C5b 与 test_no_src_prefixed_import 里分别有独立判据。
+FF.FF.                                                                   [100%]
+=================================== FAILURES ===================================
+____________ test_profile_sums_exactly_to_feed_rate_when_ring_binds ____________
+
+    def test_profile_sums_exactly_to_feed_rate_when_ring_binds():
+        """#36：生产口径必须真的出料；#34：先截断后归一 ⇒ Σ s 恰为 ṁ_total。"""
+        pos = _cloud(20.0, 21)                      # r_max=28.3 mm ≫ 环外截止 7.2 mm
+        s = _profile(LSFConfig(), pos)
+        nz = int((s > 0).sum())
+>       assert nz > 0, "生产口径下粉源恒零 ⇒ #36 复发（isinstance 守卫又分裂了）"
+E       AssertionError: 生产口径下粉源恒零 ⇒ #36 复发（isinstance 守卫又分裂了）
+E       assert 0 > 0
+
+tests/test_lsf_deposition.py:76: AssertionError
+____________ test_total_mass_strictly_increases_after_one_lsf_step _____________
+
+    def test_total_mass_strictly_increases_after_one_lsf_step():
+        """#36 的正对照腿：一步 LSF 之后总质量必须严格增大，且增量恰为 ṁ_total·dt。"""
+        pos = _cloud(1.0, 9)
+        n = pos.shape[0]
+        am = PA.ParticleAMState(
+            position=pos,
+            activation_time=jnp.full(n, 1e9),
+            temperature=jnp.zeros(n),
+            mass=jnp.full(n, 1e-6),
+            layer_id=jnp.zeros(n, dtype=jnp.int32),
+            rho=jnp.full(n, 8000.0))
+    
+        def stub(solver_state, am_state, dt, t, solver_cfg, cfg, paths,
+                 layer_start_times, layer_durations, *, walls, cp, alpha_T, tau):
+            return solver_state, am_state                      # 隔离机械步，只考粉源
+    
+        dt = 1e-4
+        _, am2 = PA._step_lsf_common(stub, None, am, dt, T_ON, None, LSFConfig(),
+                                     _paths(), STARTS, DURS, dim=2, walls=None,
+                                     cp=500.0, alpha_T=1e-5, tau=1e-3)
+        dm = float(np.asarray(am2.mass).sum() - np.asarray(am.mass).sum())
+>       assert dm > 0.0, "LSF 一步之后质量没变 ⇒ #36 复发（粉源没接进状态）"
+E       AssertionError: LSF 一步之后质量没变 ⇒ #36 复发（粉源没接进状态）
+E       assert 0.0 > 0.0
+
+tests/test_lsf_deposition.py:103: AssertionError
+_________________ test_feed_rate_gradient_hits_analytic_value __________________
+
+    def test_feed_rate_gradient_hits_analytic_value():
+        """可微侧给**绝对预期**：Σ s = feed×eff ⇒ ∂Σ s/∂feed 必须恰为 eff。"""
+        cfg0 = LSFConfig()
+        pos = _cloud(1.0, 9)
+        paths = _paths()
+    
+        def total(feed):
+            cfg = dataclasses.replace(cfg0, powder_feed_rate=feed)
+            return PA.lsf_powder_deposition_profile(
+                pos, T_ON, paths, STARTS, DURS, cfg, dim=2).sum()
+    
+        g = float(jax.grad(total)(jnp.asarray(cfg0.powder_feed_rate)))
+        assert np.isfinite(g)
+>       assert abs(g - cfg0.deposition_efficiency) / cfg0.deposition_efficiency < 1e-9, (
+            f"∂Σ s/∂feed={g:.12e} vs deposition_efficiency={cfg0.deposition_efficiency:.12e}")
+E       AssertionError: ∂Σ s/∂feed=0.000000000000e+00 vs deposition_efficiency=7.000000000000e-01
+E       assert (0.7 / 0.7) < 1e-09
+E        +  where 0.7 = abs((0.0 - 0.7))
+E        +    where 0.7 = LSFConfig(laser_power=1500.0, scan_speed=0.01, layer_thickness=0.0005, track_spacing=0.0015, beam_radius=0.002, powder_feed_rate=0.0005, absorption=0.35, deposition_efficiency=0.7, preheat_temp=473.0).deposition_efficiency
+E        +  and   0.7 = LSFConfig(laser_power=1500.0, scan_speed=0.01, layer_thickness=0.0005, track_spacing=0.0015, beam_radius=0.002, powder_feed_rate=0.0005, absorption=0.35, deposition_efficiency=0.7, preheat_temp=473.0).deposition_efficiency
+
+tests/test_lsf_deposition.py:130: AssertionError
+_______________ test_no_src_prefixed_import_remains_in_the_repo ________________
+
+    def test_no_src_prefixed_import_remains_in_the_repo():
+        """口径锁：全树不得再出现 ``from src.…`` 拼写（含正对照，证明扫描器能命中）。"""
+        pat = re.compile(r"^\s*(?:from src\.|import src\.|from src import)", re.M)
+        root = PA.__file__.rsplit("/diffmech/", 1)[0]
+        hits: list[str] = []
+        for rel in ("diffmech/methods/am/particle_am.py", "diffmech/server.py"):
+            txt = open(f"{root}/{rel}", encoding="utf-8").read()
+            hits += [f"{rel}:{i + 1}:{l.strip()}"
+                     for i, l in enumerate(txt.splitlines())
+                     if pat.match(l)]
+>       assert hits == [], f"`src.` 前缀导入复发（守卫将再次恒假）：{hits}"
+E       AssertionError: `src.` 前缀导入复发（守卫将再次恒假）：['diffmech/methods/am/particle_am.py:1181:from src.diffmech.methods.am.process import LSFConfig', 'diffmech/methods/am/particle_am.py:1236:from src.diffmech.methods.am.process import LSFConfig', 'diffmech/server.py:557:from src.diffmech.methods.am.am_api import _PROCESS_BOUNDS']
+E       assert ['diffmech/me...OCESS_BOUNDS'] == []
+E         
+E         Left contains 3 more items, first extra item: 'diffmech/methods/am/particle_am.py:1181:from src.diffmech.methods.am.process import LSFConfig'
+E         Use -v to get more diff
+
+tests/test_lsf_deposition.py:144: AssertionError
+==================================== PASSES ====================================
+=========================== short test summary info ============================
+PASSED tests/test_lsf_deposition.py::test_slm_config_still_returns_exact_zeros
+PASSED tests/test_lsf_deposition.py::test_local_guard_uses_the_module_level_class_object
+FAILED tests/test_lsf_deposition.py::test_profile_sums_exactly_to_feed_rate_when_ring_binds
+FAILED tests/test_lsf_deposition.py::test_total_mass_strictly_increases_after_one_lsf_step
+FAILED tests/test_lsf_deposition.py::test_feed_rate_gradient_hits_analytic_value
+FAILED tests/test_lsf_deposition.py::test_no_src_prefixed_import_remains_in_the_repo
+4 failed, 2 passed in 1.30s

@@ -1,0 +1,504 @@
+===== #34/#36 全量回归记分（CPU 钉住，交付树）=====
+CMD（实测自 /proc/2624190/cmdline，非手抄）: /tmp/amvenv/bin/python -m pytest -q -rA -p no:cacheprovider 
+ENV（实测自 /proc/2624190/environ）: PYTHONPATH=src JAX_ENABLE_X64=1 CUDA_VISIBLE_DEVICES=  ⇒ `CUDA_VISIBLE_DEVICES=` 为空＝CPU 钉住（本轮用户令：先不占 GPU）
+LAUNCH: 四 10月  8 20:47:20 2026（`ps -o lstart= -p 2624190` 现取）；正文墙钟 in 3824.35s
+TREE: head=146c27c；`git -c core.quotePath=false status --porcelain -- src tests`＝3 项
+      （本片的 2 处 src 改动：`particle_am.py`、`server.py`＋新增 `tests/test_lsf_deposition.py`）
+      同树证明＝回归期间 src/tests 无一次写入：
+      `find src tests -newermt "2026-10-08 20:47:00" -type f -not -path "*__pycache__*"`
+      于 21:42:44（跑中）与 21:53:37（跑后）两次实测均＝**0 行**；
+      树指纹两次逐字符相同＝md5(concat per-file md5, src/**.py)=f35399783819cb6aab3716382d3718dd，
+      md5(concat per-file md5, src+tests 的 .py)=9614b0205acb7c56f90046605652d040
+TALLY: 2 failed, 258 passed, 3 skipped in 3824.35s (1:03:44)
+NOTE: N1 计数四路闭合：
+NOTE:      ① 汇总行结局 263＝2 failed＋258 passed＋3 skipped；
+NOTE:      ② 进度字符（4 行）. ＝258／F ＝2／s ＝1 ⇒ 261；
+NOTE:      ③ `-rA` 短汇总行 PASSED=258／FAILED=2／SKIPPED=3 ⇒ 263；
+NOTE:      ④ 跑后 `pytest --collect-only -q` 末行＝"261 tests collected in 1.10s" ⇒ collected=261。
+NOTE:      闭合关系：collected 261 ＋ 2 条**模块级** importorskip（`test_gui_app.py:16`、
+NOTE:      `test_gui_app2.py:18`；收集期 skip ⇒ 不进收集计数、不占进度字符、却计入汇总行 skipped）
+NOTE:      ＝汇总行结局 263；进度字符 261＝collected 261（模块级 skip 不占进度字符）。
+NOTE:      ⇒ 闸门 G2（四路互洽＋同树＋指纹）＝PASS；
+NOTE:      扰动正对照＝把 collected 故意少算 1 再走同一闸门 ⇒ 立刻变红（闸门能红，PASS 非空转）。
+NOTE:      基线对账：上一轮 255 collected／252 passed（`am_t4_full_regression.log`）⇒ 本轮净增 6 条＝
+NOTE:      `tests/test_lsf_deposition.py` 实收 6 条（改前那份文件是 4 failed／2 passed，见
+NOTE:      `am_t34_t36_test_lsf_deposition_pre_fix.log`）⇒ passed 258＝252＋6。
+NOTE: N2 两条登记红灯**必须逐字节未变**（A0 不许放宽、#27 那条不许换指标）：
+NOTE:      `grep "^E       AssertionError: "` 在参照件（am_t4_full_regression.log）与本件各 2／2 行，
+NOTE:      `diff` 结果＝IDENTICAL；扰动正对照＝把 h=20000 那行末位改 1 ulp（2908.771450618092→…093）后
+NOTE:      同一 `diff` 反而 立刻变红 ⇒ 这把尺子能红，故 "IDENTICAL" 不是空转。
+NOTE:      红灯身份闸门 G3＝MATCH（测试名**不是手抄**：参照件正文 FAILURES 段下划线标题现取＝
+NOTE:      test_convection_removes_energy test_meltpool_converges_across_beam_resolving_grids ；本件 `-rA` 的 FAILED 行现取＝test_convection_removes_energy test_meltpool_converges_across_beam_resolving_grids ）。
+NOTE: N3 skip 身份取自 `-rA` 的 SKIPPED 行原文（**不按位置反推**——行宽随终端变，上一轮就栽过一次）：
+NOTE:        [1] tests/test_gui_app.py:16: could not import 'PySide6': No module named 'PySide6'
+NOTE:        [1] tests/test_gui_app2.py:18: could not import 'PySide6': No module named 'PySide6'
+NOTE:        [1] tests/test_monitoring.py:285: could not import 'PySide6': No module named 'PySide6'
+NOTE: N4 诚实边界：本轮**不产任何吞吐/加速数字**（性能一律只在 A6000 上测）；设备依据＝上面 ENV 行
+NOTE:      实测的空 `CUDA_VISIBLE_DEVICES`，不是从命令行猜的。stderr 与 stdout 同源（`2>&1`），
+NOTE:      正文无 JAX 回退/CPU 设备行 ⇒ 无反证。
+NOTE: N5 启动器未回显 pytest 退出码（`nohup … > log 2>&1 &` 里没有 `echo exit=$?`），故本件**不写**
+NOTE:      `reg_exit=`；由汇总行含 2 failed 可知 rc＝1，那是**推断**而非实测。
+NOTE:      ⚠ 自纠（本轮第 8 条）：「退出码要在启动时抓」这条在 memory 里已有，仍在本次启动器上复发。
+NOTE: N6 本件头部由 `/tmp/am_t36_arc.sh` 生成（模板＋环境注入，**无手抄数值**）。该仪器在本轮的
+NOTE:      **干跑**（合成 log）上暴露两处自身缺陷并当场改掉，照实记＝本轮第 9、10 条自纠：
+NOTE:      ① G0 守卫原写 `pgrep -f "pytest -q -rA -p no:cacheprovider"` ⇒ **匹配到我自己的包装 shell**
+NOTE:         （计数 2、误判"仍在跑"），改为 `ps -eo pid,comm,args` 且要求 `comm ~ /^python/`；
+NOTE:         正对照＝对真实在跑的回归进程该计数＝**1**（21:47 实测，与 0 的归档态可区分）。
+NOTE:      ② G2 闭合式误写成"② 进度字符＝① 汇总行结局"，真关系是 ②＝collected、①＝collected＋2
+NOTE:         ⇒ 首跑**拒绝归档**（闸门确实能红，不是空转）。改关系式后重跑＝PASS。
+NOTE:      生成器与模板按原名入库（`am_t36_arc.sh`＋`am_t36_hdr.tmpl`，同目录）；本件是**那一次**的产物，
+NOTE:      重跑需先照 CMD/ENV 行重新起跑，并重新采集 `/tmp` 侧三个输入（`am_t36_tree_pre.txt` 跑前指纹、
+NOTE:      `am_t36_cmdline.txt`、`am_t36_env.txt` 取自 /proc），脚本里有 DRY/NOG0/NOG2 三个干跑开关。
+----- 以下为本件正文（原 /tmp log 逐字节，未编辑）-----
+............F....................................................F...... [ 27%]
+........................................................................ [ 55%]
+......................................s................................. [ 82%]
+.............................................                            [100%]
+=================================== FAILURES ===================================
+________________________ test_convection_removes_energy ________________________
+
+    def test_convection_removes_energy():
+        """强对流降低末态温度；只有极强对流才降低**峰值**。
+    
+        A0 前的旧断言「h=200 W/m²K 使峰值下降」是**假**的：对流是表面通量，必须
+        除以 dx 摊成体积项才与 ∂H/∂t 同量纲（旧代码少除 dx，散热被低估 1/dx≈12500
+        倍）；修正后实测（0.4mm 试片 dx=80µm，5 面对流，T_inf=293K）——**③ 代（#23 之后）现行值**：
+    
+            h          末态实体均值      Δmean        峰值 K         Δpeak
+            0 (基线)   2720.80 K         —            2937.061       —
+            200        2713.53 K         −7.27 K      2938.287       +0.042%
+            2000       2649.43 K         −71.38 K     2944.735       +0.261%
+            20000      1964.87 K         −755.93 K    2908.771       −0.963%
+    
+            取证＝docs/evidence/2026-10-08/am_t28_boundary_probe.log（CPU 钉住；判据 P1-P5 跑前登记）。
+            其 P1 用 `repr()` 逐位对上 pytest 自己打印的锚点 2937.060997302282 ⇒ 量的就是这条测试的夹具；
+            Δmean/Δpeak 与 docs/evidence/2026-10-07/am_t27_convection_peak_probe.log 的 new 口径列 3/3 命中。
+            上一条（**② 代**＝#23 之前）＝均值 2291→2283→2210→1718 K、Δ −8.1/−81.6/−573.7 K、
+            Δpeak +0.03%/+0.10%/−5.39%（该 old 口径列被上面那份探针逐位复现过，±0.2K/±0.05pt）。
+            ⚠ 两代**不可混用**，而且两个量的换数幅度**不同量级**：末态均值整体抬高约 19%
+            （2291 → 2720.80 K；#23 把半填充单元的热容由整格改成按 fv 计，而均值＝总能量/总热容的直接读数），
+            峰值几乎不动（2943.778 → 2937.061 K，−0.23%；被蒸发封顶钉住 ⇒ 对热容口径不敏感）。
+    
+        物理：峰值由「脉冲剂量 + 蒸发封顶」在光斑中心局部决定，表面对流在正常工艺
+        量级（h≲10³）动不了它；但它扫完之后整体带走能量，末态温度显著下降。所以
+        守护点应是「能量被移走」，而不是「峰值被压」。
+        ⚠ 已知红灯＝任务 **#27**：③ 代下 h=20000 的压峰只剩 **−0.963%**（② 代 −5.39%），于是本测试
+        最后那条「压峰 ≥2%」的守护为红，pytest 实际打印＝
+        `AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282`（两个数都是 ③ 代现行值，
+        与上表末行的 2908.771 / 基线 2937.061 同源）。归因（同探针 U1/U2/U3，跑前登记）＝**蒸发封顶在 fv=0.5 的
+        刀锋面刚度翻倍**（`fv·S → fv·S/cap_w = S`：能量不变、钳位变硬），**不是**散热被吞——关掉封顶后
+        ③ 的 h 响应 −35.386% **强于** ② 的 −16.907%，且 Δmean 不小于一。`c_evap = 3.0e11` 是按**旧口径**
+        标定的 ⇒ 只能以**外部靶**重标定（A3/NIST 基准、登记的 ~3000K 目标），**禁止**以"让本测试转绿"为靶；
+        本测试的判据与守护在 #27 落地前**一字不动**（含下面 ①/② 两处 0.02 的字面阈值）。
+        """
+        part = _box3d(size_mm=0.4, spacing_um=80.0)
+        plan = _plan()
+        # 口径＝#19 solid_mask（实测本夹具 Δn=0 ⇒ 可证无操作，am_t26_bare_sdf_census.log S1）。
+        # ⚠ `solid_mask` 返回 ∈{0,1} 的**同 dtype 数值**数组（contracts.py: `.astype(a.dtype)`），
+        # 不是 bool ⇒ 用作布尔索引前必须 `> 0.5`。
+        solid = np.asarray(solid_mask(np.asarray(part.sdf)) > 0.5)
+        res0 = solve_enthalpy_thermal(geometry=part, process=plan,
+                                      params={"material": "316L"})
+        mean0 = float(np.mean(np.asarray(res0.final_temperature)[solid]))
+        peak0 = float(np.max(np.asarray(res0.peak_temperature)))
+    
+        means, peaks = [], []
+        for h in (200.0, 2000.0, 20000.0):
+            strong = BoundaryCollection(
+                bcs=tuple(BoundaryCondition("convection", f, h, 293.0)
+                          for f in ("+Z", "+X", "-X", "+Y", "-Y")), ic=None)
+            res = solve_enthalpy_thermal(
+                geometry=part, process=plan,
+                params={"boundary_conditions": strong, "material": "316L"})
+            Tf = np.asarray(res.final_temperature)
+            assert np.isfinite(Tf).all() and np.isfinite(res.peak_temperature).all()
+            means.append(float(np.mean(Tf[solid])))
+            peaks.append(float(np.max(np.asarray(res.peak_temperature))))
+    
+        # ① 单调散热：h 越大末态越冷，且跨度可测（**③ 代**实测 2720.80→2713.53→2649.43→1964.87 K，
+        #   取证 am_t28_boundary_probe.log；② 代为 2291→2283→2210→1718 K，两代不可混用）
+        assert means == sorted(means, reverse=True), f"末态均值未随 h 单调下降：{means}"
+        assert mean0 - means[1] > 30.0, f"h=2000 仅降 {mean0 - means[1]:.1f}K（散热未生效？）"
+        assert mean0 - means[2] > 300.0, f"h=20000 仅降 {mean0 - means[2]:.1f}K"
+        # ② 常规工艺量级对流动不了峰值（蒸发封顶/剂量决定），极强对流才能压峰
+        assert abs(peaks[1] - peak0) / peak0 < 0.02, "h=2000 不应显著改变峰值"
+>       assert peaks[2] < peak0 - 0.02 * peak0, f"h=20000 应压低峰值：{peaks[2]} vs {peak0}"
+E       AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282
+E       assert 2908.771450618092 < (2937.060997302282 - (0.02 * 2937.060997302282))
+
+tests/test_boundary.py:203: AssertionError
+_____________ test_meltpool_converges_across_beam_resolving_grids ______________
+
+    def test_meltpool_converges_across_beam_resolving_grids():
+        """A0 的核心可验证承诺：**能分辨光斑的两档网格**给出同一熔池。
+    
+        判据（5%）**不放宽**；本测试自 #19 起为**已知红灯**，下面是它红的确切数字与归属，
+        不是解释性辩护。取数条件：试片 1.2×0.6×0.4mm、600W/0.8m·s⁻¹/r=100µm/η=0.45、
+        integrated 源、步数由 CFL 自动推导、CPU 钉住（CUDA_VISIBLE_DEVICES=""）。
+        现行证据（**③ 代**＝#23 之后）：docs/evidence/2026-10-07/am_t27_fullsuite.log（2026-10-08 00:54
+        全量，本测试即其中一条红灯，打印值见 (1)）、am_t23_capacity_closure_probe.log（P3 换数表）、
+        docs/evidence/2026-10-08/am_t25_round3_observable.log（O1 矩阵）、am_t25r4_halfcell_noop.log／
+        am_t25r4b_fielddiff.log（对齐列的机制核对）。
+        档案证据（**② 代**＝#19＋#26 之后、#23 之前，HEAD af9fc89＋#19 工作树）：
+        am_t2_a0_test_mirror.log、am_t2_a0_observable.log、am_t2_a0_alignment.log、am_t2_domain_mass.log。
+        ⚠ 三代数字（① 代 #19 前／② 代／③ 代 #23 后）**不得混用**，代际声明见 docs/开发日志.md §25.2。
+    
+        (1) 本测试自己的口径（δ=0：试片表面恰落在节点上，即 `_coupon` 的刀锋对齐）——**③ 代现行值**
+              dx=50µm   峰值 2461.27K  熔体积 0.06025mm³(482 体素)
+              dx=25µm   峰值 2563.01K  熔体积 0.06947mm³(4446 体素)
+              dx=12.5µm 峰值 2565.08K  熔体积 0.07418mm³（该档体素计数未打印 ⇒ 不给计数）
+            ⇒ 断言 1 峰值差 **3.969% < 5% ⇒ 已绿**；断言 2 熔体积差 **13.270% ⇒ 本测试现在红在这一条**
+              （全量实测打印 `0.060249999999999984 vs 0.06946874999999998`）。加密不变冷（断言 3）仍通过。
+              体素计数 **482/4446 是被打印过的实测值**（`am_t23_a0_mirror.log` L8-9 的 `[fv]` 两行：
+              peak 2461.2693/2563.0062 K、熔体素 482/4446、Vn 0.06025/0.06947mm³；那轮是 #23 **落地前**在
+              head `c41d3b0` 上用 monkeypatch 把 fv 口径放进**本测试自己的**口径打分、设备 cuda:0，
+              落地后由 `am_t23_capacity_closure_probe.log` P3 与 `am_t25_round3_observable.log` R1 逐位复现）。
+              交叉核对（除法，不是新测量）：`482·(50·1e-6)³·1e9` 与 `4446·(25·1e-6)³·1e9` 与全量记分里
+              pytest 打印的两个串**逐位相等**，而 n 是 int ⇒ 计数只能取这两个值。
+            上一条（**② 代**，同一口径）＝峰值 2349.07/2478.97/2517.98K、熔体积 0.05187(415)/
+              0.05831(3732)/0.06778mm³、断言 1 差 5.24%（红）、断言 2 差 11.04%（红）⇒ 两条同红。
+            更早（**① 代**，2026-10-06 登记）＝峰值 2670.3/2617.8K、差 1.96%；体积 0.0687/0.0715mm³、差 3.92%
+              是**旧严格掩膜 `sdf<0`** 下的数，已不可复现；旧绿里含一份口径补偿误差，见 (3)。
+    
+        (2) 换指标被跑前登记的 O1 判据否掉（`am_t2_a0_observable.py:90-125`：观测量入选
+            ⇔ 对**每一种 δ** 且**每一对相邻档**都 <5%，不许挑对齐、不许挑档对）——**③ 代矩阵**
+            （`am_t25_round3_observable.log`，探针文件与 ② 代那份**一字未改** ⇒ 只差代码代际）：
+                 观测量     50↔25(δ∈{0,.25})  25↔12.5(δ∈{0,.25})  50↔25(δ=0.5)
+                 峰值 T            4.21%              0.08%            5.15%
+                 Vm(fv 加权)      14.18%              7.50%            1.13%
+                 Vn(体素计数)     13.27%              6.36%            1.13%
+                 ΔH(焓升)          2.38%              0.77%            4.66%
+                 （② 代原表：5.24/1.55/5.15、10.70/13.49/1.13、11.04/13.97/1.13、9.74/5.32/4.66）
+            ⇒ 脚本判据下**只有 ΔH 入选**，而本测试断的是峰值与 Vn ⇒ **不换指标，A0 保持红灯**。
+              照实读这张表：能量侧已闭合（ΔH 全部 ≤4.66%）、峰值在**有信息的对齐**上达标（4.21%）、
+              剩下的 13–14% 在**形态／计数口径**半边（任务 #25）。δ=0.5 那一列经 #25 第 4/4b 轮实测
+              ＝对 #23 的改动是**场级机器精度恒等**（全场最大相对差 ≤5.4e-15，≈1.4e-11 K），
+              所以它既不能当证据、也**不许从判据里删掉**（删＝放宽）。
+    
+        (3) 曾登记的一阶成因＝**已由 #23 除根**（2026-10-07 落地 `d7404f4`）。原诊断：#19 把实体掩膜改成
+            容差 `sdf<1e-12` 后，δ=0 的刀锋面被**整层计入**计算域，而 `thermal_enthalpy` 给部分填充体素配的
+            是**满体素热容**（右端项 `fv·dH/dt = lap + fv·Q − fv·cool` 里 `lap` 未除回 fv），于是
+            域热容 / 设计体积 = 1.2695×(50µm) / 1.1298×(25µm) / 1.0637×(12.5µm)，而剂量 Σfv·dx³ 只有
+            1.0191 / 1.0048 / 1.0012×——粗网格凭空多出 24.6%/12.4%/6.2% 的热容（O(dx)、随加密单调消失；
+            旧 `sdf<0` 是另一侧的 0.8785/0.9384/0.9690×，两错反向 ⇒ 旧档对差被补偿成"看似收敛"）。
+            现口径：`H` ＝单位**材料**体积焓，右端项整条除以 `cap_w = max(fv, CUT_CAPACITY_FLOOR=0.5)`；
+            注入/移走的能量逐项不变，`n_steps`/CFL 不变（0.35/0.5＝0.7 ≤ SSP-RK2 上限 1）。
+            ⚠ 照实记边界：#23 之后 Vn 的 50↔25 档对差反而从 11.040% **变大到 13.270%**（本测试的失败点
+            从 assert1 移到 assert2）⇒ 形态半边不在 #23 里，由 **#25**（液相线等值面位置＋体素计数）承载，
+            **不得**宣称本测试已接近转绿。
+    
+        (4) 对齐抖动量级（同档、三种 δ 的峰值极差）：**② 代** 3.46%(50µm)/3.36%(25µm)
+            （`am_t2_a0_alignment.log`），与当时的档对差同量级 ⇒ 噪声地板不足以支撑"1.55% vs 5.24%"的读法。
+            **③ 代**由 (2) 引用的打印值算出（同一轮、非新测量）＝1.14%(50µm)/0.40%(25µm)，
+            已低于 4.21% 的档对差 ⇒ 峰值一侧现在可读；形态一侧（Vn/Vm）仍被 13–14% 的档对差压着。
+    
+        dx=100µm(=r) 档不在本判据内：求解器对它发「熔池形态不可信」警告（真实空间欠分辨）。
+        """
+        ext = (1.2e-3, 0.6e-3, 0.4e-3)
+        pl = _coupon_plan(ext)
+        out = []
+        for dx_um in (50., 25.):
+            dx = dx_um * 1e-6
+            g = _coupon(dx, ext)
+            th = solve_enthalpy_thermal(geometry=g, process=pl,
+                                        params={"material": "316L"})
+            # 口径：#19 后统一用 solid_mask（**② 代**实测对本观测量：50µm 档 0 个体素、25µm 档 28 个体素
+            # =+0.76% 的差异；全域异或 901/3529 体素为阳性对照，见 am_t2_a0_test_mirror.log。
+            # ③ 代（#23 之后）未复测这条对比——它量的是掩膜口径之差、与热容口径无关，故未列入 #28 换数表）
+            melted = (th.peak_temperature > get_material("316L").T_liquidus) & (solid_mask(g.sdf) > 0.5)
+            n = int(jnp.sum(melted))
+            assert n > 0, f"dx={dx_um}µm 应发生熔化（历史缺陷：加密反而不熔）"
+            out.append((float(jnp.max(th.peak_temperature)), n * dx ** 3 * 1e9))
+        pk_c, vol_c = out[0]
+        pk_f, vol_f = out[1]
+        assert abs(pk_c - pk_f) / max(pk_c, pk_f) < 0.05, f"峰值不收敛：{pk_c} vs {pk_f}"
+>       assert abs(vol_c - vol_f) / max(vol_c, vol_f) < 0.05, f"熔体积不收敛：{vol_c} vs {vol_f}"
+E       AssertionError: 熔体积不收敛：0.060249999999999984 vs 0.06946874999999998
+E       assert (0.009218749999999998 / 0.06946874999999998) < 0.05
+E        +  where 0.009218749999999998 = abs((0.060249999999999984 - 0.06946874999999998))
+E        +  and   0.06946874999999998 = max(0.060249999999999984, 0.06946874999999998)
+
+tests/test_enthalpy_thermal.py:391: AssertionError
+==================================== PASSES ====================================
+_________________________ test_cli_calibrate_roundtrip _________________________
+----------------------------- Captured stdout call -----------------------------
+
+标定报告已写入: /tmp/pytest-of-shy/pytest-1818/test_cli_calibrate_roundtrip0/report.json
+_______________________ test_inverse_training_converges ________________________
+----------------------------- Captured stdout call -----------------------------
+  step   0  loss = 8.3514e-01
+  step   2  loss = 6.0165e-01
+  step   4  loss = 4.3714e-01
+  step   6  loss = 4.1989e-01
+  step   8  loss = 3.7007e-01
+  step  10  loss = 3.5793e-01
+  step  12  loss = 3.3172e-01
+  step  14  loss = 3.2514e-01
+  step  16  loss = 3.2480e-01
+  step  18  loss = 3.2310e-01
+  step  19  loss = 3.2198e-01
+=========================== short test summary info ============================
+PASSED tests/test_beam_convention.py::test_beam_radius_is_the_one_over_e_squared_radius
+PASSED tests/test_beam_convention.py::test_two_spellings_of_the_decay_are_bitwise_identical
+PASSED tests/test_beam_convention.py::test_inplane_integral_is_half_pi_r_squared
+PASSED tests/test_beam_convention.py::test_moving_source_plane_sigma_matches_contract
+PASSED tests/test_beam_convention.py::test_default_meltpool_fdm_source_sigma_and_power
+PASSED tests/test_beam_convention.py::test_cell_integrated_default_still_conforms
+PASSED tests/test_beam_convention.py::test_diffmech_width_matches_amforge
+PASSED tests/test_boundary.py::test_face_mask_axis_locations_3d
+PASSED tests/test_boundary.py::test_face_mask_z_empty_for_2d
+PASSED tests/test_boundary.py::test_boundary_collection_roundtrip
+PASSED tests/test_boundary.py::test_boundary_condition_validation
+PASSED tests/test_boundary.py::test_dirichlet_holds_base_temperature
+PASSED tests/test_boundary.py::test_initial_condition_preheat
+PASSED tests/test_calibration.py::test_calibration_fits_known_material
+PASSED tests/test_calibration.py::test_calibration_report_pytree_roundtrip
+PASSED tests/test_calibration.py::test_make_experiments_from_dicts_and_process_from_dict
+PASSED tests/test_calibration.py::test_cli_calibrate_roundtrip
+PASSED tests/test_default_solver_numerical.py::test_amforge_default_meltpool_is_numerical
+PASSED tests/test_default_solver_numerical.py::test_amforge_default_thermal_is_numerical
+PASSED tests/test_default_solver_numerical.py::test_amforge_analytical_excluded_by_default_but_selectable
+PASSED tests/test_default_solver_numerical.py::test_amforge_high_fidelity_vof_selectable_not_default
+PASSED tests/test_default_solver_numerical.py::test_forgecore_default_prefers_numerical
+PASSED tests/test_default_solver_numerical.py::test_forgecore_analytical_selectable
+PASSED tests/test_default_solver_numerical.py::test_meltpool_fdm_runs_and_is_differentiable
+PASSED tests/test_dimensional_optimization.py::test_hifi_asbuilt_runs_in_simulate
+PASSED tests/test_dimensional_optimization.py::test_hifi_dimensional_loss_gradient_finite
+PASSED tests/test_dimensional_optimization.py::test_optimize_reduces_dimensional_loss
+PASSED tests/test_dimensional_optimization.py::test_default_simulate_still_buildup
+PASSED tests/test_dimensional_optimization.py::test_loss_fn_accepts_hifi_switch
+PASSED tests/test_dimensional_optimization.py::test_shape_gradient_finite_and_connected
+PASSED tests/test_dimensional_optimization.py::test_optimize_shape_reduces_dimensional_deviation
+PASSED tests/test_dimensional_optimization.py::test_optimize_shape_finite_results
+PASSED tests/test_dimensional_optimization.py::test_joint_co_optimization_reduces_deviation
+PASSED tests/test_dimensional_optimization.py::test_joint_both_levers_move_and_are_finite
+PASSED tests/test_dimensional_optimization.py::test_joint_competitive_with_shape_only
+PASSED tests/test_dimensional_optimization.py::test_process_constraint_penalty_finite_and_connected
+PASSED tests/test_dimensional_optimization.py::test_process_constraint_reduces_penalty_in_joint
+PASSED tests/test_dimensional_optimization.py::test_soft_constraint_alone_drives_process_feasible
+PASSED tests/test_dimensional_optimization.py::test_dimensional_constraint_keeps_plan_feasible
+PASSED tests/test_dimensional_optimization.py::test_hard_projection_is_feasible_idempotent_and_finite
+PASSED tests/test_dimensional_optimization.py::test_hard_projection_reduces_penalty_vs_input
+PASSED tests/test_dimensional_optimization.py::test_hard_projection_in_joint_yields_feasible_plan
+PASSED tests/test_dimensional_optimization.py::test_hard_projection_in_dimensional_yields_feasible_plan
+PASSED tests/test_dimensional_optimization.py::test_pareto_front_nsga2_non_dominated_and_feasible
+PASSED tests/test_dimensional_optimization.py::test_pareto_lambda_legacy_still_works
+PASSED tests/test_e2e_chain.py::test_all_builtin_modules_imported
+PASSED tests/test_e2e_chain.py::test_registry_has_full_chain_solvers
+PASSED tests/test_e2e_chain.py::test_auto_pipeline_full_chain
+PASSED tests/test_e2e_chain.py::test_all_contracts_reachable
+PASSED tests/test_e2e_chain.py::test_pipeline_run_end_to_end
+PASSED tests/test_e2e_chain.py::test_loss_gradient_has_no_nan
+PASSED tests/test_e2e_chain.py::test_pipeline_function_gradient_has_no_nan
+PASSED tests/test_e2e_chain.py::test_inverse_training_converges
+PASSED tests/test_e2e_chain.py::test_contract_dim_consistency
+PASSED tests/test_enthalpy_thermal.py::test_liquid_fraction_monotone_and_mushy_bounded
+PASSED tests/test_enthalpy_thermal.py::test_temperature_of_enthalpy_inverts
+PASSED tests/test_enthalpy_thermal.py::test_latent_heat_lowers_peak_temperature
+PASSED tests/test_enthalpy_thermal.py::test_solver_produces_finite_thermal_history
+PASSED tests/test_enthalpy_thermal.py::test_gradient_through_enthalpy_is_finite
+PASSED tests/test_enthalpy_thermal.py::test_registered_and_selectable_in_forgecore
+PASSED tests/test_enthalpy_thermal.py::test_cell_integrated_source_conserves_dose
+PASSED tests/test_enthalpy_thermal.py::test_scan_recipe_is_grid_independent
+PASSED tests/test_enthalpy_thermal.py::test_unstable_or_unresolved_schedule_is_rejected
+PASSED tests/test_enthalpy_thermal.py::test_preheat_temperature_enters_initial_condition
+PASSED tests/test_forgecore_e2e.py::test_registry_has_am_solvers
+PASSED tests/test_forgecore_e2e.py::test_mirror_costs_match_native
+PASSED tests/test_forgecore_e2e.py::test_auto_wiring_reaches_verdict
+PASSED tests/test_forgecore_e2e.py::test_end_to_end_finite
+PASSED tests/test_forgecore_e2e.py::test_gradient_through_full_chain_no_nan
+PASSED tests/test_forgecore_e2e.py::test_amf_serialization_roundtrip
+PASSED tests/test_geometry_voxelization.py::test_grid_axes_spelling_invariant[5e-05-16]
+PASSED tests/test_geometry_voxelization.py::test_grid_axes_spelling_invariant[2.5e-05-32]
+PASSED tests/test_geometry_voxelization.py::test_grid_axes_spelling_invariant[1.25e-05-64]
+PASSED tests/test_geometry_voxelization.py::test_grid_axes_spelling_invariant[0.0001-8]
+PASSED tests/test_geometry_voxelization.py::test_grid_axes_spelling_invariant[2e-05-40]
+PASSED tests/test_geometry_voxelization.py::test_from_sdf_fn_shape_invariant[5e-05-16]
+PASSED tests/test_geometry_voxelization.py::test_from_sdf_fn_shape_invariant[2.5e-05-32]
+PASSED tests/test_geometry_voxelization.py::test_from_sdf_fn_shape_invariant[1.25e-05-64]
+PASSED tests/test_geometry_voxelization.py::test_from_sdf_fn_shape_invariant[0.0001-8]
+PASSED tests/test_geometry_voxelization.py::test_from_sdf_fn_shape_invariant[2e-05-40]
+PASSED tests/test_geometry_voxelization.py::test_real_remainder_still_gets_extra_cell
+PASSED tests/test_geometry_voxelization.py::test_axis_nodes_are_exactly_n_cells_apart
+PASSED tests/test_gui_postproc.py::test_field_extraction_finite_and_shaped
+PASSED tests/test_gui_postproc.py::test_unknown_field_raises
+PASSED tests/test_gui_postproc.py::test_vtk_and_csv_export_roundtrip
+PASSED tests/test_gui_postproc.py::test_export_all_fields_manifest
+PASSED tests/test_gui_postproc.py::test_assembly_summary_and_chain
+PASSED tests/test_gui_postproc.py::test_optimization_summary_joint_synthetic
+PASSED tests/test_gui_postproc.py::test_optimization_summary_pareto_synthetic
+PASSED tests/test_gui_preproc.py::test_build_primitive_sphere
+PASSED tests/test_gui_preproc.py::test_primitive_shapes_distinct
+PASSED tests/test_gui_preproc.py::test_hatch_paths_nonempty_and_layered
+PASSED tests/test_gui_preproc.py::test_hatch_spacing_density_monotonic
+PASSED tests/test_gui_preproc.py::test_build_process_plan_and_assess
+PASSED tests/test_gui_preproc.py::test_export_import_roundtrip
+PASSED tests/test_gui_preproc.py::test_generate_support_logic
+PASSED tests/test_intsnap_counts.py::test_count_ceil_semantics
+PASSED tests/test_intsnap_counts.py::test_count_floor_semantics
+PASSED tests/test_intsnap_counts.py::test_band_width_is_one_ninth_to_one_hundredth
+PASSED tests/test_intsnap_counts.py::test_layer_count_and_z_heights_spelling_invariant[50.0-12-15]
+PASSED tests/test_intsnap_counts.py::test_layer_count_and_z_heights_spelling_invariant[25.0-24-12]
+PASSED tests/test_intsnap_counts.py::test_layer_count_and_z_heights_spelling_invariant[100.0-8-4]
+PASSED tests/test_intsnap_counts.py::test_layer_count_and_z_heights_spelling_invariant[12.5-32-20]
+PASSED tests/test_intsnap_counts.py::test_baseplate_cells_spelling_invariant[25.0-20-20]
+PASSED tests/test_intsnap_counts.py::test_baseplate_cells_spelling_invariant[50.0-6-6]
+PASSED tests/test_intsnap_counts.py::test_baseplate_cells_spelling_invariant[12.5-8-20]
+PASSED tests/test_intsnap_counts.py::test_crop_margin_pad_spelling_invariant[50.0-3]
+PASSED tests/test_intsnap_counts.py::test_crop_margin_pad_spelling_invariant[25.0-5]
+PASSED tests/test_intsnap_counts.py::test_crop_margin_pad_spelling_invariant[12.5-8]
+PASSED tests/test_intsnap_counts.py::test_powder_lattice_spelling_invariant[50.0-3]
+PASSED tests/test_intsnap_counts.py::test_powder_lattice_spelling_invariant[50.0-8]
+PASSED tests/test_intsnap_counts.py::test_powder_lattice_spelling_invariant[40.0-5]
+PASSED tests/test_intsnap_counts.py::test_powder_lattice_drop_is_real_defect_shape
+PASSED tests/test_intsnap_counts.py::test_gui_hatch_lines_spelling_invariant[4]
+PASSED tests/test_intsnap_counts.py::test_gui_hatch_lines_spelling_invariant[8]
+PASSED tests/test_intsnap_counts.py::test_gui_hatch_lines_spelling_invariant[10]
+PASSED tests/test_intsnap_counts.py::test_diffmech_hatch_lines_spelling_invariant[4]
+PASSED tests/test_intsnap_counts.py::test_diffmech_hatch_lines_spelling_invariant[8]
+PASSED tests/test_intsnap_counts.py::test_diffmech_hatch_lines_spelling_invariant[16]
+PASSED tests/test_intsnap_counts.py::test_diffmech_width_matches_amforge
+PASSED tests/test_intsnap_counts.py::test_zigzag_bias_locked[4]
+PASSED tests/test_intsnap_counts.py::test_zigzag_bias_locked[8]
+PASSED tests/test_intsnap_counts.py::test_zigzag_bias_locked[20]
+PASSED tests/test_intsnap_counts.py::test_grid_axes_control_still_holds[50.0-12]
+PASSED tests/test_intsnap_counts.py::test_grid_axes_control_still_holds[12.5-32]
+PASSED tests/test_lsf_deposition.py::test_profile_sums_exactly_to_feed_rate_when_ring_binds
+PASSED tests/test_lsf_deposition.py::test_total_mass_strictly_increases_after_one_lsf_step
+PASSED tests/test_lsf_deposition.py::test_slm_config_still_returns_exact_zeros
+PASSED tests/test_lsf_deposition.py::test_feed_rate_gradient_hits_analytic_value
+PASSED tests/test_lsf_deposition.py::test_no_src_prefixed_import_remains_in_the_repo
+PASSED tests/test_lsf_deposition.py::test_local_guard_uses_the_module_level_class_object
+PASSED tests/test_mbd.py::test_assembly_result_contract
+PASSED tests/test_mbd.py::test_surrogate_default_in_simulate
+PASSED tests/test_mbd.py::test_mass_matrix_spd
+PASSED tests/test_mbd.py::test_mbd_coupled_finite
+PASSED tests/test_mbd.py::test_mbd_coupled_differentiable
+PASSED tests/test_mbd.py::test_inverse_chain_differentiable_through_mbd
+PASSED tests/test_mbd.py::test_newton_bridge_guarded
+PASSED tests/test_meltpool_surrogate.py::test_center_temperature_matches_closed_form
+PASSED tests/test_meltpool_surrogate.py::test_quadrature_converges
+PASSED tests/test_meltpool_surrogate.py::test_temperature_decays_away_from_source
+PASSED tests/test_meltpool_surrogate.py::test_smooth_max_unbiased_on_plateau
+PASSED tests/test_meltpool_surrogate.py::test_smooth_max_is_differentiable
+PASSED tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[Ti6Al4V-280W-1.20mps]
+PASSED tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[Ti6Al4V-220W-0.90mps]
+PASSED tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[316L-195W-0.80mps]
+PASSED tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[316L-100W-0.40mps]
+PASSED tests/test_meltpool_surrogate.py::test_melt_pool_size_order_of_magnitude[IN718-285W-0.96mps]
+PASSED tests/test_meltpool_surrogate.py::test_temperature_capped_near_boiling
+PASSED tests/test_meltpool_surrogate.py::test_pool_grows_with_energy_density
+PASSED tests/test_meltpool_surrogate.py::test_no_depression_below_boiling
+PASSED tests/test_meltpool_surrogate.py::test_gradient_wrt_power_and_speed
+PASSED tests/test_meltpool_surrogate.py::test_jit_compiles
+PASSED tests/test_meltpool_surrogate.py::test_vmap_over_process_window
+PASSED tests/test_meltpool_surrogate.py::test_melt_length_scale_positive
+PASSED tests/test_meltpool_temperature_dependent.py::test_laser_source_power_conserving
+PASSED tests/test_meltpool_temperature_dependent.py::test_laser_source_exponential_depth_decay
+PASSED tests/test_meltpool_temperature_dependent.py::test_temperature_dependent_k_changes_result
+PASSED tests/test_meltpool_temperature_dependent.py::test_meltpool_fdm_temperature_dependent_differentiable
+PASSED tests/test_meltpool_vof.py::test_pressure_operator_symmetric
+PASSED tests/test_meltpool_vof.py::test_projection_removes_divergence
+PASSED tests/test_meltpool_vof.py::test_runs_finite
+PASSED tests/test_meltpool_vof.py::test_melts
+PASSED tests/test_meltpool_vof.py::test_free_surface_and_keyhole
+PASSED tests/test_meltpool_vof.py::test_marangoni_effect
+PASSED tests/test_meltpool_vof.py::test_differentiable_wrong_power
+PASSED tests/test_meltpool_vof.py::test_default_checkpoint_enabled
+PASSED tests/test_monitoring.py::test_sensor_monitoring_closedloop_pytree_roundtrip
+PASSED tests/test_monitoring.py::test_ingest_from_thermal_history
+PASSED tests/test_monitoring.py::test_ingest_from_tuple_and_dict
+PASSED tests/test_monitoring.py::test_monitor_detect_produces_monitoringstate
+PASSED tests/test_monitoring.py::test_monitor_correct_raises_power_on_lof
+PASSED tests/test_monitoring.py::test_monitor_correct_lowers_power_on_keyhole
+PASSED tests/test_monitoring.py::test_inverse_controller_lowers_defect_cost
+PASSED tests/test_monitoring.py::test_run_loop_inverse_controller_runs
+PASSED tests/test_monitoring.py::test_mirror_monitoring_registered_in_both
+PASSED tests/test_monitoring.py::test_mirror_costs_match_native_monitoring
+PASSED tests/test_monitoring.py::test_run_loop_structure_and_fields
+PASSED tests/test_monitoring.py::test_run_loop_online_recalibration_back_to_C
+PASSED tests/test_monitoring.py::test_run_loop_converges_on_good_geometry
+PASSED tests/test_nsga2.py::test_fast_non_dominated_sort_convex_front
+PASSED tests/test_nsga2.py::test_fast_non_dominated_sort_nonconvex
+PASSED tests/test_nsga2.py::test_crowding_distance_boundary_is_inf
+PASSED tests/test_nsga2.py::test_crowding_distance_le_two_is_inf
+PASSED tests/test_nsga2.py::test_sbx_identical_parents_yield_parents
+PASSED tests/test_nsga2.py::test_sbx_stays_in_bounds
+PASSED tests/test_nsga2.py::test_polynomial_mutation_stays_in_bounds
+PASSED tests/test_nsga2.py::test_nsga2_recovers_true_front
+PASSED tests/test_nsga2.py::test_nsga2_deterministic_with_seed
+PASSED tests/test_nsga2.py::test_nsga2_init_pop_respected
+PASSED tests/test_packaging.py::test_forgecore_packaged_and_importable
+PASSED tests/test_packaging.py::test_diffmech_packaged_and_importable
+PASSED tests/test_packaging.py::test_amforge_import_clean
+PASSED tests/test_packaging.py::test_cli_entry_callable
+PASSED tests/test_packaging.py::test_cli_info_exit_zero
+PASSED tests/test_phasefield.py::test_fourfold_symmetry_axis_preferred
+PASSED tests/test_phasefield.py::test_g_orientation_rotation
+PASSED tests/test_phasefield.py::test_phasefield_differentiable_wrt_eps4
+PASSED tests/test_phasefield.py::test_semi_implicit_stable_at_large_lam
+PASSED tests/test_phasefield.py::test_solve_phasefield_contract
+PASSED tests/test_phasefield.py::test_inverse_simulate_uses_phasefield
+PASSED tests/test_phasefield.py::test_inverse_default_surrogate_unchanged
+PASSED tests/test_phasefield.py::test_optimize_dimensional_phasefield_runs
+PASSED tests/test_phasefield.py::test_optimize_geometry_process_phasefield_runs
+PASSED tests/test_plastic_asbuilt.py::TestRegistrationAndRouting::test_solver_registered
+PASSED tests/test_plastic_asbuilt.py::TestRegistrationAndRouting::test_select_routes_to_high_fidelity
+PASSED tests/test_plastic_asbuilt.py::TestRegistrationAndRouting::test_default_chain_unchanged
+PASSED tests/test_plastic_asbuilt.py::TestRegistrationAndRouting::test_required_inputs
+PASSED tests/test_plastic_asbuilt.py::TestAsBuiltOutput::test_j2_finite_and_capped
+PASSED tests/test_plastic_asbuilt.py::TestAsBuiltOutput::test_cpfe_finite
+PASSED tests/test_plastic_asbuilt.py::TestAsBuiltOutput::test_inside_part_stress_nonzero_outside_zero
+PASSED tests/test_plastic_asbuilt.py::TestDifferentiability::test_grad_wrt_peak_temperature
+PASSED tests/test_postproc_animation.py::test_record_frames_default_none
+PASSED tests/test_postproc_animation.py::test_record_frames_enabled_shape_and_finite
+PASSED tests/test_postproc_animation.py::test_meltpool_moves_across_frames
+PASSED tests/test_postproc_animation.py::test_extract_temperature_frames
+PASSED tests/test_postproc_animation.py::test_save_field_gif
+PASSED tests/test_postproc_animation.py::test_save_field_pvd
+PASSED tests/test_postprocess.py::test_secondaryprocessresult_pytree_roundtrip
+PASSED tests/test_postprocess.py::test_passthrough_wraps_asbuilt
+PASSED tests/test_postprocess.py::test_ht_relieves_residual_stress
+PASSED tests/test_postprocess.py::test_hip_closes_porosity
+PASSED tests/test_postprocess.py::test_machining_trims_to_nominal
+PASSED tests/test_postprocess.py::test_mirror_postprocess_registered_in_both
+PASSED tests/test_postprocess.py::test_mirror_costs_match_native_postprocess
+PASSED tests/test_postprocess.py::test_pipeline_serviceverdict_includes_secondary
+PASSED tests/test_postprocess.py::test_select_secondary_switches_solver
+PASSED tests/test_postprocess.py::test_verdict_consumes_secondary
+PASSED tests/test_postprocess.py::test_apply_secondary_logic
+PASSED tests/test_powder_import.py::test_csv_import_roundtrip
+PASSED tests/test_powder_import.py::test_csv_2d_import
+PASSED tests/test_powder_import.py::test_generated_bed_csv_roundtrip_lossless
+PASSED tests/test_powder_import.py::test_json_import_roundtrip
+PASSED tests/test_powder_import.py::test_from_part_bed_3d
+PASSED tests/test_powder_import.py::test_from_part_bed_2d
+PASSED tests/test_powder_import.py::test_from_part_bed_seed_deterministic
+PASSED tests/test_powder_import.py::test_powder_bed_params_mapping
+PASSED tests/test_powder_import.py::test_preproc_wrappers_smoke
+PASSED tests/test_powder_import.py::test_solve_dem_real_powderbed
+PASSED tests/test_powder_import.py::test_synth_powder_bed_injects_precise_positions
+PASSED tests/test_powder_import.py::test_solve_dem_precise_injection_takes_effect
+PASSED tests/test_powderbed.py::test_powderbed_contract_registered
+PASSED tests/test_powderbed.py::test_powderbed_tier_finite[surrogate]
+PASSED tests/test_powderbed.py::test_powderbed_tier_finite[dem]
+PASSED tests/test_powderbed.py::test_powderbed_tier_finite[sph]
+PASSED tests/test_powderbed.py::test_powderbed_tier_finite[mpm]
+PASSED tests/test_powderbed.py::test_powderbed_surrogate_differentiable
+PASSED tests/test_powderbed.py::test_powderbed_zero_regression
+PASSED tests/test_powderbed.py::test_powderbed_dem_packing_sanity
+PASSED tests/test_support.py::test_support_auto_on_plate_needs_none
+PASSED tests/test_support.py::test_support_auto_floating_needs_support
+PASSED tests/test_support.py::test_support_auto_overhang_subset_of_block
+PASSED tests/test_support.py::test_support_simulate_empty_equals_baseline
+PASSED tests/test_support.py::test_support_simulate_couples_and_zeroes_support
+PASSED tests/test_support.py::test_supportstructure_pytree_roundtrip
+PASSED tests/test_support.py::test_mirror_support_registered_in_both
+PASSED tests/test_support.py::test_default_asbuilt_pipeline_avoids_support_simulate
+PASSED tests/test_support.py::test_supportstructure_target_routes_to_support_auto
+SKIPPED [1] tests/test_gui_app.py:16: could not import 'PySide6': No module named 'PySide6'
+SKIPPED [1] tests/test_gui_app2.py:18: could not import 'PySide6': No module named 'PySide6'
+SKIPPED [1] tests/test_monitoring.py:285: could not import 'PySide6': No module named 'PySide6'
+FAILED tests/test_boundary.py::test_convection_removes_energy - AssertionErro...
+FAILED tests/test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids
+2 failed, 258 passed, 3 skipped in 3824.35s (1:03:44)
