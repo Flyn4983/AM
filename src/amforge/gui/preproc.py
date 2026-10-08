@@ -24,6 +24,7 @@ import jax.numpy as jnp
 import numpy as np
 
 import amforge.geometry as G
+from amforge.counts import count_floor
 from amforge.core.contracts import PartGeometry, ProcessPlan
 from amforge.boundary import (
     BoundaryCondition, InitialCondition, BoundaryCollection,
@@ -125,7 +126,7 @@ def generate_hatch_paths(part: PartGeometry, layer_thickness: float,
             row_occ = m.any(axis=0)
             y_min, y_max = float(ys[row_occ][0]), float(ys[row_occ][-1])
             # 扫描线按 hatch_spacing 均匀铺在 [y_min, y_max]（bidirectional raster）
-            n_lines = max(1, int(np.floor((y_max - y_min) / hatch_spacing)) + 1)
+            n_lines = max(1, count_floor((y_max - y_min) / hatch_spacing) + 1)
             ys_lines = np.linspace(y_min, y_max, n_lines)
             for yk in ys_lines:
                 j = int(np.argmin(np.abs(ys - yk)))   # 最近邻 y 行采样

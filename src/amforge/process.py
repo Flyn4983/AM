@@ -41,6 +41,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from amforge.core.contracts import PartGeometry, ProcessPlan
+from amforge.counts import count_ceil
 from amforge.core.registry import register_solver
 from amforge.geometry import overhang_fraction, thin_wall_field
 from amforge.materials import AMMaterial, get_material
@@ -498,7 +499,7 @@ def zigzag_segments(geometry: PartGeometry, plan: ProcessPlan, *,
     diag = float(np.linalg.norm(hi - lo)) + 1e-12
 
     h = float(jnp.mean(jnp.atleast_1d(plan.hatch_spacing)))
-    n_line = max(1, int(np.ceil(diag / max(h, 1e-9))))
+    n_line = max(1, count_ceil(diag / max(h, 1e-9)))
     n_layers = plan.n_layers if layers is None else len(list(layers))
     idx = list(range(n_layers)) if layers is None else list(layers)
 

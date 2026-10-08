@@ -104,7 +104,10 @@ def zigzag_hatch(mask: np.ndarray, xs: np.ndarray, ys: np.ndarray,
     waypoints = []
     # Hatch lines spaced by hatch_spacing along the cross-axis.
     y_min, y_max = ys.min(), ys.max()
-    n_lines = max(1, int(np.ceil((y_max - y_min) / hatch_spacing)))
+    # T3(#24)：本包在 amforge 之下（依赖单向）⇒ 不能 import amforge.counts，按**同宽** 1e-9
+    # 内联；两包一致性由 docs/evidence/2026-10-08/am_t3_intsnap_probe.py 的文本绑定守。
+    ratio = float(y_max - y_min) / float(hatch_spacing)
+    n_lines = max(1, int(np.ceil(ratio - 1e-9 * max(1.0, abs(ratio)))))
     hatch_ys = np.linspace(y_min, y_max, n_lines)
 
     for i, yc in enumerate(hatch_ys):

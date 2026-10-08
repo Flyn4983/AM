@@ -571,7 +571,9 @@ def denudation_mpm(cfg: PowderBedConfig, slm: SLMConfig, *,
 
     dx = 2.0 * float(cfg.d50)
     lx = float(np.asarray(cfg.bed_lx))
-    n_grid = max(8, int(np.ceil(lx / dx)) + 4)
+    # T3(#24)：本包不能 import amforge.counts（依赖单向 amforge→diffmech）⇒ 按同宽 1e-9 内联。
+    ratio = lx / dx
+    n_grid = max(8, int(np.ceil(ratio - 1e-9 * max(1.0, abs(ratio)))) + 4)
     grid_shape = tuple([n_grid] * dim)
     origin = tuple([-2.0 * dx] * dim)
     if dt is None:

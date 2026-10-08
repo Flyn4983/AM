@@ -308,7 +308,10 @@ def _build_solver_state(
         grid_origin = tuple(float(x) for x in p.min(axis=0))
         spans = p.max(axis=0) - p.min(axis=0)
         dx = float(max(spans) / max(1, n_grid - 2))
-        shape = tuple(max(3, int(np.ceil(spans[i] / dx)) + 2) for i in range(dim))
+        # T3(#24)：本包不能 import amforge.counts（依赖单向 amforge→diffmech）⇒ 同宽 1e-9 内联。
+        ratios = spans / dx
+        shape = tuple(max(3, int(np.ceil(float(r) - 1e-9 * max(1.0, abs(float(r))))) + 2)
+                      for r in ratios)
         cfg = MPMConfig(
             grid_origin=grid_origin,
             grid_shape=shape,

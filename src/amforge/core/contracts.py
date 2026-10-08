@@ -30,6 +30,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from amforge.counts import count_ceil
 from amforge.materials import AMMaterial
 
 Array = jnp.ndarray
@@ -187,7 +188,7 @@ class PartGeometry:
     def layer_count(self, layer_thickness: float) -> int:
         """给定层厚时的层数（沿最后一个轴 = 构建方向 Z）。"""
         height = self.spacing * (self.shape[-1] - 1)
-        return max(1, int(np.ceil(float(height) / float(layer_thickness))))
+        return max(1, count_ceil(float(height) / float(layer_thickness)))
 
     def coords(self) -> Array:
         """体素中心坐标 (..., dim) [m]。"""

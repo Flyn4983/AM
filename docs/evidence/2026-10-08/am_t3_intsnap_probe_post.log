@@ -1,0 +1,318 @@
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+
+==============================================================================
+ENV
+==============================================================================
+python     = 3.12.3   jax=0.11.0 x64=True
+HEAD       = 65c8cc3
+dirty_src  = 10  ['M src/amforge/core/contracts.py', ' M src/amforge/geometry.py', ' M src/amforge/gui/preproc.py', ' M src/amforge/powder.py', ' M src/amforge/process.py', ' M src/diffmech/methods/am/powder_bed.py', ' M src/diffmech/methods/am/scan_paths.py', ' M src/diffmech/server.py', '?? src/amforge/counts.py', '?? tests/test_intsnap_counts.py']
+device_pin = CUDA_VISIBLE_DEVICES='' backends=[CpuDevice(id=0)]
+
+>>> phase=post  counts.py 存在=True  HEAD=65c8cc3
+>>> 复刻位点（S10/S11）容差宽度 = 1e-09
+
+==============================================================================
+K0 普查：src/**/*.py 的每一处 ceil/floor/round/rint
+==============================================================================
+  [  index-map] index_map                src/amforge/asbuilt_plastic.py:110  jnp.round((cell_centers - origin) / spacing),
+  [   in-scope] S01_layer_count          src/amforge/core/contracts.py:191  return max(1, count_ceil(float(height) / float(layer
+  [     helper] S00_counts_helper        src/amforge/counts.py:49  return int(math.ceil(r - TOL_REL * max(1.0, abs(r)))
+  [     helper] S00_counts_helper        src/amforge/counts.py:58  return int(math.floor(r + TOL_REL * max(1.0, abs(r))
+  [    snapped] grid_axes                src/amforge/geometry.py:129  n_cells = count_ceil(ratio)
+  [   in-scope] S02_with_baseplate       src/amforge/geometry.py:417  n_add = max(1, count_ceil(thickness / part.spacing))
+  [   in-scope] S03_layer_z_heights      src/amforge/geometry.py:451  n = max(1, count_ceil((hi - lo) / layer_thickness))
+  [   in-scope] S04_crop_margin          src/amforge/geometry.py:523  pad = count_ceil(margin / part.spacing)
+  [   in-scope] S08_gui_hatch_lines      src/amforge/gui/preproc.py:129  n_lines = max(1, count_floor((y_max - y_min) / hatch
+  [  index-map] index_map                src/amforge/meltpool.py:305  k = jnp.floor(t / t_cycle)
+  [round-family] round_family             src/amforge/meltpool.py:656  n_cells_layer = max(1, int(round(lt / cfg.dx)))
+  [  int-exact] int_exact                src/amforge/phasefield.py:495  max_step = int(jnp.ceil(jnp.sqrt(cx ** 2 + cy ** 2))
+  [  index-map] index_map                src/amforge/phasefield.py:497  ix = jnp.clip(jnp.round(cx + dxr[:, None] * steps[No
+  [  index-map] index_map                src/amforge/phasefield.py:498  iy = jnp.clip(jnp.round(cy + dyr[:, None] * steps[No
+  [   in-scope] S06_powder_lattice       src/amforge/powder.py:238  nx = max(1, count_floor((x1 - x0) / spacing) + 1)
+  [   in-scope] S06_powder_lattice       src/amforge/powder.py:239  ny = max(1, count_floor((y1 - y0) / spacing) + 1)
+  [   in-scope] S06_powder_lattice       src/amforge/powder.py:240  nz = max(1, count_floor((z1 - z0) / spacing) + 1) if
+  [   in-scope] S07_powder_bed_params    src/amforge/powder.py:391  nx = max(4, count_floor((hi[0] - lo[0]) / sp) + 1)
+  [   in-scope] S07_powder_bed_params    src/amforge/powder.py:394  nz = max(2, count_floor((hi[1] - lo[1]) / sp) + 1)
+  [   in-scope] S07_powder_bed_params    src/amforge/powder.py:396  ny = max(4, count_floor((hi[1] - lo[1]) / sp) + 1)
+  [   in-scope] S05_zigzag_n_line        src/amforge/process.py:502  n_line = max(1, count_ceil(diag / max(h, 1e-9)))
+  [round-family] round_family             src/amforge/thermal_enthalpy.py:233  n_layers = jnp.maximum(jnp.round(z_ext / jnp.maximum
+  [round-family] round_family             src/amforge/thermal_enthalpy.py:240  n_lines = jnp.maximum(jnp.round(y_ext / hatch), 1.0)
+  [  doc-prose] doc_prose                src/amforge/thermal_enthalpy.py:253  64 点缓冲（旧写法 ``xs_full=linspace(...,64)`` 配 ``n_per_li
+  [  index-map] index_map                src/amforge/thermal_enthalpy.py:268  lf = jnp.clip(jnp.floor(gl), 0.0, n_layers - 1.0)
+  [  index-map] index_map                src/amforge/thermal_enthalpy.py:270  jf = jnp.clip(jnp.floor(gj), 0.0, n_lines - 1.0)
+  [ time-count] time_counts              src/amforge/thermal_enthalpy.py:379  return max(1, int(math.ceil(t_exp / dt_max - 1e-9)))
+  [ time-count] time_counts              src/amforge/thermal_enthalpy.py:497  n_need = max(1, int(math.ceil(path_max / v_lo_auto /
+  [ time-count] time_counts              src/amforge/thermal_enthalpy.py:498  n_stable = max(1, int(math.ceil(path_max / v_lo_auto
+  [ time-count] time_counts              src/amforge/thermal_enthalpy.py:525  else max(1, int(math.ceil(t_bound / dt_target - 1e-9
+  [ time-count] time_counts              src/amforge/thermal_enthalpy.py:712  n_steps_cfl = max(1, int(math.ceil(t_bound / dt_c - 
+  [ time-count] time_counts              src/amforge/thermal_enthalpy.py:713  n_steps_stable = max(1, int(math.ceil(t_bound / dt_r
+  [  index-map] index_map                src/diffmech/methods/am/powder_bed.py:214  cx = jnp.clip(jnp.floor(pos[:, 0] / dx), 0, max(nx -
+  [  index-map] index_map                src/diffmech/methods/am/powder_bed.py:216  cy = jnp.clip(jnp.floor(pos[:, 1] / dy), 0, max(ny -
+  [   in-scope] S10_powderbed_ngrid      src/diffmech/methods/am/powder_bed.py:576  n_grid = max(8, int(np.ceil(ratio - 1e-9 * max(1.0, 
+  [   in-scope] S09_am_hatch_lines       src/diffmech/methods/am/scan_paths.py:110  n_lines = max(1, int(np.ceil(ratio - 1e-9 * max(1.0,
+  [  index-map] index_map                src/diffmech/methods/mpm/mpm.py:74  base_f = jnp.floor(x - 0.5)
+  [  int-exact] int_exact                src/diffmech/postprocess/animation.py:126  nrows = int(np.ceil(n / ncols))
+  [   in-scope] S11_server_mpagrid       src/diffmech/server.py:313  shape = tuple(max(3, int(np.ceil(float(r) - 1e-9 * m
+
+全树命中 39 处；登记 39 行；未登记 0 处
+
+K0b 每条 in-scope 登记行的文本绑定与吸附状态：
+   S01_layer_count          contracts.py       含标记(count_ceil)<=True  行=return max(1, count_ceil(float(height) / float(layer_thickness
+   S02_with_baseplate       geometry.py        含标记(count_ceil)<=True  行=n_add = max(1, count_ceil(thickness / part.spacing))
+   S03_layer_z_heights      geometry.py        含标记(count_ceil)<=True  行=n = max(1, count_ceil((hi - lo) / layer_thickness))
+   S04_crop_margin          geometry.py        含标记(count_ceil)<=True  行=pad = count_ceil(margin / part.spacing)
+   S05_zigzag_n_line        process.py         含标记(count_ceil)<=True  行=n_line = max(1, count_ceil(diag / max(h, 1e-9)))
+   S06_powder_lattice       powder.py          含标记(count_floor)<=True  行=nx = max(1, count_floor((x1 - x0) / spacing) + 1)
+   S06_powder_lattice       powder.py          含标记(count_floor)<=True  行=ny = max(1, count_floor((y1 - y0) / spacing) + 1)
+   S06_powder_lattice       powder.py          含标记(count_floor)<=True  行=nz = max(1, count_floor((z1 - z0) / spacing) + 1) if part.dim 
+   S07_powder_bed_params    powder.py          含标记(count_floor)<=True  行=nx = max(4, count_floor((hi[0] - lo[0]) / sp) + 1)
+   S07_powder_bed_params    powder.py          含标记(count_floor)<=True  行=ny = max(4, count_floor((hi[1] - lo[1]) / sp) + 1)
+   S07_powder_bed_params    powder.py          含标记(count_floor)<=True  行=nz = max(2, count_floor((hi[1] - lo[1]) / sp) + 1)
+   S08_gui_hatch_lines      preproc.py         含标记(count_floor)<=True  行=n_lines = max(1, count_floor((y_max - y_min) / hatch_spacing) 
+   S09_am_hatch_lines       scan_paths.py      含标记(1e-9)<=True  行=n_lines = max(1, int(np.ceil(ratio - 1e-9 * max(1.0, abs(ratio
+   S10_powderbed_ngrid      powder_bed.py      含标记(1e-9)<=True  行=n_grid = max(8, int(np.ceil(ratio - 1e-9 * max(1.0, abs(ratio)
+   S11_server_mpagrid       server.py          含标记(1e-9)<=True  行=shape = tuple(max(3, int(np.ceil(float(r) - 1e-9 * max(1.0, ab
+
+==============================================================================
+K1/K2 同一物理量换 4 拼写（字面量/±1ulp/µm×1e-6）⇒ 整数是否全同 ＋ oracle ＋ rel
+==============================================================================
+
+-- S01_layer_count （16 例，异常例=0，文本绑定=True）
+   刀锋 dx=50.0 cells=12 q=15         rel=    15.000000000000 band=True  o=15    lit=15 m1=15 p1=15 mul=15 stable=True  o_ok=True  mul6=15
+   余量q+0.4 dx=50.0 cells=12 q=15    rel=    15.400000000000 band=False o=16    lit=16 m1=16 p1=16 mul=16 stable=True  o_ok=True  mul6=16
+   带内上1e-10 dx=50.0 cells=12 q=15   rel=    15.000000001500 band=True  o=None  lit=15 m1=15 p1=15 mul=15 stable=True  o_ok=True  mul6=15
+   带外上1e-8 dx=50.0 cells=12 q=15    rel=    15.000000150000 band=False o=None  lit=16 m1=16 p1=16 mul=16 stable=True  o_ok=True  mul6=15
+   刀锋 dx=25.0 cells=24 q=12         rel=    12.000000000000 band=True  o=12    lit=12 m1=12 p1=12 mul=12 stable=True  o_ok=True  mul6=12
+   余量q+0.4 dx=25.0 cells=24 q=12    rel=    12.400000000000 band=False o=13    lit=13 m1=13 p1=13 mul=13 stable=True  o_ok=True  mul6=13
+   带内上1e-10 dx=25.0 cells=24 q=12   rel=    12.000000001200 band=True  o=None  lit=12 m1=12 p1=12 mul=12 stable=True  o_ok=True  mul6=12
+   带外上1e-8 dx=25.0 cells=24 q=12    rel=    12.000000120000 band=False o=None  lit=13 m1=13 p1=13 mul=13 stable=True  o_ok=True  mul6=12
+   刀锋 dx=100.0 cells=8 q=4          rel=     4.000000000000 band=True  o=4     lit=4 m1=4 p1=4 mul=4 stable=True  o_ok=True  mul6=4
+   余量q+0.4 dx=100.0 cells=8 q=4     rel=     4.400000000000 band=False o=5     lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   带内上1e-10 dx=100.0 cells=8 q=4    rel=     4.000000000400 band=True  o=None  lit=4 m1=4 p1=4 mul=4 stable=True  o_ok=True  mul6=4
+   带外上1e-8 dx=100.0 cells=8 q=4     rel=     4.000000040000 band=False o=None  lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=4
+   刀锋 dx=12.5 cells=32 q=20         rel=    20.000000000000 band=True  o=20    lit=20 m1=20 p1=20 mul=20 stable=True  o_ok=True  mul6=20
+   余量q+0.4 dx=12.5 cells=32 q=20    rel=    20.400000000000 band=False o=21    lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=21
+   带内上1e-10 dx=12.5 cells=32 q=20   rel=    20.000000002000 band=True  o=None  lit=20 m1=20 p1=20 mul=20 stable=True  o_ok=True  mul6=20
+   带外上1e-8 dx=12.5 cells=32 q=20    rel=    20.000000200000 band=False o=None  lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=20
+   （诊断：mul6≠四拼写任一值的例 = 4/16 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S02_with_baseplate （6 例，异常例=0，文本绑定=True）
+   刀锋 dx=50.0 q=6                   rel=     6.000000000000 band=True  o=6     lit=6 m1=6 p1=6 mul=6 stable=True  o_ok=True  mul6=6
+   余量q+0.4 dx=50.0                  rel=     6.400000000000 band=False o=7     lit=7 m1=7 p1=7 mul=7 stable=True  o_ok=True  mul6=7
+   刀锋 dx=25.0 q=16                  rel=    16.000000000000 band=True  o=16    lit=16 m1=16 p1=16 mul=16 stable=True  o_ok=True  mul6=16
+   余量q+0.4 dx=25.0                  rel=    16.400000000000 band=False o=17    lit=17 m1=17 p1=17 mul=17 stable=True  o_ok=True  mul6=17
+   刀锋 dx=12.5 q=20                  rel=    20.000000000000 band=True  o=20    lit=20 m1=20 p1=20 mul=20 stable=True  o_ok=True  mul6=20
+   余量q+0.4 dx=12.5                  rel=    20.400000000000 band=False o=21    lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=21
+   （诊断：mul6≠四拼写任一值的例 = 0/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S03_layer_z_heights （16 例，异常例=0，文本绑定=True）
+   刀锋 dx=50.0 cells=12 q=15         rel=    15.000000000000 band=True  o=15    lit=15 m1=15 p1=15 mul=15 stable=True  o_ok=True  mul6=15
+   余量q+0.4 dx=50.0 cells=12 q=15    rel=    15.400000000000 band=False o=16    lit=16 m1=16 p1=16 mul=16 stable=True  o_ok=True  mul6=16
+   带内上1e-10 dx=50.0 cells=12 q=15   rel=    15.000000001500 band=True  o=None  lit=15 m1=15 p1=15 mul=15 stable=True  o_ok=True  mul6=15
+   带外上1e-8 dx=50.0 cells=12 q=15    rel=    15.000000150000 band=False o=None  lit=16 m1=16 p1=16 mul=16 stable=True  o_ok=True  mul6=15
+   刀锋 dx=25.0 cells=24 q=12         rel=    12.000000000000 band=True  o=12    lit=12 m1=12 p1=12 mul=12 stable=True  o_ok=True  mul6=12
+   余量q+0.4 dx=25.0 cells=24 q=12    rel=    12.400000000000 band=False o=13    lit=13 m1=13 p1=13 mul=13 stable=True  o_ok=True  mul6=13
+   带内上1e-10 dx=25.0 cells=24 q=12   rel=    12.000000001200 band=True  o=None  lit=12 m1=12 p1=12 mul=12 stable=True  o_ok=True  mul6=12
+   带外上1e-8 dx=25.0 cells=24 q=12    rel=    12.000000120000 band=False o=None  lit=13 m1=13 p1=13 mul=13 stable=True  o_ok=True  mul6=12
+   刀锋 dx=100.0 cells=8 q=4          rel=     4.000000000000 band=True  o=4     lit=4 m1=4 p1=4 mul=4 stable=True  o_ok=True  mul6=4
+   余量q+0.4 dx=100.0 cells=8 q=4     rel=     4.400000000000 band=False o=5     lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   带内上1e-10 dx=100.0 cells=8 q=4    rel=     4.000000000400 band=True  o=None  lit=4 m1=4 p1=4 mul=4 stable=True  o_ok=True  mul6=4
+   带外上1e-8 dx=100.0 cells=8 q=4     rel=     4.000000040000 band=False o=None  lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=4
+   刀锋 dx=12.5 cells=32 q=20         rel=    20.000000000000 band=True  o=20    lit=20 m1=20 p1=20 mul=20 stable=True  o_ok=True  mul6=20
+   余量q+0.4 dx=12.5 cells=32 q=20    rel=    20.400000000000 band=False o=21    lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=21
+   带内上1e-10 dx=12.5 cells=32 q=20   rel=    20.000000002000 band=True  o=None  lit=20 m1=20 p1=20 mul=20 stable=True  o_ok=True  mul6=20
+   带外上1e-8 dx=12.5 cells=32 q=20    rel=    20.000000200000 band=False o=None  lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=20
+   （诊断：mul6≠四拼写任一值的例 = 4/16 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S04_crop_margin （6 例，异常例=0，文本绑定=True）
+   刀锋 dx=50.0 q=3                   rel=     3.000000000000 band=True  o=3     lit=3 m1=3 p1=3 mul=3 stable=True  o_ok=True  mul6=3
+   余量q+0.4 dx=50.0                  rel=     3.400000000000 band=False o=4     lit=4 m1=4 p1=4 mul=4 stable=True  o_ok=True  mul6=4
+   刀锋 dx=25.0 q=5                   rel=     5.000000000000 band=True  o=5     lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   余量q+0.4 dx=25.0                  rel=     5.400000000000 band=False o=6     lit=6 m1=6 p1=6 mul=6 stable=True  o_ok=True  mul6=6
+   刀锋 dx=12.5 q=8                   rel=     8.000000000000 band=True  o=8     lit=8 m1=8 p1=8 mul=8 stable=True  o_ok=True  mul6=8
+   余量q+0.4 dx=12.5                  rel=     8.400000000000 band=False o=9     lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   （诊断：mul6≠四拼写任一值的例 = 0/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S05_zigzag_n_line （6 例，异常例=0，文本绑定=True）
+   整数跨度 q=4                         rel=     4.000000000000 band=True  o=None  lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=4
+   余量q+0.4 @q=4                     rel=     4.400000000000 band=False o=None  lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   整数跨度 q=8                         rel=     8.000000000000 band=True  o=None  lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   余量q+0.4 @q=8                     rel=     8.400000000000 band=False o=None  lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   整数跨度 q=20                        rel=    20.000000000000 band=True  o=None  lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=21
+   余量q+0.4 @q=20                    rel=    20.400000000000 band=False o=None  lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=21
+   （诊断：mul6≠四拼写任一值的例 = 1/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S06_powder_lattice （6 例，异常例=0，文本绑定=True）
+   刀锋 sp=50.0 n_layers=3            rel=     3.000000000000 band=True  o=None  lit=100 m1=100 p1=100 mul=100 stable=True  o_ok=True  mul6=100
+   余量q+0.4 sp=50.0 n=3              rel=     3.400000000000 band=False o=None  lit=100 m1=100 p1=100 mul=100 stable=True  o_ok=True  mul6=100
+   刀锋 sp=50.0 n_layers=8            rel=     8.000000000000 band=True  o=None  lit=225 m1=225 p1=225 mul=225 stable=True  o_ok=True  mul6=225
+   余量q+0.4 sp=50.0 n=8              rel=     8.400000000000 band=False o=None  lit=225 m1=225 p1=225 mul=225 stable=True  o_ok=True  mul6=225
+   刀锋 sp=40.0 n_layers=5            rel=     5.000000000000 band=True  o=None  lit=216 m1=216 p1=216 mul=216 stable=True  o_ok=True  mul6=216
+   余量q+0.4 sp=40.0 n=5              rel=     5.400000000000 band=False o=None  lit=216 m1=216 p1=216 mul=216 stable=True  o_ok=True  mul6=216
+   （诊断：mul6≠四拼写任一值的例 = 0/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S07_powder_bed_params （6 例，异常例=0，文本绑定=True）
+   刀锋 q=4 sp_eff=50.798211µm        rel=     4.000000000000 band=True  o=None  lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=4
+   余量q+0.4 @q=4                     rel=     4.400000000000 band=False o=None  lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   刀锋 q=8 sp_eff=50.798211µm        rel=     8.000000000000 band=True  o=None  lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=8
+   余量q+0.4 @q=8                     rel=     8.400000000000 band=False o=None  lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   刀锋 q=16 sp_eff=50.798211µm       rel=    16.000000000000 band=True  o=None  lit=17 m1=17 p1=17 mul=17 stable=True  o_ok=True  mul6=16
+   余量q+0.4 @q=16                    rel=    16.400000000000 band=False o=None  lit=17 m1=17 p1=17 mul=17 stable=True  o_ok=True  mul6=17
+   （诊断：mul6≠四拼写任一值的例 = 3/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S08_gui_hatch_lines （6 例，异常例=0，文本绑定=True）
+   刀锋 span=400µm q=4                rel=     4.000000000000 band=True  o=5     lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   余量q+0.4 @q=4                     rel=     4.400000000000 band=False o=5     lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   刀锋 span=400µm q=8                rel=     8.000000000000 band=True  o=9     lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   余量q+0.4 @q=8                     rel=     8.400000000000 band=False o=9     lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   刀锋 span=400µm q=10               rel=    10.000000000000 band=True  o=11    lit=11 m1=11 p1=11 mul=11 stable=True  o_ok=True  mul6=11
+   余量q+0.4 @q=10                    rel=    10.400000000000 band=False o=11    lit=11 m1=11 p1=11 mul=11 stable=True  o_ok=True  mul6=11
+   （诊断：mul6≠四拼写任一值的例 = 0/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S09_am_hatch_lines （6 例，异常例=0，文本绑定=True）
+   刀锋 span=400µm q=4                rel=     4.000000000000 band=True  o=4     lit=4 m1=4 p1=4 mul=4 stable=True  o_ok=True  mul6=4
+   余量q+0.4 @q=4                     rel=     4.400000000000 band=False o=5     lit=5 m1=5 p1=5 mul=5 stable=True  o_ok=True  mul6=5
+   刀锋 span=400µm q=8                rel=     8.000000000000 band=True  o=8     lit=8 m1=8 p1=8 mul=8 stable=True  o_ok=True  mul6=8
+   余量q+0.4 @q=8                     rel=     8.400000000000 band=False o=9     lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   刀锋 span=400µm q=16               rel=    16.000000000000 band=True  o=16    lit=16 m1=16 p1=16 mul=16 stable=True  o_ok=True  mul6=16
+   余量q+0.4 @q=16                    rel=    16.400000000000 band=False o=17    lit=17 m1=17 p1=17 mul=17 stable=True  o_ok=True  mul6=17
+   （诊断：mul6≠四拼写任一值的例 = 0/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S10_powderbed_ngrid （6 例，异常例=0，文本绑定=True）
+   刀锋 lx=300.0 dx=50.0 q=6          rel=     6.000000000000 band=True  o=10    lit=10 m1=10 p1=10 mul=10 stable=True  o_ok=True  mul6=10
+   余量q+0.4 lx=300.0 dx=50.0         rel=     6.400000000000 band=False o=11    lit=11 m1=11 p1=11 mul=11 stable=True  o_ok=True  mul6=11
+   刀锋 lx=400.0 dx=25.0 q=16         rel=    16.000000000000 band=True  o=20    lit=20 m1=20 p1=20 mul=20 stable=True  o_ok=True  mul6=20
+   余量q+0.4 lx=400.0 dx=25.0         rel=    16.400000000000 band=False o=21    lit=21 m1=21 p1=21 mul=21 stable=True  o_ok=True  mul6=21
+   刀锋 lx=300.0 dx=12.5 q=24         rel=    24.000000000000 band=True  o=28    lit=28 m1=28 p1=28 mul=28 stable=True  o_ok=True  mul6=28
+   余量q+0.4 lx=300.0 dx=12.5         rel=    24.400000000000 band=False o=29    lit=29 m1=29 p1=29 mul=29 stable=True  o_ok=True  mul6=29
+   （诊断：mul6≠四拼写任一值的例 = 0/6 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+-- S11_server_mpagrid （4 例，异常例=0，文本绑定=True）
+   刀锋 span=300.0 dx=50.0 q=6        rel=     6.000000000000 band=True  o=8     lit=8 m1=8 p1=8 mul=8 stable=True  o_ok=True  mul6=8
+   余量q+0.4 span=300.0               rel=     6.400000000000 band=False o=9     lit=9 m1=9 p1=9 mul=9 stable=True  o_ok=True  mul6=9
+   刀锋 span=600.0 dx=75.0 q=8        rel=     8.000000000000 band=True  o=10    lit=10 m1=10 p1=10 mul=10 stable=True  o_ok=True  mul6=10
+   余量q+0.4 span=600.0               rel=     8.400000000000 band=False o=11    lit=11 m1=11 p1=11 mul=11 stable=True  o_ok=True  mul6=11
+   （诊断：mul6≠四拼写任一值的例 = 0/4 ⇒ 6 位截度改的是**物理量**而非拼写，故不进判据，见 spellings() 【跑后修正 SP-1】）
+
+==============================================================================
+K4 覆盖不退化（ceil 族：min(n)·step 不得比 L 少超过容差，除非该例在带内）
+==============================================================================
+   S01_layer_count          刀锋 dx=50.0 cells=12 q=15         n_min=15 少覆盖=0µm band=True  OK
+   S01_layer_count          余量q+0.4 dx=50.0 cells=12 q=15    n_min=16 少覆盖=-23.3766234µm band=False OK
+   S01_layer_count          带内上1e-10 dx=50.0 cells=12 q=15   n_min=15 少覆盖=6.00000476e-08µm band=True  OK
+   S01_layer_count          带外上1e-8 dx=50.0 cells=12 q=15    n_min=16 少覆盖=-39.9999936µm band=False OK
+   S01_layer_count          刀锋 dx=25.0 cells=24 q=12         n_min=12 少覆盖=0µm band=True  OK
+   S01_layer_count          余量q+0.4 dx=25.0 cells=24 q=12    n_min=13 少覆盖=-29.0322581µm band=False OK
+   S01_layer_count          带内上1e-10 dx=25.0 cells=24 q=12   n_min=12 少覆盖=5.99999339e-08µm band=True  OK
+   S01_layer_count          带外上1e-8 dx=25.0 cells=24 q=12    n_min=13 少覆盖=-49.9999935µm band=False OK
+   S01_layer_count          刀锋 dx=100.0 cells=8 q=4          n_min=4 少覆盖=0µm band=True  OK
+   S01_layer_count          余量q+0.4 dx=100.0 cells=8 q=4     n_min=5 少覆盖=-109.090909µm band=False OK
+   S01_layer_count          带内上1e-10 dx=100.0 cells=8 q=4    n_min=4 少覆盖=7.99999498e-08µm band=True  OK
+   S01_layer_count          带外上1e-8 dx=100.0 cells=8 q=4     n_min=5 少覆盖=-199.99999µm band=False OK
+   S01_layer_count          刀锋 dx=12.5 cells=32 q=20         n_min=20 少覆盖=0µm band=True  OK
+   S01_layer_count          余量q+0.4 dx=12.5 cells=32 q=20    n_min=21 少覆盖=-11.7647059µm band=False OK
+   S01_layer_count          带内上1e-10 dx=12.5 cells=32 q=20   n_min=20 少覆盖=4.00000317e-08µm band=True  OK
+   S01_layer_count          带外上1e-8 dx=12.5 cells=32 q=20    n_min=21 少覆盖=-19.9999958µm band=False OK
+   S02_with_baseplate       刀锋 dx=50.0 q=6                   n_min=6 少覆盖=0µm band=True  OK
+   S02_with_baseplate       余量q+0.4 dx=50.0                  n_min=7 少覆盖=-30µm band=False OK
+   S02_with_baseplate       刀锋 dx=25.0 q=16                  n_min=16 少覆盖=0µm band=True  OK
+   S02_with_baseplate       余量q+0.4 dx=25.0                  n_min=17 少覆盖=-15µm band=False OK
+   S02_with_baseplate       刀锋 dx=12.5 q=20                  n_min=20 少覆盖=0µm band=True  OK
+   S02_with_baseplate       余量q+0.4 dx=12.5                  n_min=21 少覆盖=-7.5µm band=False OK
+   S03_layer_z_heights      刀锋 dx=50.0 cells=12 q=15         n_min=15 少覆盖=0µm band=True  OK
+   S03_layer_z_heights      余量q+0.4 dx=50.0 cells=12 q=15    n_min=16 少覆盖=-23.3766234µm band=False OK
+   S03_layer_z_heights      带内上1e-10 dx=50.0 cells=12 q=15   n_min=15 少覆盖=6.00000476e-08µm band=True  OK
+   S03_layer_z_heights      带外上1e-8 dx=50.0 cells=12 q=15    n_min=16 少覆盖=-39.9999936µm band=False OK
+   S03_layer_z_heights      刀锋 dx=25.0 cells=24 q=12         n_min=12 少覆盖=0µm band=True  OK
+   S03_layer_z_heights      余量q+0.4 dx=25.0 cells=24 q=12    n_min=13 少覆盖=-29.0322581µm band=False OK
+   S03_layer_z_heights      带内上1e-10 dx=25.0 cells=24 q=12   n_min=12 少覆盖=5.99999339e-08µm band=True  OK
+   S03_layer_z_heights      带外上1e-8 dx=25.0 cells=24 q=12    n_min=13 少覆盖=-49.9999935µm band=False OK
+   S03_layer_z_heights      刀锋 dx=100.0 cells=8 q=4          n_min=4 少覆盖=0µm band=True  OK
+   S03_layer_z_heights      余量q+0.4 dx=100.0 cells=8 q=4     n_min=5 少覆盖=-109.090909µm band=False OK
+   S03_layer_z_heights      带内上1e-10 dx=100.0 cells=8 q=4    n_min=4 少覆盖=7.99999498e-08µm band=True  OK
+   S03_layer_z_heights      带外上1e-8 dx=100.0 cells=8 q=4     n_min=5 少覆盖=-199.99999µm band=False OK
+   S03_layer_z_heights      刀锋 dx=12.5 cells=32 q=20         n_min=20 少覆盖=0µm band=True  OK
+   S03_layer_z_heights      余量q+0.4 dx=12.5 cells=32 q=20    n_min=21 少覆盖=-11.7647059µm band=False OK
+   S03_layer_z_heights      带内上1e-10 dx=12.5 cells=32 q=20   n_min=20 少覆盖=4.00000317e-08µm band=True  OK
+   S03_layer_z_heights      带外上1e-8 dx=12.5 cells=32 q=20    n_min=21 少覆盖=-19.9999958µm band=False OK
+   S04_crop_margin          刀锋 dx=50.0 q=3                   n_min=3 少覆盖=0µm band=True  OK
+   S04_crop_margin          余量q+0.4 dx=50.0                  n_min=4 少覆盖=-30µm band=False OK
+   S04_crop_margin          刀锋 dx=25.0 q=5                   n_min=5 少覆盖=0µm band=True  OK
+   S04_crop_margin          余量q+0.4 dx=25.0                  n_min=6 少覆盖=-15µm band=False OK
+   S04_crop_margin          刀锋 dx=12.5 q=8                   n_min=8 少覆盖=0µm band=True  OK
+   S04_crop_margin          余量q+0.4 dx=12.5                  n_min=9 少覆盖=-7.5µm band=False OK
+   S05_zigzag_n_line        整数跨度 q=4                         n_min=5 少覆盖=-70.7106781µm band=True  OK
+   S05_zigzag_n_line        余量q+0.4 @q=4                     n_min=5 少覆盖=-38.5694608µm band=False OK
+   S05_zigzag_n_line        整数跨度 q=8                         n_min=9 少覆盖=-35.3553391µm band=True  OK
+   S05_zigzag_n_line        余量q+0.4 @q=8                     n_min=9 少覆盖=-20.2030509µm band=False OK
+   S05_zigzag_n_line        整数跨度 q=20                        n_min=21 少覆盖=-14.1421356µm band=True  OK
+   S05_zigzag_n_line        余量q+0.4 @q=20                    n_min=21 少覆盖=-8.31890331µm band=False OK
+   S09_am_hatch_lines       刀锋 span=400µm q=4                n_min=4 少覆盖=0µm band=True  OK
+   S09_am_hatch_lines       余量q+0.4 @q=4                     n_min=5 少覆盖=-54.5454545µm band=False OK
+   S09_am_hatch_lines       刀锋 span=400µm q=8                n_min=8 少覆盖=0µm band=True  OK
+   S09_am_hatch_lines       余量q+0.4 @q=8                     n_min=9 少覆盖=-28.5714286µm band=False OK
+   S09_am_hatch_lines       刀锋 span=400µm q=16               n_min=16 少覆盖=0µm band=True  OK
+   S09_am_hatch_lines       余量q+0.4 @q=16                    n_min=17 少覆盖=-14.6341463µm band=False OK
+   S10_powderbed_ngrid      刀锋 lx=300.0 dx=50.0 q=6          n_min=10 少覆盖=-200µm band=True  OK
+   S10_powderbed_ngrid      余量q+0.4 lx=300.0 dx=50.0         n_min=11 少覆盖=-230µm band=False OK
+   S10_powderbed_ngrid      刀锋 lx=400.0 dx=25.0 q=16         n_min=20 少覆盖=-100µm band=True  OK
+   S10_powderbed_ngrid      余量q+0.4 lx=400.0 dx=25.0         n_min=21 少覆盖=-115µm band=False OK
+   S10_powderbed_ngrid      刀锋 lx=300.0 dx=12.5 q=24         n_min=28 少覆盖=-50µm band=True  OK
+   S10_powderbed_ngrid      余量q+0.4 lx=300.0 dx=12.5         n_min=29 少覆盖=-57.5µm band=False OK
+   S11_server_mpagrid       刀锋 span=300.0 dx=50.0 q=6        n_min=8 少覆盖=-100µm band=True  OK
+   S11_server_mpagrid       余量q+0.4 span=300.0               n_min=9 少覆盖=-130µm band=False OK
+   S11_server_mpagrid       刀锋 span=600.0 dx=75.0 q=8        n_min=10 少覆盖=-150µm band=True  OK
+   S11_server_mpagrid       余量q+0.4 span=600.0               n_min=11 少覆盖=-195µm band=False OK
+
+==============================================================================
+K2 内建正对照：_grid_axes（T1 已修）必须通过同一判据 ⇒ 证明门槛可被正确实现达到
+==============================================================================
+   dx=50.0µm 期望节点数 17 → {'lit': 17, 'm1': 17, 'p1': 17, 'mul': 17}  OK
+   dx=25.0µm 期望节点数 33 → {'lit': 33, 'm1': 33, 'p1': 33, 'mul': 33}  OK
+   dx=12.5µm 期望节点数 65 → {'lit': 65, 'm1': 65, 'p1': 65, 'mul': 65}  OK
+   dx=100.0µm 期望节点数 9 → {'lit': 9, 'm1': 9, 'p1': 9, 'mul': 9}  OK
+   dx=20.0µm 期望节点数 41 → {'lit': 41, 'm1': 41, 'p1': 41, 'mul': 41}  OK
+
+==============================================================================
+K5 A0 夹具整数块（本轮改动不得移动；两阶段日志此段必须逐行相同）
+==============================================================================
+   dx= 50.0µm shape=(25, 13, 9) nvox=2925 n_layers=1 n_lines=4 path_len=0.00525
+   dx= 25.0µm shape=(49, 25, 17) nvox=20825 n_layers=1 n_lines=4 path_len=0.00525
+   dx= 12.5µm shape=(97, 49, 33) nvox=156849 n_layers=1 n_lines=4 path_len=0.00525
+
+==============================================================================
+K6 三套舍入口径实测（只打印 ⇒ #31，本轮不统一）
+==============================================================================
+   试片 y 跨度 0.6mm / hatch 140µm      比值=    4.28571428571  ceil=5  round=4  floor+1=5
+   试片 y 跨度 0.6mm / hatch 150µm      比值=                4  ceil=4  round=4  floor+1=5
+   试片 y 跨度 0.6mm / hatch 100µm      比值=                6  ceil=6  round=6  floor+1=7
+   A0 高 400µm / lt 40µm             比值=               10  ceil=10  round=10  floor+1=11
+   A0 高 400µm / lt 60µm             比值=    6.66666666667  ceil=7  round=7  floor+1=7
+   A0 高 400µm / lt 120µm            比值=    3.33333333333  ceil=4  round=3  floor+1=4
+
+==============================================================================
+记分
+==============================================================================
+K0 普查完备            : OK  问题 0 项：[]
+K0b in-scope 已吸附行   : 15/15  未吸附位点=[]  文本漂移位点=[]
+K1 改后不判（改后 0 翻转正是 K2 的内容）: 翻转例=0/84  有翻转位点=0/11  ⇒ 正对照证据在 `_pre.log`
+K2 改后 4 拼写同整数＋oracle: OK  不稳定={}  oracle不符={}  _grid_axes 失败=[]
+K4 覆盖不退化          : OK  []
+   K2b S05_zigzag_n_line 整数跨度 q=4: 期望 5 实得 [5] OK
+   K2b S05_zigzag_n_line 整数跨度 q=8: 期望 9 实得 [9] OK
+   K2b S05_zigzag_n_line 整数跨度 q=20: 期望 21 实得 [21] OK
+K2b 改后预测值命中      : OK  []
+K3 读 rel/band 列：带内(1e-10)例改后须吸附到整数下侧；带外(1e-8)例须仍为 ceil
+K5 A0 段：两阶段日志此段 diff 必须为空（外层判定）
+K6 三套舍入差 ⇒ 登记 #31（本轮不统一）
+门槛汇总（post 硬门）   : PASS  判了=['K0', 'K0b', 'K2', 'K2b', 'K4']  失败=[]

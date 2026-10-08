@@ -42,6 +42,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from amforge.counts import count_ceil
 from amforge.core.contracts import PartGeometry
 from amforge.core.registry import register_solver
 
@@ -118,13 +119,14 @@ def _grid_axes(bounds: Sequence[tuple[float, float]], spacing: float):
     件厚恰为 dx 整数倍时比值越过整数，层数从 33 跳到 34：同一零件、同一版本代码
     多出一层 Z 体素（161602 vs 156849），实测峰值温度差 0.53%、熔化体积差 1.77%。
     所以这里按比例做**容差吸附**（``1e-9`` 相对容差 ≫ 单次 ulp 抖动，又 ≪ 真实
-    非整数余量）：只有当余量确实超过一个体素的十万分之一时才多铺一格。
+    非整数余量）：只有当余量确实超过一个体素的十万分之一时才多铺一格。该吸附宽度自
+    T3（#24）起由 :func:`amforge.counts.count_ceil` 单点持有，全树同一约定。
     """
     axes = []
     sp = float(spacing)
     for lo, hi in bounds:
         ratio = (hi - lo) / sp
-        n_cells = int(np.ceil(ratio - 1e-9 * max(1.0, abs(ratio))))
+        n_cells = count_ceil(ratio)
         axes.append(lo + sp * np.arange(max(2, n_cells + 1), dtype=np.float64))
     return axes
 
@@ -412,7 +414,7 @@ def with_baseplate(
     基板是 AM 热学的关键边界：它是主要散热通道，也是残余应力与
     变形的约束来源。不含基板的热分析会显著高估温度、低估残余应力。
     """
-    n_add = max(1, int(np.ceil(thickness / part.spacing)))
+    n_add = max(1, count_ceil(thickness / part.spacing))
     nx, ny, _nz = part.shape
     # 基板视为完全实体：SDF 取负的、随深度增大的距离
     depth = part.spacing * (np.arange(n_add, 0, -1, dtype=np.float64))
@@ -446,7 +448,7 @@ def layer_z_heights(part: PartGeometry, layer_thickness: float) -> np.ndarray:
     """逐层构建高度（沿 Z 轴）[m]。"""
     lo = float(np.asarray(part.origin)[-1])
     hi = lo + part.spacing * (part.shape[-1] - 1)
-    n = max(1, int(np.ceil((hi - lo) / layer_thickness)))
+    n = max(1, count_ceil((hi - lo) / layer_thickness))
     # 取每层中面高度，避免正好落在层界上导致占位判断抖动
     return lo + layer_thickness * (np.arange(n, dtype=np.float64) + 0.5)
 
@@ -518,7 +520,7 @@ def crop_to_part(part: PartGeometry, *, margin: float = 0.0) -> PartGeometry:
         return part
     idx = [np.where(occ.any(axis=tuple(j for j in range(part.dim) if j != d)))[0]
            for d in range(part.dim)]
-    pad = int(np.ceil(margin / part.spacing))
+    pad = count_ceil(margin / part.spacing)
     sl, new_origin = [], []
     for d in range(part.dim):
         a = max(0, int(idx[d][0]) - pad)

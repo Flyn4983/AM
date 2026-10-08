@@ -29,7 +29,6 @@
 from __future__ import annotations
 
 import json
-import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -39,6 +38,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from amforge.counts import count_floor
 from amforge.core.contracts import PartGeometry
 from amforge.materials import get_material
 
@@ -235,9 +235,9 @@ class ParticleCollection:
             z1 = z0 + dz_total
 
         spacing = 2.0 * d50
-        nx = max(1, int(math.floor((x1 - x0) / spacing)) + 1)
-        ny = max(1, int(math.floor((y1 - y0) / spacing)) + 1)
-        nz = max(1, int(math.floor((z1 - z0) / spacing)) + 1) if part.dim == 3 else 1
+        nx = max(1, count_floor((x1 - x0) / spacing) + 1)
+        ny = max(1, count_floor((y1 - y0) / spacing) + 1)
+        nz = max(1, count_floor((z1 - z0) / spacing) + 1) if part.dim == 3 else 1
         n = nx * ny * nz
 
         key = jax.random.PRNGKey(int(seed))
@@ -388,12 +388,12 @@ class ParticleCollection:
         if geometry is not None:
             lo, hi = np.asarray(geometry.bbox(), dtype=np.float64)
             sp = 2.0 * d50
-            nx = max(4, int(math.floor((hi[0] - lo[0]) / sp)) + 1)
+            nx = max(4, count_floor((hi[0] - lo[0]) / sp) + 1)
             if int(geometry.dim) == 2:
                 ny = 1
-                nz = max(2, int(math.floor((hi[1] - lo[1]) / sp)) + 1)
+                nz = max(2, count_floor((hi[1] - lo[1]) / sp) + 1)
             else:
-                ny = max(4, int(math.floor((hi[1] - lo[1]) / sp)) + 1)
+                ny = max(4, count_floor((hi[1] - lo[1]) / sp) + 1)
                 nz = 3
             params["nx"] = nx
             params["ny"] = ny
