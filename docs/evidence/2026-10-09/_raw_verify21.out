@@ -1,0 +1,41 @@
+① 本地 HEAD = 119324e498552045061456c0c76a23f02a232ac9
+① ls-remote refs/heads/main = 119324e498552045061456c0c76a23f02a232ac9  -> MATCH
+② truncated=False，tree 条目 672 = blob 605 + tree 67
+② 本地 blob = 605，父提交 = 584
+② 本片文件 27 个 = 新增 21 + 修改 6
+② 闭合式 远端 605 == 父提交 584 + 新增 21 = 605 -> PASS
+③ 路径差集：本地独有 0/605  远端独有 0/605
+④ 全库共有 605 条 ⇒ blob SHA 不符 0/605
+④ 本片 27 文件（A 21／M 6）单列复核 ⇒ 远端缺失 0/27，SHA 不符 0/27，MATCH 27/27
+   MATCH  M  '.workbuddy/memory/2026-10-09.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_collect.out'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_full.log'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_pytest.log'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_skips.out'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_census_warnpct.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_census_warnpct.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_cpu_evidence.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_cpu_evidence.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_docs.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_dxr_rerun.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_dxr_rerun.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_dxr_rerun_first_attempt.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_edit.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_fixbrace.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_full_assemble.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_full_regression.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_full_run.sh'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_postcheck.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_postcheck.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_qleg.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t35_skips.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+   MATCH  M  'src/amforge/thermal_enthalpy.py'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/605（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/605，远端独有 0/604
+⑤ 正对照 C（闭合式右边 +1）⇒ 605 == 606 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/27，SHA 不符 0/27（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS
