@@ -1,0 +1,25 @@
+① 本地 HEAD = 2a03ac7f9135efbeabe11d5c28d7e50380bfa884
+① ls-remote refs/heads/main = 2a03ac7f9135efbeabe11d5c28d7e50380bfa884  -> MATCH
+② truncated=False，tree 条目 678 = blob 611 + tree 67
+② 本地 blob = 611，父提交 = 605
+② 本片文件 11 个 = 新增 6 + 修改 5
+② 闭合式 远端 611 == 父提交 605 + 新增 6 = 611 -> PASS
+③ 路径差集：本地独有 0/611  远端独有 0/611
+④ 全库共有 611 条 ⇒ blob SHA 不符 0/611
+④ 本片 11 文件（A 6／M 5）单列复核 ⇒ 远端缺失 0/11，SHA 不符 0/11，MATCH 11/11
+   MATCH  M  '.workbuddy/memory/2026-10-09.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify21.err'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify21.out'
+   MATCH  A  'docs/evidence/2026-10-09/am_s21_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_s22_docs.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify21.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify21.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/611（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/611，远端独有 0/610
+⑤ 正对照 C（闭合式右边 +1）⇒ 611 == 612 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/11，SHA 不符 0/11（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS
