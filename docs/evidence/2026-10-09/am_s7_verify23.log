@@ -1,0 +1,68 @@
+生成时刻: 2026-10-09 16:19:40 +0800
+CMD     : 正文那条运行＝CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-09/am_s7_verify23.py
+          （stdout→_raw_verify23.out，stderr→_raw_verify23.err，两条都在本件里被复跑并逐字节比对；
+          这两件在生成本表头**之前**就用 cp -p 逐字节抄进本目录（与本件同一次提交入库），md5＝5cf6b8085c78／d41d8cd98f00，
+          mtime 保留 ⇒ 下面"首次归档运行"那个时刻是原次运行时刻，不是复制时刻）
+          本表头由同解释器跑 am_s23_hdr.py 生成，它内部又用同一环境复跑了上面那条命令一次。
+ENV     : CUDA_VISIBLE_DEVICES=（空串＝CPU 钉住，用户令「继续，还是不动GPU」＋「现在需要把GPU归还给我的其他程序」）；
+          本件**不 import jax**（只跑 git／GitHub API），带空串是习惯性钉住而不是必需，照实说明。
+脚本    : docs/evidence/2026-10-09/am_s7_verify23.py（＝分片 18 那把尺子的**逐字节副本**：与 am_s7_verify18.py 现比 md5＝相同，
+          本件 md5 0d20117bb82f；本目录 glob＋md5 现算＝同一把尺子已有 4 份档案（含本件），
+          多片共用同一仪器，不是"为这一片重写一把尺子"。这个数**现算**，因为写死它就会随片腐烂）
+TREE    : head=fda1bdde89ccec067589ab1fa41dc157da488491 parent=2a03ac7f9135efbeabe11d5c28d7e50380bfa884 dirty(src+tests)=0
+SRC指纹 : 4a5a257efaf3251badbdfbfb10ecec4b（口径与全量回归件一致 ⇒ 核验时被测树就是本片落地的那棵树）
+GPU     : 本表头生成时现取 nvidia-smi compute 进程 4 个，其中我的解释器（/proc/PID/cmdline 含 /tmp/amvenv）
+          所留 0/4 个（须 0）；口径与全量回归件的归还段相同。
+RUN     : 表头生成时**复跑**核验件：rc=0、stderr 0 字节（0＝没有一条警告被吞），且复跑 stdout 与
+          下面的正文区**逐字节相同**（本件写入前有断言）⇒ 判读行与正文是同一次运行的口径，非两次拼接。
+          首次归档运行 2026-10-09 16:12:48 +0800（其 stderr 留档案 0 字节），复跑于 2026-10-09 16:19:40 +0800。
+判读    : 远端 main == 本地 HEAD；tree 条目 684 = blob 617 + tree 67；
+          闭合式 远端 617 == 父提交 611 + 本片新增(A) 6 ＝ 617 -> PASS；
+          双向路径差集 0/617 与 0/617；全库 blob SHA 不符 0/617；
+          本片单列复核 11/11 MATCH（A 6／M 5 个文件）。
+四个正对照: A 远端一条 sha 首位改 f ⇒ 不符 1/617；B 远端删一条路径 ⇒ 本地独有 1/617、远端独有 0/616；
+          C 闭合式右边 +1 ⇒ 617 == 618 判 FAIL；D 远端删**本片**一条路径 ⇒ 本片缺失 1/11、SHA 不符 0/11。
+          四条读数一律从正文 ⑤ 段正则现取（本表头不许自己造数），逐条都能红、所以不是空转。
+分母口径: 每个 0 都与其分母同印（0/617、0/617、11/11），
+          没有"光秃秃的 0"。
+正文区  : 下面 BODY_OFFSET 之后＝核验件原始 stdout，逐字节未改（含 ①〜⑤ 与 LANDING_VERDICT 行）。
+复核    : 在仓库根跑 cmp -i 5241:0 docs/evidence/2026-10-09/am_s7_verify23.log docs/evidence/2026-10-09/_raw_verify23.out   （rc=0 才算正文区逐字节相同；两侧偏移各 +1 必须变红）
+同片对照: 本片新增 6 件，与 /tmp **同名件现比 md5**（本表头自己数，不抄任何一份档案里的件数）＝
+          相同 3 件／不同 0 件（无）／/tmp 已无同名件 3 件（临时件被清理或当初换了名）。
+          没有一件不同 ⇒ /tmp 现存的同名件全部逐字节相同。⇒ 这条只作辅助溯源，落地证明以正文区为准。
+用途    : S7 分片 23（分片 22 的回执＋表头生成器＋归档写手＋原始 stdout/stderr＋核验件逐字节副本）的落地回执；开发日志 §26.27 (t) 引用本件。
+教训    : ① 仪器复用＝同一把尺子量多片，比对才有效；② 闭合式的右边含本片新增数，所以它随片而变、不是恒等式：
+          分片 18 的档案印「远端 575 == 父提交 574 + 新增 1 = 575」、本片印「远端 617 == 父提交 611 ＋ 新增 6 ＝ 617」，
+          两条各自被控制 C（右边 +1）证过"能红"；但闭合式只数**个数**，看不见"少一个＋多一个"的形状，
+          所以必须与双向路径差集、全库 SHA 不符两条**同读**，三条一起才构成落地证明；③ 表头不用 f-string
+          承载（§26.27 (q) 的成因），改用 PLACEHOLDER＋replace，写盘后再查残留；④ 本件由上一片的生成器
+          **机械克隆**（sed 只换片号）而来 ⇒ 凡"来历／片号／节号字母／份数"写死在注文里的都会随片腐烂而
+          diff 不会自动改它：读 diff 逐条复核后，把**能现算的数**（如尺子副本份数）改成 glob＋md5 现算字段、
+          把**只属于上一片的故事**改成中性描述，本轮这些都拦在写盘前 ⇒ 按自纠分界计 +0。
+          教训一句话：**数字一律现取，文字也要。**
+BODY_OFFSET=5241
+① 本地 HEAD = fda1bdde89ccec067589ab1fa41dc157da488491
+① ls-remote refs/heads/main = fda1bdde89ccec067589ab1fa41dc157da488491  -> MATCH
+② truncated=False，tree 条目 684 = blob 617 + tree 67
+② 本地 blob = 617，父提交 = 611
+② 本片文件 11 个 = 新增 6 + 修改 5
+② 闭合式 远端 617 == 父提交 611 + 新增 6 = 617 -> PASS
+③ 路径差集：本地独有 0/617  远端独有 0/617
+④ 全库共有 617 条 ⇒ blob SHA 不符 0/617
+④ 本片 11 文件（A 6／M 5）单列复核 ⇒ 远端缺失 0/11，SHA 不符 0/11，MATCH 11/11
+   MATCH  M  '.workbuddy/memory/2026-10-09.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify22.err'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify22.out'
+   MATCH  A  'docs/evidence/2026-10-09/am_s22_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_s23_docs.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify22.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify22.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/617（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/617，远端独有 0/616
+⑤ 正对照 C（闭合式右边 +1）⇒ 617 == 618 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/11，SHA 不符 0/11（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS
