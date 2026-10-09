@@ -1,0 +1,51 @@
+# am_s7_verify18.log ｜ S7 分片 18（补记轮）落地核验与仪器自检
+生成时刻: 2026-10-09 09:00:52 CST（`date '+%F %T %Z'` 现取）
+CMD    : cd /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder && /tmp/amvenv/bin/python /tmp/am_s7_verify18.py > /tmp/am_verify18b.out 2>/tmp/am_verify18b.err; echo rc=$?
+⚠ 实际执行的是 **/tmp** 下的同名脚本；入库副本 docs/evidence/2026-10-09/am_s7_verify18.py 与 /tmp/am_s7_verify18.py **逐字节相同**（`cmp /tmp/am_s7_verify18.py docs/evidence/2026-10-09/am_s7_verify18.py` rc=0，md5 见下一行脚本行）⇒ 表头 CMD 与正文出自同一次运行，未换体。
+ENV    : 无 JAX/pytest 参与；仅 `git`＋GitHub Trees API（HTTPS，只读）＋本地文件读取。
+         本件不需要 CPU 钉记（不跑数值 face），故不写 `CUDA_VISIBLE_DEVICES`——
+         ⚠ 与"全量记分"表头不同：那里必须实测 `/proc/<pid>/environ`，本件没有长命令。
+脚本   : docs/evidence/2026-10-09/am_s7_verify18.py（md5=0d20117bb82f6f80548744e439380f70）
+TREE   : head=de0591f（父=962cf62）；本次是**只读核验＋归档**，
+         不跑 face、不改 `src`/`tests`。`git status --porcelain -- src tests`＝**0 行**；
+         `-- docs .workbuddy`＝1 行（＝正在归档的本轮文档改动，属预期，非 face 干扰）。
+GPU    : 全程未发起任何占用 GPU 的进程（用户指令「继续，还是不动GPU」）；本件**不含**任何
+         性能/吞吐论断（性能只在 GPU 上测）。
+生成器 : docs/evidence/2026-10-09/am_s18_hdr.py（表头字段由 `git rev-parse`／
+         `git status --porcelain`／`date`／`md5sum` 现取，无手写数字）。
+RUN    : 原始 stdout 存为 _raw_verify18.out 后随本件归档；当轮回显 **rc=0**
+         （四步核验＋四个正对照全过 ⇒ LANDING_VERDICT=ALL CHECKS PASS）。
+         ⚠ 这条 rc 敢写，是因为启动命令**当时就回显了** `echo rc=$?`；全量记分件那种没回显的，
+         一律写明"不写 reg_exit="。
+判读    : 远端 main == 本地 HEAD；`truncated=False`、**575 blobs == 本地 575**；闭合式
+         远端 575 == 父提交 574 ＋ 本片新增 1；双向路径差集 **0/575**；全库共有 **575** 条
+         逐文件 blob SHA 不符 **0/575**；本片 **2/2 MATCH**（含 CJK 文档名 `docs/开发日志.md`）。
+四个正对照 : A 远端某条 sha 首位改 `f` ⇒ 不符 **1/575**；B 远端删一条路径 ⇒ 本地独有 **1/575**、
+         远端独有 **0/574**；C 闭合式右边 +1 ⇒ 判 **FAIL**；D 远端删**本片**一条路径 ⇒
+         本片缺失 **1/2**。四个都能变红，那三个 0 才成立。
+缺陷标本 : 首版把本片清单写成 `for p, _ in status` ⇒ `p` 取到**状态字母**而非路径，于是
+         「远端缺失」＝文件数（假事故）、「SHA 不符」＝**0/2（假零，条件永假）**，而同一次运行的
+         逐条 MATCH 行与之矛盾 ⇒ 缺陷是被**两处读数互相冲突**抓出来的，不是被脚本自己。原始错误
+         输出见 am_s7_verify18_first_attempt.log；合成件三态干跑见 am_s7_verify18_dryrun.log。
+         修法：路径一律取 `row[-1]` ＋ `assert len(paths)==len(set(paths))==len(status)`
+         ＋ 三类判定之和必须覆盖清单 ＋ 新增正对照 D。
+正文区  : 逐字节等于 _raw_verify18.out；正文区 md5=
+         141d95bd9e308080d574086caf514921，行数 16。归档**只加表头**，
+         读数一字未改。
+复核    : 在本目录跑 `cmp -i 0:3852 _raw_verify18.out am_s7_verify18.log`，rc 必须＝0（diffutils 3.10 的 `-i` 用**冒号**分隔 SKIP1:SKIP2，写成逗号会被判「无效值」而 rc=2——那是**仪器方言错**，不是正文有差）。
+① 本地 HEAD = de0591f61696f516dadb59955274639628b88fea
+① ls-remote refs/heads/main = de0591f61696f516dadb59955274639628b88fea  -> MATCH
+② truncated=False，tree 条目 641 = blob 575 + tree 66
+② 本地 blob = 575，父提交 = 574
+② 本片文件 2 个 = 新增 1 + 修改 1
+② 闭合式 远端 575 == 父提交 574 + 新增 1 = 575 -> PASS
+③ 路径差集：本地独有 0/575  远端独有 0/575
+④ 全库共有 575 条 ⇒ blob SHA 不符 0/575
+④ 本片 2 文件（A 1／M 1）单列复核 ⇒ 远端缺失 0/2，SHA 不符 0/2，MATCH 2/2
+   MATCH  A  '.workbuddy/memory/2026-10-09.md'
+   MATCH  M  'docs/开发日志.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/575（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/575，远端独有 0/574
+⑤ 正对照 C（闭合式右边 +1）⇒ 575 == 576 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/2，SHA 不符 0/2（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS

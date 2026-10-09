@@ -1,0 +1,15 @@
+① 本地 HEAD = de0591f61696f516dadb59955274639628b88fea
+① ls-remote refs/heads/main = de0591f61696f516dadb59955274639628b88fea  -> MATCH
+② truncated=False，tree 条目 641 = blob 575 + tree 66
+② 本地 blob = 575，父提交 = 574
+② 本片文件 2 个 = 新增 1 + 修改 1
+② 闭合式 远端 575 == 父提交 574 + 新增 1 = 575 -> PASS
+③ 路径差集：本地独有 0/575  远端独有 0/575
+④ 全库共有 575 条 ⇒ blob SHA 不符 0/575
+④ 本片 2 文件单列复核 ⇒ 远端缺失 2/2，SHA 不符 0/2
+   MATCH  A  .workbuddy/memory/2026-10-09.md
+   MATCH  M  docs/开发日志.md
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/575（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/575，远端独有 0/574
+⑤ 正对照 C（闭合式右边 +1）⇒ 575 == 576 判 FAIL（须 FAIL）
+LANDING_VERDICT = PROBLEM（见上面非零项）

@@ -1,0 +1,27 @@
+# am_s7_verify18_dryrun.log ｜ S7 分片 18（补记轮）落地核验与仪器自检
+生成时刻: 2026-10-09 09:00:52 CST（`date '+%F %T %Z'` 现取）
+CMD    : cd /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder && /tmp/amvenv/bin/python docs/evidence/2026-10-09/am_s7_verify18_dryrun.py > docs/evidence/2026-10-09/_raw_dryrun.out 2>&1; echo rc=$?
+ENV    : 无 JAX/pytest 参与；仅 `git`＋GitHub Trees API（HTTPS，只读）＋本地文件读取。
+         本件不需要 CPU 钉记（不跑数值 face），故不写 `CUDA_VISIBLE_DEVICES`——
+         ⚠ 与"全量记分"表头不同：那里必须实测 `/proc/<pid>/environ`，本件没有长命令。
+脚本   : docs/evidence/2026-10-09/am_s7_verify18_dryrun.py（md5=2fe58ec009d19090f6a326d6f1c7eb7b）
+TREE   : head=de0591f（父=962cf62）；本次是**只读核验＋归档**，
+         不跑 face、不改 `src`/`tests`。`git status --porcelain -- src tests`＝**0 行**；
+         `-- docs .workbuddy`＝1 行（＝正在归档的本轮文档改动，属预期，非 face 干扰）。
+GPU    : 全程未发起任何占用 GPU 的进程（用户指令「继续，还是不动GPU」）；本件**不含**任何
+         性能/吞吐论断（性能只在 GPU 上测）。
+生成器 : docs/evidence/2026-10-09/am_s18_hdr.py（表头字段由 `git rev-parse`／
+         `git status --porcelain`／`date`／`md5sum` 现取，无手写数字）。
+用途    : **归档仪器自己的合成件干跑**（规则：给归档件写仪器时先拿合成件跑一遍，
+         假绿与假拒一起抓）。三种真实状态（全对／缺一条／SHA 不符一条）必须给出三种不同读数。
+判读    : 修好版＝3 种不同读数（对真相敏感）；首版缺陷写法＝**1 种**（恒读 (2,0,2)）⇒
+         当场复现"形状完好的假零"是怎么产生的，也证明修好版不会重犯。当轮回显 rc=0。
+正文区  : 逐字节等于 _raw_dryrun.out；正文区 md5=
+         cb5200702d9697e2ca7536c58cb3b2c2，行数 5。归档**只加表头**，
+         读数一字未改。
+复核    : 在本目录跑 `cmp -i 0:2388 _raw_dryrun.out am_s7_verify18_dryrun.log`，rc 必须＝0（diffutils 3.10 的 `-i` 用**冒号**分隔 SKIP1:SKIP2，写成逗号会被判「无效值」而 rc=2——那是**仪器方言错**，不是正文有差）。
+①全都存在且 SHA 相同（正确实现该得 0/0/2/2）              修好版=(0, 0, 2, 2)  首版缺陷版=(2, 0, 2)
+②远端缺一条（该 1/0/1/2）                          修好版=(1, 0, 1, 2)  首版缺陷版=(2, 0, 2)
+③一条 SHA 不符（该 0/1/1/2）                      修好版=(0, 1, 1, 2)  首版缺陷版=(2, 0, 2)
+判读：修好版在三种情形下给出 3 种不同读数（须＝3 ⇒ 仪器对真相敏感）；首版缺陷版给出 1 种（＝1 ⇒ 恒读 (2,0,2)，即假零的成因）
+DRYRUN_VERDICT = 仪器有效（可分三态，且缺陷标本复现假零）

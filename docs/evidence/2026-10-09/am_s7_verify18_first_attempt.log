@@ -1,0 +1,39 @@
+# am_s7_verify18_first_attempt.log ｜ S7 分片 18（补记轮）落地核验与仪器自检
+生成时刻: 2026-10-09 09:00:52 CST（`date '+%F %T %Z'` 现取）
+CMD    : cd /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder && /tmp/amvenv/bin/python /tmp/am_s7_verify18.py > /tmp/am_verify18.out 2>&1; echo rc=$?   # 修好前的那一次
+标本件：正文是**缺陷版脚本**对真实仓库那次运行的输出（rc=3、LANDING_VERDICT=PROBLEM）。缺陷版字节未入库（脚本随后被修好并入库，故本件表头「脚本 md5」指向**修好后**的字节）；缺陷那 3 行原样保留在 am_s7_verify18_dryrun.py 的 `review_buggy()` 里，可复跑。
+ENV    : 无 JAX/pytest 参与；仅 `git`＋GitHub Trees API（HTTPS，只读）＋本地文件读取。
+         本件不需要 CPU 钉记（不跑数值 face），故不写 `CUDA_VISIBLE_DEVICES`——
+         ⚠ 与"全量记分"表头不同：那里必须实测 `/proc/<pid>/environ`，本件没有长命令。
+脚本   : docs/evidence/2026-10-09/am_s7_verify18.py（md5=0d20117bb82f6f80548744e439380f70）
+TREE   : head=de0591f（父=962cf62）；本次是**只读核验＋归档**，
+         不跑 face、不改 `src`/`tests`。`git status --porcelain -- src tests`＝**0 行**；
+         `-- docs .workbuddy`＝1 行（＝正在归档的本轮文档改动，属预期，非 face 干扰）。
+GPU    : 全程未发起任何占用 GPU 的进程（用户指令「继续，还是不动GPU」）；本件**不含**任何
+         性能/吞吐论断（性能只在 GPU 上测）。
+生成器 : docs/evidence/2026-10-09/am_s18_hdr.py（表头字段由 `git rev-parse`／
+         `git status --porcelain`／`date`／`md5sum` 现取，无手写数字）。
+读法警告：正文「远端缺失 2/2」与「SHA 不符 0/2」**都不可采信**——前者是状态字母
+         被当成路径（假事故），后者是条件永假的**假零**。同一次运行里逐条 MATCH 的两行与它矛盾，
+         这才是缺陷现形的方式。现行结论见 am_s7_verify18.log。
+教训    : 该件的 PROBLEM 结论本身也是**误判**：落地其实早已成功（①②③④四项全真），报错来自仪器
+         而非仓库 ⇒ 「仪器拒绝」≠「事情没做成」，先复核仪器再下结论。
+正文区  : 逐字节等于 _raw_verify18_first.out；正文区 md5=
+         51eb361d7dafd96668350088db460252，行数 15。归档**只加表头**，
+         读数一字未改。
+复核    : 在本目录跑 `cmp -i 0:2806 _raw_verify18_first.out am_s7_verify18_first_attempt.log`，rc 必须＝0（diffutils 3.10 的 `-i` 用**冒号**分隔 SKIP1:SKIP2，写成逗号会被判「无效值」而 rc=2——那是**仪器方言错**，不是正文有差）。
+① 本地 HEAD = de0591f61696f516dadb59955274639628b88fea
+① ls-remote refs/heads/main = de0591f61696f516dadb59955274639628b88fea  -> MATCH
+② truncated=False，tree 条目 641 = blob 575 + tree 66
+② 本地 blob = 575，父提交 = 574
+② 本片文件 2 个 = 新增 1 + 修改 1
+② 闭合式 远端 575 == 父提交 574 + 新增 1 = 575 -> PASS
+③ 路径差集：本地独有 0/575  远端独有 0/575
+④ 全库共有 575 条 ⇒ blob SHA 不符 0/575
+④ 本片 2 文件单列复核 ⇒ 远端缺失 2/2，SHA 不符 0/2
+   MATCH  A  .workbuddy/memory/2026-10-09.md
+   MATCH  M  docs/开发日志.md
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/575（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/575，远端独有 0/574
+⑤ 正对照 C（闭合式右边 +1）⇒ 575 == 576 判 FAIL（须 FAIL）
+LANDING_VERDICT = PROBLEM（见上面非零项）
