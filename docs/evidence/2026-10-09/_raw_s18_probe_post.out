@@ -1,0 +1,52 @@
+K0 环境 :: SRC=be0ed11b647e36f44e8e4a8bb805fd38 jax=0.11.0 x64=True head=3b43aab dirty(src+tests)=3
+K1a 段长/累计/总长 :: seg=[np.float64(5.0), np.float64(12.0)] cum=[np.float64(0.0), np.float64(5.0), np.float64(17.0)] total=17.000000000000（手算 5+12=17）
+K1b 正对照 回头路 :: 首尾直线距=0.000 折线总长=10.000（须 10：把回去的 5 也计上）
+K1c (n,2) 补 z 与 (n,3) 同长 :: (n,2)=10.000000000000 (n,3)=10.000000000000
+K2a 采样点 :: g=0.37 s=6.290000 期望段=1 份额=0.1075000000 pos=[np.float64(3.0), np.float64(4.0), np.float64(1.29)] power=2.1075000000
+K2b ∂power/∂功率列 :: [np.float64(0.0), np.float64(0.8925), np.float64(0.1075)]（手算 (0, 1−u, u)＝[0.0, 0.8925, 0.1075]）
+K2c ∂Σpos/∂points :: 有限=True 非零元=8/9 max|g|=6.300000e-01
+K2d 正对照 中心差分 :: max|解析−差分|=1.360e-09 相对=2.160e-09（须 <1e-6）
+K2e 正对照 stop_gradient :: 截断前=6.300000e-01 → 截断后=0.000000e+00（须恰 0，否则 K2c 的『非零』是噪声）
+K3a jnp.interp 梯度 :: ∂/∂折点值=[np.float64(0.4), np.float64(0.6), np.float64(0.0)]（s=3 落在 [0,5) ⇒ 手算 (0.4,0.6,0)） ∂/∂弧长表=[np.float64(-0.24), np.float64(-0.36), np.float64(0.0)]
+K3b polyline_trajectory.total_time :: type=float 值=34.0（float ⇒ 时长那条链在构造时就被具体化）
+K3c ∂pos(1s)/∂speed（构造在 trace 内） :: 抛 TracerArrayConversionError：The numpy.ndarray conversion method __array__() was called on traced array with shape float64[]
+K3d ∂pos(t)/∂t :: 7.000000e-01（t 那条链仍连着构造时定格的 speed=0.5）
+K3e ∂pos(1s)/∂speed（构造在 trace 外） :: 0.000000e+00（**恒 0**：速度已在构造时折进 fn 的闭包，再对外部速度求导拿不到任何耦合 ⇒ 熔池求解器侧的速度梯度断在这里）
+K3f ScanPath.position_at 的 searchsorted :: diffmech/methods/am/scan_paths.py:47 用 np.searchsorted ⇒ 只能 eager 逐点求值，不能进 jax.lax.scan/jit（本探针 K8 实测 PathProgram 两者皆可）
+K4a 拓扑现值 :: n_layers=2 n_lines=2 x_ext=600.000µm y_ext=300.000µm z_ext=300.000µm spacing=150.000µm path=2700.000000µm（手算 2×(2×600+1×150)=2700µm）
+K4b 单层拓扑 :: n_layers=1 n_lines=2 path=1350.000000µm（手算 2×600+1×150=1350µm）
+K4c 单层总长对账 :: 折线=1350.000000µm 解析=1350.000000µm rel=1.606e-16（须 <1e-12） 折点数=5
+K4d 正对照 spacing×1.001 :: rel=1.111e-04（须 >1e-6 而红）
+K4e-a 无分辨力的一脚 :: 折点 0 的 x=0.0e+00，math.ulp=4.941e-324（最小非规格化） ⇒ 加完总长逐位不变=True（须 True，登记为本探针的自纠素材）
+K4e-b 正对照 1ulp（非零分量） :: 折点[1] 分量 0：0.0006 → 0.0006（步长 1.084e-19）弧长表 md5 变=True 总长 md5 变=False 总长差=0.000e+00
+K4e-c 正对照 4ulp :: 步长=4.337e-19（>总长自身 ulp=2.168e-19）总长 1350.000000000µm → 1350.000000000µm rel=3.212e-16 md5 异=True
+K5-偶道数 多层差值 :: n_layers=2 n_lines=2 折线=2912.1320µm 解析=2700.0000µm 差=212.1320µm 跨层段和=212.1320µm 换层后对位段和=0.0000µm 跨层段数=1/10
+K5-偶道数b 分区校核 :: Σ段长=2912.132034µm vs total_length=2912.132034µm 比值=1.078567
+K5-奇道数 多层差值 :: n_layers=2 n_lines=3 折线=4850.0000µm 解析=4000.0000µm 差=850.0000µm 跨层段和=250.0000µm 换层后对位段和=600.0000µm 跨层段数=1/16
+K5-奇道数b 分区校核 :: Σ段长=4850.000000µm vs total_length=4850.000000µm 比值=1.212500
+K6a 无跳段夹具 :: n_layers=1 n_lines=1 path=600.000000µm
+K6b 无跳段极限位置差 :: max_abs=0.000e+00m max_rel=0.000e+00（须 <1e-12） 逐位相同=True
+K6c 正对照 n_lines=2 :: max_abs=1.054e-04m（须显著非零 ⇒ 两种驻留律确实不同）
+K6d 解析律的瞬跳 :: 最大单步 Δy=150.000µm Δz=150.000µm；跳段占解析路径长 11.11%（折线律恒速连续走，把这些行程也摊进时间）
+K7a 常功率列门控 :: 全部逐位==1.0=True min=1 max=1 max|gate−1|=0.000e+00
+K7b 正对照 第 1 折点关束 :: ==1.0 的比例=0.750 含零=False min=0.0520404
+K7c ∂Σgate/∂功率列 :: 非零元=8/11 有限=True
+K7d 门控对参考功率的梯度 :: ∂Σgate/∂P=-6.666667e-03（常功率列＝P 时应为 −n_steps/P＝-6.666667e-03，比值门的分母同样可微）
+K8a jit 内可用 :: 形状=(8, 3) 有限=True
+K8b lax.scan 内可用 :: acc=1.274058e-03 有限=True
+K8c jit+grad 折点 :: 非零元=28/33 有限=True
+K8d 零长段的 sqrt :: 改前 ∂Σseg/∂points 非有限元=6/12 值=[array([-1.,  0.,  0.]), array([nan, nan, nan]), array([nan, nan, nan]), array([1., 0., 0.])]；现写法非有限元=0/12 值=[array([-1.,  0.,  0.]), array([1., 0., 0.]), array([-1.,  0.,  0.]), array([1., 0., 0.])]
+K8e 零长段的前值 :: 段长=[np.float64(1.0), np.float64(0.0), np.float64(1.0)]（重复折点须给**精确 0**，否则总长对账 K4c 会带 1e-15 的偏置）
+K9a 夹具 :: n_steps=137 体素=343 voxel_steps=46991 dx=80µm hatch=150µm lt=120µm
+K9b 改前指纹 :: {"cooling_rate": "019195efc2f86de8", "dim": "3", "final_temperature": "fad9571c118afce5", "peak_temperature": "fccc9aac694633bc", "solidification_rate": "fb46918d4c97ab18", "spacing": "12b4683306d89968", "temperature_evolution": "None", "thermal_gradient": "ef1f55422961dac3", "time_above_melt": "75f4649502036a04"}
+K9c 关键字段 :: {"cooling_rate": {"max": 17814214.826233722, "md5": "019195efc2f86de8928695629837607a", "shape": [7, 7, 7], "sum": 898362380.6804321}, "final_temperature": {"max": 2948.7690594476153, "md5": "fad9571c118afce5e38ef73bc1af35de", "shape": [7, 7, 7], "sum": 507174.59396552504}, "peak_temperature": {"max": 3015.6814325277965, "md5": "fccc9aac694633bc8be158b07c22ad59", "shape": [7, 7, 7], "sum": 513013.14483042026}, "solidification_rate": {"max": 20.07440518418058, "md5": "fb46918d4c97ab181eccb588a31aab37", "shape": [], "sum": 20.07440518418058}, "spacing": {"max": 8e-05, "md5": "12b4683306d89968de4e7ade015ac4a6", "shape": [], "sum": 8e-05}, "thermal_gradient": {"max": 36685395.221369535, "md5": "ef1f55422961dac39363826bdd3df37e", "shape": [7, 7, 7], "sum": 5073369820.03497}, "time_above_melt": {"max": 0.008607299270072984, "md5": "75f4649502036a045442ba117815bc0e", "shape": [7, 7, 7], "sum": 0.8850744525547447}}
+K9d 落盘 :: /tmp/_s18_pre.json 字段数=9
+K10a 表头与列数 :: header=['x (µm)', 'y (µm)', 'laser power (W)', 'time (seconds)'] 列数=4 行数=2 index={0: 'x (µm)', 1: 'y (µm)', 2: 'laser power (W)', 3: 'time (seconds)'}
+K10b 折线 :: 折点=(2, 3) 总长=2000.000000µm 功率列=[np.float64(285.0), np.float64(285.0)]
+K10c 时间列→等效速度 :: 0.961538 m/s（手算 2000µm/2.08ms；诊断量，不绕过弧长映射）
+K10d 关束占空比 :: 1.000000（表内功率恒 285W ⇒ 须 1.0）；正对照：把第 2 折点功率改 0 后=0.500000
+K10e 正对照 不猜单位 :: unit=1.0 时总长=2000.000m（＝按表内数字当米，2000 倍过头 ⇒ 单位必须由调用方指名）
+K10f 旧 from_csv 对同一张表 :: 抛 UnicodeDecodeError：'utf-8' codec can't decode byte 0xb5 in position 3: invalid start byte⇒ **连读都读不进**（np.loadtxt 按 utf-8 解表头，µ 是 0xb5）；本模块的 read_track_table 靠 utf-8→latin-1 退路把列名还原成 µ（见 K10a）
+
+=== 全部断言通过 ===
+READOUTS=49

@@ -1,0 +1,40 @@
+G01 PASS  
+        pre=49 post=49
+G02 PASS  
+        相同=48/48 不同=[]
+G03 PASS  
+        抓到 1 行：['K9c 关键字段']
+G04 PASS  
+        pre=9 post=9
+G05 PASS  
+        不符=[]
+G06 PASS  
+        peak=3015.6814325277965 n_steps=137 nvox=343
+G07 PASS  
+        抓到=['peak_temperature']
+G08 PASS  
+        pre=d02f301a105d1e66b01fab9450cc064a post=be0ed11b647e36f44e8e4a8bb805fd38
+G09 PASS  
+        pre=1 post=3
+G10 PASS  
+        stderr 前 80 字='Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.in'
+G11 PASS  
+        机上 1 个进程，我的 0 个：[]
+G12 PASS  
+        代码行 1/1，含注释 1 处（正则=program = p\.get\("scan_program"\)）
+G13 PASS  
+        代码行 1/1，含注释 1 处（正则=require_program\(program, reference_power=P\)）
+G14 PASS  
+        代码行 1/1，含注释 1 处（正则=path_length = program\.total_length\(\)）
+G15 PASS  
+        代码行 1/1，含注释 1 处（正则=positions, _pw_col = program\.sample_steps\(n_steps\)）
+G16 PASS  
+        代码行 1/1，含注释 1 处（正则=power_gate = gate_from_power\(_pw_col, P\)）
+G17 PASS  
+        代码行 2/2，含注释 3 处（正则=power_gate is None）
+G18 PASS  
+        注释掉后代码行命中 0 ⇒ 该读数真的在读代码，不是硬编码 True
+G19 PASS  
+        整份文本=3 代码行=2
+
+共 19 条读数全部通过。

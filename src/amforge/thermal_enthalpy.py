@@ -82,6 +82,7 @@ from amforge.core.contracts import (
 )
 from amforge.core.registry import register_solver
 from amforge.materials import get_material
+from amforge.scan_program import gate_from_power, require_program
 
 
 # ---------------------------------------------------------------------------
@@ -394,7 +395,7 @@ def suggest_n_steps(geometry, process, *, material="316L", cfl=0.35):
 def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
                    speed_slack=2.0, path_slack=2.0, max_steps=200000,
                    max_voxel_steps=None, over_budget="raise",
-                   fixed_n_steps=None, resolution_policy="strict"):
+                   fixed_n_steps=None, resolution_policy="strict", program=None):
     """**这张网格上默认链的可用档位**：静态时间调度 + 与之自洽的工艺搜索子盒。
 
     动机（2026-10-06 D0）：A0 把 ``dt`` 钉在物理曝光时长上之后，``n_steps``（时间
@@ -419,8 +420,18 @@ def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
 
     ``fixed_n_steps`` 给定时反过来**由步数定工艺盒**：把速度下界抬到"钉住的
     ``n_steps`` 覆盖得住曝光"，用于调用方自带调度的场合（返回的 ``n_steps`` 即该值）。
+
+    ``program``（#18，opt-in）＝ ``amforge.scan_program.PathProgram`` 实例：路径长改由
+    折线总长给出（与 ``hatch_spacing``/``layer_thickness`` 无关 ⇒ 最坏角落与
+    ``path_slack`` 对这一支空转，曝光上界＝程序总长/速度下界），与
+    ``params["thermal"]["scan_program"]`` 同一个对象。不给则逐项逐位不变。
     """
     from amforge.process import PROCESS_BOUNDS
+    if program is not None:
+        # 这里必然处于 eager（下面连 ConcretizationTypeError 都要兜），所以路径程序的
+        # 数值域前提在**定价之前**一次判掉：给一条自相矛盾的程序（总长 0、参考功率 0
+        # 却带非零功率）算出一个 n_steps，只会让它到求解器里变成 NaN 场。
+        require_program(program, reference_power=process.laser_power)
     try:
         return _chain_schedule(geometry, process, material=material, cfl=cfl,
                                speed_slack=speed_slack, path_slack=path_slack,
@@ -428,7 +439,8 @@ def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
                                max_voxel_steps=max_voxel_steps,
                                over_budget=over_budget,
                                fixed_n_steps=fixed_n_steps,
-                               resolution_policy=resolution_policy)
+                               resolution_policy=resolution_policy,
+                               program=program)
     except jax.errors.ConcretizationTypeError as e:
         raise ValueError(
             "chain_schedule() 必须在 eager 模式用**具体数值**的名义工艺调用"
@@ -439,7 +451,7 @@ def chain_schedule(geometry, process, *, material="316L", cfl=0.35,
 
 def _chain_schedule(geometry, process, *, material, cfl, speed_slack, path_slack,
                     max_steps, bounds, max_voxel_steps=None, over_budget="raise",
-                    fixed_n_steps=None, resolution_policy="strict"):
+                    fixed_n_steps=None, resolution_policy="strict", program=None):
     mat = get_material(material)
     alpha0 = float(mat.k_solid) / (float(mat.rho_solid) * float(mat.cp_solid) + 1e-12)
     dx = float(jnp.asarray(geometry.spacing, dtype=jnp.float64))
@@ -450,8 +462,9 @@ def _chain_schedule(geometry, process, *, material, cfl, speed_slack, path_slack
     def _m(v):
         return float(jnp.mean(jnp.atleast_1d(jnp.asarray(v, dtype=jnp.float64))))
 
-    path_nom = float(_scan_topology(coords, process, dim=geometry.dim,
-                                    solid=solid)[-1])
+    path_nom = (float(program.total_length()) if program is not None else
+                float(_scan_topology(coords, process, dim=geometry.dim,
+                                     solid=solid)[-1]))
     v_nom, h_nom = _m(process.scan_speed), _m(process.hatch_spacing)
     lt_nom, r_nom = _m(process.layer_thickness), _m(process.beam_radius)
 
@@ -489,11 +502,22 @@ def _chain_schedule(geometry, process, *, material, cfl, speed_slack, path_slack
             f"（搜索子盒仍取 ≥ dx 的可分辨下界。）",
             stacklevel=2)
 
-    worst = process.replace(hatch_spacing=jnp.asarray(h_worst),
-                            layer_thickness=jnp.asarray(lt_worst),
-                            beam_radius=jnp.asarray(max(r_nom, r_lo)))
-    path_max = float(_scan_topology(coords, worst, dim=geometry.dim,
-                                    solid=solid)[-1])
+    if program is None:
+        worst = process.replace(hatch_spacing=jnp.asarray(h_worst),
+                                layer_thickness=jnp.asarray(lt_worst),
+                                beam_radius=jnp.asarray(max(r_nom, r_lo)))
+        path_max = float(_scan_topology(coords, worst, dim=geometry.dim,
+                                        solid=solid)[-1])
+    else:
+        # 折线由调用方给定 ⇒ 路径长与 hatch_spacing/layer_thickness **无关**：上面的
+        # 最坏角落与 path_slack 对程序分支都是空转，程序总长本身就是上界。
+        path_max = path_nom
+        warnings.warn(
+            f"路径程序档位：曝光上界由折线总长 {path_nom*1e3:.1f}mm 给出，"
+            f"hatch_spacing/layer_thickness 不再进入热解（也不再有最坏角落放大），"
+            f"返回的工艺子盒里这两项对温度场**梯度恒零**——要优化它们就得回到缺省"
+            f"解析 zigzag（去掉 params['scan_program']）。",
+            stacklevel=2)
     # 代价上限（§25.7 实测成本律的工程化）：一次正向的墙钟 ≈ n_steps × 体素数。
     # 于是"预算"有两把尺：步数上限 max_steps 与 voxel-step 上限 max_voxel_steps
     # （后者按网格规模反比地收紧步数）。预算不够时**抬扫描速度下界**（缩小可优化的
@@ -675,9 +699,20 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
 
     hcool = float(p.get("h_cool", 0.5))                # 弱 Newton 冷却 [1/s]
 
+    # 路径程序（#18，**opt-in**）：``params["thermal"]["scan_program"]`` 不给就是 None，
+    # 下面三处覆盖（总长/位置/功率门控）全部不执行，缺省档逐位不变。
+    program = p.get("scan_program")
+    if program is not None:
+        require_program(program, reference_power=P)
+
     (n_layers, n_lines, _x_min, _y_min, _z_min, _x_ext, _y_ext, _z_ext,
      _spacing_y, path_length) = _scan_topology(coords, process, dim=geometry.dim,
                                                solid=_footprint(geometry))
+    if program is not None:
+        # **时间映射不被取代**：曝光时长照样 = 路径长/扫描速度，只是路径长改由折线
+        # 总长给出 ⇒ 归一化弧长 g=(t+0.5)/n_steps 与缺省档同一个中点口径，
+        # |∂输出/∂scan_speed| 因此仍非零（test_enthalpy_thermal.py:173 的断言不破）。
+        path_length = program.total_length()
 
     alpha0 = k / (rho * cp + 1e-12)
     cfl = float(p.get("cfl", 0.35))
@@ -760,18 +795,31 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
 
     # 扫描足迹必须与上面的 _scan_topology（n_steps、path_length）用**同一个**掩膜，
     # 否则曝光时长一致而位置轨迹按另一套拓扑展开，两者错位。
-    positions, _ = _build_scan_positions(coords, process, dx, n_steps=n_steps,
-                                         dim=geometry.dim,
-                                         solid=_footprint(geometry))
+    if program is None:
+        positions, _ = _build_scan_positions(coords, process, dx, n_steps=n_steps,
+                                             dim=geometry.dim,
+                                             solid=_footprint(geometry))
+        power_gate = None
+    else:
+        # 折线按**同一个** g=(t+0.5)/n_steps 口径给出 (n_steps, 3) 位置与门控；门控是
+        # 比值 power(t)/laser_power ⇒ 常功率列逐位＝1.0（见 scan_program 第 2 条口径）。
+        positions, _pw_col = program.sample_steps(n_steps)
+        power_gate = gate_from_power(_pw_col, P)
     dt = t_exposure / jnp.maximum(n_steps, 1)
 
+    # ``power_gate is None`` 是 Python 静态判断（不是 jnp.where）：缺省分支的 jaxpr 里
+    # 一个乘法都不会出现 ⇒ 默认档输出与接入前逐位相同，而门控只在程序分支乘入功率。
     if source_model == "integrated":
         def _source_at(t):
-            return _cell_integrated_source(positions[t], coords, laser_power,
-                                           r_src, dp, dx)
+            return _cell_integrated_source(
+                positions[t], coords,
+                laser_power if power_gate is None else laser_power * power_gate[t],
+                r_src, dp, dx)
     else:
         def _source_at(t):
-            return _moving_source(positions[t], coords, Q0, r_src, dp)
+            return _moving_source(
+                positions[t], coords,
+                Q0 if power_gate is None else Q0 * power_gate[t], r_src, dp)
 
     # 热源空间欠采样校核（eager）：一个体素装不下光斑直径时，峰值温度无物理意义。
     r_c, dx_c = _concrete(r), _concrete(dx)
