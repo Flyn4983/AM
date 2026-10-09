@@ -1,0 +1,26 @@
+# #35 全量件的 skip 身份实测（供 am_t35_full_assemble.py 的 G4 使用）。
+# 身份一律取 `-rs` 的 SKIPPED 行**原文**，不按位置反推（行宽随终端变，上一轮栽过一次）。
+# 分两路取，口径不同、各自标注：
+#   路 A＝收集期 skip（模块级 importorskip）⇒ --collect-only -rs 即可现取；
+#        该路 rc=5「no tests collected」正是「这两条不占 collected 计数」的直接证据。
+#   路 B＝测试体内 skip ⇒ 收集期不报，必须实跑那一条 nodeid（只跑一条，避开同文件的慢测）。
+# DATE: 2026-10-09 10:20:07 +0800
+# TREE: head=c34a2e1 dirty=1
+# FINGER（启动器同口径）: 4a5a257efaf3251badbdfbfb10ecec4b
+
+===== 路 A：收集期 skip =====
+CMD: CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python -m pytest --collect-only -q -rs tests/test_gui_app.py tests/test_gui_app2.py -p no:cacheprovider
+
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_gui_app.py:16: could not import 'PySide6': No module named 'PySide6'
+SKIPPED [1] tests/test_gui_app2.py:18: could not import 'PySide6': No module named 'PySide6'
+no tests collected in 0.02s
+rc=5
+
+===== 路 B：测试体内 skip =====
+CMD: CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python -m pytest -q -rs tests/test_monitoring.py::test_monitoring_gui_construct_and_logic -p no:cacheprovider
+s                                                                        [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_monitoring.py:285: could not import 'PySide6': No module named 'PySide6'
+1 skipped in 1.01s
+rc=0

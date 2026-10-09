@@ -1,0 +1,73 @@
+===== #35 全量回归的 CPU 钉住证据件（四路实测，同树同环境）=====
+CMD A: /tmp/amvenv/bin/python -m pytest -q -s -p no:cacheprovider tests/test_enthalpy_thermal.py::test_scan_recipe_is_grid_independent
+CMD B: /tmp/amvenv/bin/python -m pytest -q -s -p no:cacheprovider -p no:logging tests/test_enthalpy_thermal.py::test_scan_recipe_is_grid_independent
+CMD C: /tmp/amvenv/bin/python -m pytest -q -s -p no:cacheprovider --log-cli-level=WARNING tests/test_enthalpy_thermal.py::test_scan_recipe_is_grid_independent
+CMD D: /tmp/amvenv/bin/python -c "import jax; print('BACKEND', jax.default_backend())"
+ENV: 继承本 shell 的 94 个变量 ＋ 只覆盖 CUDA_VISIBLE_DEVICES=（**空串**）／JAX_ENABLE_X64=1／PYTHONPATH=src
+     ＝启动器 /tmp/am_t35_full_run.sh 里那条命令的同形环境
+TREE: head=c34a2e1 dirty(src+tests 改动行数)=1
+DATE_START: 2026-10-09 11:12:10 +0800；DATE_END: 2026-10-09 11:12:28 +0800
+FINGER(启动器口径)＝起＝止＝4a5a257efaf3251badbdfbfb10ecec4b；与全量件 `am_t35_full.log` 的 SRCFINGER_END **同值** ⇒ 同树可比
+标记行读数：A＝0（全量面配置）／B＝2／C＝2／D＝2；全量件自身＝0
+E5 逐字节：B 与 C 都命中同一串 'cuInit(0) failed: CUDA_ERROR_NO_DEVICE' ⇒ 不是正则的产物
+D 路 stdout：BACKEND cpu
+NOTE: 本件为什么必须存在（而不是"我在头里写了 ENV"就算）：全量件的 CPU 判据**不能**是"正文里有那两行"，
+NOTE:   因为 A 路证明**同样的配置就是取不到**（标记 0 行）——`-s` 只关 fd 捕获，JAX 的回退走 `logging`，
+NOTE:   被 pytest 的 logging 插件收走且用例通过时不回显。⇒ 全量件的钉住判据＝① 它自记的 CMD 以
+NOTE:   `CUDA_VISIBLE_DEVICES= `（空值）开头 ＋ ② 本件 C 路（保留全部插件、只把显示门打开，最接近真实面）
+NOTE:   在同树同环境下现取到那两行 ＋ D 路 `BACKEND cpu`。
+NOTE: 支持性一致（**不单独当判据**）：本轮全量件两条红灯的打印值与 CPU 钉住的参照件
+NOTE:   `docs/evidence/2026-10-08/am_t34_t36_full_regression.log` 逐字节相同（见全量件 G2）；换后端不太可能
+NOTE:   保持 64 位断言值逐字节一致，但这条只作旁证。
+NOTE: E0 本件首版的**自身缺陷**：ENV 手挑 6 个变量 ⇒ JAX 的 xla_cuda13 插件在该子环境里走另一分支
+NOTE:   （"a CUDA-enabled jaxlib is not installed"），连做那次 `cuInit(0)` 都不做，两行证据全缺、E4 假失败。
+NOTE:   ⇒ "同一个启动环境"不是口号：少传一个变量，要取的那两行就会消失。修法＝继承 os.environ ＋ E0 断言。
+NOTE: ⚠ 与 N9(b) 的关系：我为对照跑过一条**未带** CVD 的 `python -c "import jax"`，当场报 gpu＝真的建了
+NOTE:   CUDA context（进程即刻退出、`nvidia-smi` 现取无我的残留）。⇒ 脚本里有闸门不等于命令带了闸门；
+NOTE:   本件的 D 路因此**只跑带空串的那一条**，去掉 CVD 的正对照**不跑**（与「不动 GPU」冲突，如实登记）。
+BODY_OFFSET=00000000000000003120
+============ A 全量面配置复本（-q -s） ｜rc＝0 ｜标记行 0 条
+--- 该路正文（原样，含 rc=0 的成功行）---
+.
+1 passed in 5.12s
+
+============ B 摘掉 logging 插件（-p no:logging） ｜rc＝0 ｜标记行 2 条
+M  | RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+M  | An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+--- 该路正文（原样，含 rc=0 的成功行）---
+.
+1 passed in 5.23s
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+
+============ C 打开 log 实时显示（--log-cli-level=WARNING） ｜rc＝0 ｜标记行 2 条
+M  | RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+M  | WARNING  jax._src.xla_bridge:xla_bridge.py:878 An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+--- 该路正文（原样，含 rc=0 的成功行）---
+
+----------------------------- live log collection ------------------------------
+ERROR    jax._src.xla_bridge:xla_bridge.py:497 Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+WARNING  jax._src.xla_bridge:xla_bridge.py:878 An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+
+tests/test_enthalpy_thermal.py::test_scan_recipe_is_grid_independent PASSED
+
+============================== 1 passed in 5.40s ===============================
+

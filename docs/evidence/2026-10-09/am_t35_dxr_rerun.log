@@ -1,0 +1,95 @@
+#35 —— `thermal_enthalpy.py` 的 **dx>r 欠分辨文案**（注释＋用户可见的 warnings.warn 串）在**提交树**上重测。
+
+标题块（生成命令见文末，非手抄）：
+  探针     = docs/evidence/2026-10-09/am_t35_dxr_rerun.py
+  探针 md5 = 7be53b79772f7009d144948624ac8538   （本件归档后**不再改动该 .py** ⇒ 此 md5 即产出下面读数的字节）
+  归档时间 = 2026-10-09 09:50:21 +0800
+  运行命令 = CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python <本件路径>
+             （用户指令「继续，还是不动GPU」⇒ 未钉 CPU 时探针在 `import jax` **之前**自行拒绝）
+
+结论照实（细节全在下面原样 stdout 里）：
+  1) 文案 5 个数**全部过期**：integrated 峰值 15.6→13.45、熔宽 46.7→40.00、熔体积 52.8→60.99；
+     point 熔宽 35.1→20.00、熔体积 56.9→30.90（判据 `round(实测,1)==文案值`，5/5 判「已过期」）。
+  2) 尺子有效：C3 正对照（光斑半径 ×1.05、同 ns 重跑两档）Δpeak/ΔLy/Δvol **6/6 非零**。
+  3) 读取器有效：SHIPPED 值**由源码现取**，且同文件 ⚠ 历史值（45.0）与现值（46.7）不同 ⇒ 分得开两者。
+  4) C5 真触发了运行时警告，`warnings.warn` 实际发出的整串按 repr 入库 ⇒ 要改的是实测文本而非我抄的文本。
+  5) C6 与旧件 `2026-10-07/am_t2_a0_conv_rerun.log` 逐档对照：**旧/新完全相同的 (ns, peak) 项＝0/16**，
+     且该件 TREE 自报 `head=af9fc89 dirty=30` ⇒ 那组数**不对应任何提交**、不可复现。本轮只登记
+     「基线不可复现」，**不指认**差值来自 af9fc89..HEAD 中哪一笔触及 src 的提交（候选集见开发日志 §26.27）。
+  6) R35_VERDICT 原文见末行；rc=0。
+
+首版缺陷件＝同目录 `am_t35_dxr_rerun_first_attempt.log`（C5 段图省事写 `n_steps=2` 被求解器稳定上限
+守卫拒绝 ⇒ stdout 只剩段落标题、traceback 全在 stderr）。⇒ 规则再次命中：**归档件必须回读 stderr 与
+rc，不能只看 stdout**。
+
+======================== 以下为运行原样输出（未编辑） ========================
+
+======== stdout ========
+CMD: CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src /tmp/amvenv/bin/python /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-09/am_t35_dxr_rerun.py
+TREE: head=c34a2e1 dirty=0
+DATE: 2026-10-09 09:37:49 +0800
+BACKEND: cpu devices=['cpu']
+SHIPPED（从源码现取，非手抄）: {'int_peak': 15.6, 'int_width': 46.7, 'int_vol': 52.8, 'pt_width': 35.1, 'pt_vol': 56.9, 'warn_width': 46.7, 'warn_vol': 52.8}
+文本读取的正对照：现取注释值=46.7  同文件历史值(⚠ 旧表)=45.0 ⇒ 两者不同 ⇒ 读取器分得出现值与史值
+运行时文本与注释文本的对比数是否同源：warn_width=46.7 vs int_width=46.7 warn_vol=52.8 vs int_vol=52.8
+[integrated] dx= 100.0 ns=   65   3.54s peak=  2378.3 nml=    34 xor=    0 Lx= 1.000 Ly= 0.300 vol=  0.0340mm³ vol_fv=  0.0340mm³
+[integrated] dx=  50.0 ns=  258   3.04s peak=  2609.7 nml=   548 xor=    5 Lx= 1.200 Ly= 0.450 vol=  0.0685mm³ vol_fv=  0.0682mm³
+[integrated] dx=  25.0 ns= 1031   3.16s peak=  2695.0 nml=  5240 xor=   65 Lx= 1.200 Ly= 0.475 vol=  0.0819mm³ vol_fv=  0.0814mm³
+[integrated] dx=  12.5 ns= 4121   3.73s peak=  2747.8 nml= 44630 xor=  564 Lx= 1.200 Ly= 0.500 vol=  0.0872mm³ vol_fv=  0.0866mm³
+[point     ] dx= 100.0 ns=   65   0.71s peak=  2836.9 nml=   111 xor=    3 Lx= 1.200 Ly= 0.400 vol=  0.1110mm³ vol_fv=  0.1095mm³
+[point     ] dx=  50.0 ns=  258   0.55s peak=  2899.7 nml=  1140 xor=   69 Lx= 1.200 Ly= 0.450 vol=  0.1425mm³ vol_fv=  0.1382mm³
+[point     ] dx=  25.0 ns= 1031   0.58s peak=  2926.1 nml= 10042 xor=  715 Lx= 1.200 Ly= 0.500 vol=  0.1569mm³ vol_fv=  0.1513mm³
+[point     ] dx=  12.5 ns= 4121   0.70s peak=  2957.5 nml= 82251 xor= 3433 Lx= 1.200 Ly= 0.500 vol=  0.1606mm³ vol_fv=  0.1573mm³
+
+=== C2/C4：dx=r(100µm) 相对 dx=r/8(12.5µm) 的偏低比 vs 文案现值 ===
+  [integrated] peak 偏低  13.45%  Ly 偏低  40.00%  计数 vol 偏低  60.99%  fv 加权 vol 偏低  60.75%
+    绝对值 peak 2378.3 -> 2747.8K   Ly 0.300 -> 0.500mm   vol 0.0340 -> 0.0872mm³   vol_fv 0.0340 -> 0.0866mm³
+    int_peak   文案= 15.60  实测= 13.45  round(实测,1)==文案 -> 已过期
+    int_width  文案= 46.70  实测= 40.00  round(实测,1)==文案 -> 已过期
+    int_vol    文案= 52.80  实测= 60.99  round(实测,1)==文案 -> 已过期
+  [point     ] peak 偏低   4.08%  Ly 偏低  20.00%  计数 vol 偏低  30.90%  fv 加权 vol 偏低  30.39%
+    绝对值 peak 2836.9 -> 2957.5K   Ly 0.400 -> 0.500mm   vol 0.1110 -> 0.1606mm³   vol_fv 0.1095 -> 0.1573mm³
+    pt_width   文案= 35.10  实测= 20.00  round(实测,1)==文案 -> 已过期
+    pt_vol     文案= 56.90  实测= 30.90  round(实测,1)==文案 -> 已过期
+
+=== C3：正对照（光斑半径 ×1.05，同 ns 再跑两档 ⇒ 三个读数必须全变） ===
+  dx= 100.0 (ns=65)  Δpeak=  -393.0K  ΔLy=-0.200mm  Δvol=-0.0230mm³
+  dx=  12.5 (ns=4121)  Δpeak=  -510.7K  ΔLy=-0.088mm  Δvol=-0.0541mm³
+  判读：非零变化 6/6（必须＝6，否则 C2 的偏低比读数对本探针不敏感 ⇒ 结论作废）
+
+=== C5：运行时警告文本（真触发一次 dx>r：r=60µm、dx=100µm、ns=40） ===
+  ⚠ 首版这里写 ns=2 ⇒ 被求解器的稳定上限守卫**拒绝**（`params['n_steps']=2 不足：…至少需要 n_steps>=34`）：那条守卫是对的，错的是我图省事给的小步数。缺陷现形方式＝stderr  traceback 而 C5 段落空转（正文只剩标题）⇒ 归档件必须回读 stderr，不能只看 stdout 与 rc。
+  捕获警告条数 = 2
+  category=UserWarning
+  TEXT repr: "params['n_steps']=40 低于 CFL 精度目标 95（cfl=0.35）：仍稳定但每步激光移动 190µm，移动热源被时间欠采样，峰值温度会偏低。建议 suggest_n_steps() 或提高 n_steps。"
+  category=UserWarning
+  TEXT repr: '体素 dx=100.0µm 大于光束半径 r=60.0µm：横向仅约 1.2 个体素跨过光斑，能量守恒但**熔池形态与峰值不可信**（实测 dx=r 相对 dx=r/8 档：熔宽偏低 46.7%、熔体积偏低 52.8%）。定量熔池形态请取 dx≤r/2。'
+
+=== C6：与旧件（`am_t2_a0_conv_rerun.log`，其 TREE 自报 head=af9fc89 dirty=30）逐档对照 ===
+  旧件解析出 8/8 行（必须＝8，否则下面的对照表是空转）
+  [integrated dx= 100.0] ns    66 ->    65   peak   2125.6 ->   2378.3K (+11.89%)   Ly  0.300 ->  0.300mm ( +0.00%)   vol   0.0320 ->   0.0340mm³ (  +6.25%)   nml     32 ->     34
+  [integrated dx=  50.0] ns   262 ->   258   peak   2349.1 ->   2609.7K (+11.09%)   Ly  0.500 ->  0.450mm (-10.00%)   vol   0.0519 ->   0.0685mm³ ( +31.98%)   nml    415 ->    548
+  [integrated dx=  25.0] ns  1045 ->  1031   peak   2479.0 ->   2695.0K ( +8.71%)   Ly  0.550 ->  0.475mm (-13.64%)   vol   0.0583 ->   0.0819mm³ ( +40.44%)   nml   3732 ->   5240
+  [integrated dx=  12.5] ns  4180 ->  4121   peak   2518.0 ->   2747.8K ( +9.13%)   Ly  0.563 ->  0.500mm (-11.19%)   vol   0.0678 ->   0.0872mm³ ( +28.57%)   nml  34703 ->  44630
+  [point      dx= 100.0] ns    66 ->    65   peak   2087.6 ->   2836.9K (+35.89%)   Ly  0.300 ->  0.400mm (+33.33%)   vol   0.0330 ->   0.1110mm³ (+236.36%)   nml     33 ->    111
+  [point      dx=  50.0] ns   262 ->   258   peak   2123.1 ->   2899.7K (+36.58%)   Ly  0.400 ->  0.450mm (+12.50%)   vol   0.0479 ->   0.1425mm³ (+197.49%)   nml    383 ->   1140
+  [point      dx=  25.0] ns  1045 ->  1031   peak   2170.5 ->   2926.1K (+34.81%)   Ly  0.450 ->  0.500mm (+11.11%)   vol   0.0618 ->   0.1569mm³ (+153.89%)   nml   3953 ->  10042
+  [point      dx=  12.5] ns  4180 ->  4121   peak   2214.5 ->   2957.5K (+33.55%)   Ly  0.463 ->  0.500mm ( +7.99%)   vol   0.0765 ->   0.1606mm³ (+110.00%)   nml  39182 ->  82251
+  判读：旧/新**完全相同**的 (ns, peak) 项数＝0/16（若＝全部 ⇒ 本轮读数与旧件无差 ⇒ C2 的『过期』结论不成立；实测应≠全部）
+  归因边界：旧件自报 dirty=30 ⇒ 那次读数**不对应任何提交**，本轮差值只作『基线不可复现』记录，不指认由 #19/#22/#23/#24 中哪一笔造成（候选集＝af9fc89..HEAD 触及 src 的提交，见开发日志）。
+
+R35_VERDICT = 有文案已过期（见上面『已过期』行）；尺子敏感=True；整体 = 需换数/需复核尺子
+rc=0
+
+======== stderr ========
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.

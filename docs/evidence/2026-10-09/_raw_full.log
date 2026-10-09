@@ -1,0 +1,180 @@
+CMD: CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python -m pytest -q
+TREE: head=c34a2e1 dirty=1
+DATE_START: 2026-10-09 09:57:18 +0800
+SRCFINGER_START: 4a5a257efaf3251badbdfbfb10ecec4b
+............F....................................................F...... [ 27%]
+........................................................................ [ 55%]
+......................................s................................. [ 82%]
+.............................................                            [100%]
+=================================== FAILURES ===================================
+________________________ test_convection_removes_energy ________________________
+
+    def test_convection_removes_energy():
+        """强对流降低末态温度；只有极强对流才降低**峰值**。
+    
+        A0 前的旧断言「h=200 W/m²K 使峰值下降」是**假**的：对流是表面通量，必须
+        除以 dx 摊成体积项才与 ∂H/∂t 同量纲（旧代码少除 dx，散热被低估 1/dx≈12500
+        倍）；修正后实测（0.4mm 试片 dx=80µm，5 面对流，T_inf=293K）——**③ 代（#23 之后）现行值**：
+    
+            h          末态实体均值      Δmean        峰值 K         Δpeak
+            0 (基线)   2720.80 K         —            2937.061       —
+            200        2713.53 K         −7.27 K      2938.287       +0.042%
+            2000       2649.43 K         −71.38 K     2944.735       +0.261%
+            20000      1964.87 K         −755.93 K    2908.771       −0.963%
+    
+            取证＝docs/evidence/2026-10-08/am_t28_boundary_probe.log（CPU 钉住；判据 P1-P5 跑前登记）。
+            其 P1 用 `repr()` 逐位对上 pytest 自己打印的锚点 2937.060997302282 ⇒ 量的就是这条测试的夹具；
+            Δmean/Δpeak 与 docs/evidence/2026-10-07/am_t27_convection_peak_probe.log 的 new 口径列 3/3 命中。
+            上一条（**② 代**＝#23 之前）＝均值 2291→2283→2210→1718 K、Δ −8.1/−81.6/−573.7 K、
+            Δpeak +0.03%/+0.10%/−5.39%（该 old 口径列被上面那份探针逐位复现过，±0.2K/±0.05pt）。
+            ⚠ 两代**不可混用**，而且两个量的换数幅度**不同量级**：末态均值整体抬高约 19%
+            （2291 → 2720.80 K；#23 把半填充单元的热容由整格改成按 fv 计，而均值＝总能量/总热容的直接读数），
+            峰值几乎不动（2943.778 → 2937.061 K，−0.23%；被蒸发封顶钉住 ⇒ 对热容口径不敏感）。
+    
+        物理：峰值由「脉冲剂量 + 蒸发封顶」在光斑中心局部决定，表面对流在正常工艺
+        量级（h≲10³）动不了它；但它扫完之后整体带走能量，末态温度显著下降。所以
+        守护点应是「能量被移走」，而不是「峰值被压」。
+        ⚠ 已知红灯＝任务 **#27**：③ 代下 h=20000 的压峰只剩 **−0.963%**（② 代 −5.39%），于是本测试
+        最后那条「压峰 ≥2%」的守护为红，pytest 实际打印＝
+        `AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282`（两个数都是 ③ 代现行值，
+        与上表末行的 2908.771 / 基线 2937.061 同源）。归因（同探针 U1/U2/U3，跑前登记）＝**蒸发封顶在 fv=0.5 的
+        刀锋面刚度翻倍**（`fv·S → fv·S/cap_w = S`：能量不变、钳位变硬），**不是**散热被吞——关掉封顶后
+        ③ 的 h 响应 −35.386% **强于** ② 的 −16.907%，且 Δmean 不小于一。`c_evap = 3.0e11` 是按**旧口径**
+        标定的 ⇒ 只能以**外部靶**重标定（A3/NIST 基准、登记的 ~3000K 目标），**禁止**以"让本测试转绿"为靶；
+        本测试的判据与守护在 #27 落地前**一字不动**（含下面 ①/② 两处 0.02 的字面阈值）。
+        """
+        part = _box3d(size_mm=0.4, spacing_um=80.0)
+        plan = _plan()
+        # 口径＝#19 solid_mask（实测本夹具 Δn=0 ⇒ 可证无操作，am_t26_bare_sdf_census.log S1）。
+        # ⚠ `solid_mask` 返回 ∈{0,1} 的**同 dtype 数值**数组（contracts.py: `.astype(a.dtype)`），
+        # 不是 bool ⇒ 用作布尔索引前必须 `> 0.5`。
+        solid = np.asarray(solid_mask(np.asarray(part.sdf)) > 0.5)
+        res0 = solve_enthalpy_thermal(geometry=part, process=plan,
+                                      params={"material": "316L"})
+        mean0 = float(np.mean(np.asarray(res0.final_temperature)[solid]))
+        peak0 = float(np.max(np.asarray(res0.peak_temperature)))
+    
+        means, peaks = [], []
+        for h in (200.0, 2000.0, 20000.0):
+            strong = BoundaryCollection(
+                bcs=tuple(BoundaryCondition("convection", f, h, 293.0)
+                          for f in ("+Z", "+X", "-X", "+Y", "-Y")), ic=None)
+            res = solve_enthalpy_thermal(
+                geometry=part, process=plan,
+                params={"boundary_conditions": strong, "material": "316L"})
+            Tf = np.asarray(res.final_temperature)
+            assert np.isfinite(Tf).all() and np.isfinite(res.peak_temperature).all()
+            means.append(float(np.mean(Tf[solid])))
+            peaks.append(float(np.max(np.asarray(res.peak_temperature))))
+    
+        # ① 单调散热：h 越大末态越冷，且跨度可测（**③ 代**实测 2720.80→2713.53→2649.43→1964.87 K，
+        #   取证 am_t28_boundary_probe.log；② 代为 2291→2283→2210→1718 K，两代不可混用）
+        assert means == sorted(means, reverse=True), f"末态均值未随 h 单调下降：{means}"
+        assert mean0 - means[1] > 30.0, f"h=2000 仅降 {mean0 - means[1]:.1f}K（散热未生效？）"
+        assert mean0 - means[2] > 300.0, f"h=20000 仅降 {mean0 - means[2]:.1f}K"
+        # ② 常规工艺量级对流动不了峰值（蒸发封顶/剂量决定），极强对流才能压峰
+        assert abs(peaks[1] - peak0) / peak0 < 0.02, "h=2000 不应显著改变峰值"
+>       assert peaks[2] < peak0 - 0.02 * peak0, f"h=20000 应压低峰值：{peaks[2]} vs {peak0}"
+E       AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282
+E       assert 2908.771450618092 < (2937.060997302282 - (0.02 * 2937.060997302282))
+
+tests/test_boundary.py:203: AssertionError
+_____________ test_meltpool_converges_across_beam_resolving_grids ______________
+
+    def test_meltpool_converges_across_beam_resolving_grids():
+        """A0 的核心可验证承诺：**能分辨光斑的两档网格**给出同一熔池。
+    
+        判据（5%）**不放宽**；本测试自 #19 起为**已知红灯**，下面是它红的确切数字与归属，
+        不是解释性辩护。取数条件：试片 1.2×0.6×0.4mm、600W/0.8m·s⁻¹/r=100µm/η=0.45、
+        integrated 源、步数由 CFL 自动推导、CPU 钉住（CUDA_VISIBLE_DEVICES=""）。
+        现行证据（**③ 代**＝#23 之后）：docs/evidence/2026-10-07/am_t27_fullsuite.log（2026-10-08 00:54
+        全量，本测试即其中一条红灯，打印值见 (1)）、am_t23_capacity_closure_probe.log（P3 换数表）、
+        docs/evidence/2026-10-08/am_t25_round3_observable.log（O1 矩阵）、am_t25r4_halfcell_noop.log／
+        am_t25r4b_fielddiff.log（对齐列的机制核对）。
+        档案证据（**② 代**＝#19＋#26 之后、#23 之前，HEAD af9fc89＋#19 工作树）：
+        am_t2_a0_test_mirror.log、am_t2_a0_observable.log、am_t2_a0_alignment.log、am_t2_domain_mass.log。
+        ⚠ 三代数字（① 代 #19 前／② 代／③ 代 #23 后）**不得混用**，代际声明见 docs/开发日志.md §25.2。
+    
+        (1) 本测试自己的口径（δ=0：试片表面恰落在节点上，即 `_coupon` 的刀锋对齐）——**③ 代现行值**
+              dx=50µm   峰值 2461.27K  熔体积 0.06025mm³(482 体素)
+              dx=25µm   峰值 2563.01K  熔体积 0.06947mm³(4446 体素)
+              dx=12.5µm 峰值 2565.08K  熔体积 0.07418mm³（该档体素计数未打印 ⇒ 不给计数）
+            ⇒ 断言 1 峰值差 **3.969% < 5% ⇒ 已绿**；断言 2 熔体积差 **13.270% ⇒ 本测试现在红在这一条**
+              （全量实测打印 `0.060249999999999984 vs 0.06946874999999998`）。加密不变冷（断言 3）仍通过。
+              体素计数 **482/4446 是被打印过的实测值**（`am_t23_a0_mirror.log` L8-9 的 `[fv]` 两行：
+              peak 2461.2693/2563.0062 K、熔体素 482/4446、Vn 0.06025/0.06947mm³；那轮是 #23 **落地前**在
+              head `c41d3b0` 上用 monkeypatch 把 fv 口径放进**本测试自己的**口径打分、设备 cuda:0，
+              落地后由 `am_t23_capacity_closure_probe.log` P3 与 `am_t25_round3_observable.log` R1 逐位复现）。
+              交叉核对（除法，不是新测量）：`482·(50·1e-6)³·1e9` 与 `4446·(25·1e-6)³·1e9` 与全量记分里
+              pytest 打印的两个串**逐位相等**，而 n 是 int ⇒ 计数只能取这两个值。
+            上一条（**② 代**，同一口径）＝峰值 2349.07/2478.97/2517.98K、熔体积 0.05187(415)/
+              0.05831(3732)/0.06778mm³、断言 1 差 5.24%（红）、断言 2 差 11.04%（红）⇒ 两条同红。
+            更早（**① 代**，2026-10-06 登记）＝峰值 2670.3/2617.8K、差 1.96%；体积 0.0687/0.0715mm³、差 3.92%
+              是**旧严格掩膜 `sdf<0`** 下的数，已不可复现；旧绿里含一份口径补偿误差，见 (3)。
+    
+        (2) 换指标被跑前登记的 O1 判据否掉（`am_t2_a0_observable.py:90-125`：观测量入选
+            ⇔ 对**每一种 δ** 且**每一对相邻档**都 <5%，不许挑对齐、不许挑档对）——**③ 代矩阵**
+            （`am_t25_round3_observable.log`，探针文件与 ② 代那份**一字未改** ⇒ 只差代码代际）：
+                 观测量     50↔25(δ∈{0,.25})  25↔12.5(δ∈{0,.25})  50↔25(δ=0.5)
+                 峰值 T            4.21%              0.08%            5.15%
+                 Vm(fv 加权)      14.18%              7.50%            1.13%
+                 Vn(体素计数)     13.27%              6.36%            1.13%
+                 ΔH(焓升)          2.38%              0.77%            4.66%
+                 （② 代原表：5.24/1.55/5.15、10.70/13.49/1.13、11.04/13.97/1.13、9.74/5.32/4.66）
+            ⇒ 脚本判据下**只有 ΔH 入选**，而本测试断的是峰值与 Vn ⇒ **不换指标，A0 保持红灯**。
+              照实读这张表：能量侧已闭合（ΔH 全部 ≤4.66%）、峰值在**有信息的对齐**上达标（4.21%）、
+              剩下的 13–14% 在**形态／计数口径**半边（任务 #25）。δ=0.5 那一列经 #25 第 4/4b 轮实测
+              ＝对 #23 的改动是**场级机器精度恒等**（全场最大相对差 ≤5.4e-15，≈1.4e-11 K），
+              所以它既不能当证据、也**不许从判据里删掉**（删＝放宽）。
+    
+        (3) 曾登记的一阶成因＝**已由 #23 除根**（2026-10-07 落地 `d7404f4`）。原诊断：#19 把实体掩膜改成
+            容差 `sdf<1e-12` 后，δ=0 的刀锋面被**整层计入**计算域，而 `thermal_enthalpy` 给部分填充体素配的
+            是**满体素热容**（右端项 `fv·dH/dt = lap + fv·Q − fv·cool` 里 `lap` 未除回 fv），于是
+            域热容 / 设计体积 = 1.2695×(50µm) / 1.1298×(25µm) / 1.0637×(12.5µm)，而剂量 Σfv·dx³ 只有
+            1.0191 / 1.0048 / 1.0012×——粗网格凭空多出 24.6%/12.4%/6.2% 的热容（O(dx)、随加密单调消失；
+            旧 `sdf<0` 是另一侧的 0.8785/0.9384/0.9690×，两错反向 ⇒ 旧档对差被补偿成"看似收敛"）。
+            现口径：`H` ＝单位**材料**体积焓，右端项整条除以 `cap_w = max(fv, CUT_CAPACITY_FLOOR=0.5)`；
+            注入/移走的能量逐项不变，`n_steps`/CFL 不变（0.35/0.5＝0.7 ≤ SSP-RK2 上限 1）。
+            ⚠ 照实记边界：#23 之后 Vn 的 50↔25 档对差反而从 11.040% **变大到 13.270%**（本测试的失败点
+            从 assert1 移到 assert2）⇒ 形态半边不在 #23 里，由 **#25**（液相线等值面位置＋体素计数）承载，
+            **不得**宣称本测试已接近转绿。
+    
+        (4) 对齐抖动量级（同档、三种 δ 的峰值极差）：**② 代** 3.46%(50µm)/3.36%(25µm)
+            （`am_t2_a0_alignment.log`），与当时的档对差同量级 ⇒ 噪声地板不足以支撑"1.55% vs 5.24%"的读法。
+            **③ 代**由 (2) 引用的打印值算出（同一轮、非新测量）＝1.14%(50µm)/0.40%(25µm)，
+            已低于 4.21% 的档对差 ⇒ 峰值一侧现在可读；形态一侧（Vn/Vm）仍被 13–14% 的档对差压着。
+    
+        dx=100µm(=r) 档不在本判据内：求解器对它发「熔池形态不可信」警告（真实空间欠分辨）。
+        """
+        ext = (1.2e-3, 0.6e-3, 0.4e-3)
+        pl = _coupon_plan(ext)
+        out = []
+        for dx_um in (50., 25.):
+            dx = dx_um * 1e-6
+            g = _coupon(dx, ext)
+            th = solve_enthalpy_thermal(geometry=g, process=pl,
+                                        params={"material": "316L"})
+            # 口径：#19 后统一用 solid_mask（**② 代**实测对本观测量：50µm 档 0 个体素、25µm 档 28 个体素
+            # =+0.76% 的差异；全域异或 901/3529 体素为阳性对照，见 am_t2_a0_test_mirror.log。
+            # ③ 代（#23 之后）未复测这条对比——它量的是掩膜口径之差、与热容口径无关，故未列入 #28 换数表）
+            melted = (th.peak_temperature > get_material("316L").T_liquidus) & (solid_mask(g.sdf) > 0.5)
+            n = int(jnp.sum(melted))
+            assert n > 0, f"dx={dx_um}µm 应发生熔化（历史缺陷：加密反而不熔）"
+            out.append((float(jnp.max(th.peak_temperature)), n * dx ** 3 * 1e9))
+        pk_c, vol_c = out[0]
+        pk_f, vol_f = out[1]
+        assert abs(pk_c - pk_f) / max(pk_c, pk_f) < 0.05, f"峰值不收敛：{pk_c} vs {pk_f}"
+>       assert abs(vol_c - vol_f) / max(vol_c, vol_f) < 0.05, f"熔体积不收敛：{vol_c} vs {vol_f}"
+E       AssertionError: 熔体积不收敛：0.060249999999999984 vs 0.06946874999999998
+E       assert (0.009218749999999998 / 0.06946874999999998) < 0.05
+E        +  where 0.009218749999999998 = abs((0.060249999999999984 - 0.06946874999999998))
+E        +  and   0.06946874999999998 = max(0.060249999999999984, 0.06946874999999998)
+
+tests/test_enthalpy_thermal.py:391: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_boundary.py::test_convection_removes_energy - AssertionErro...
+FAILED tests/test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids
+2 failed, 258 passed, 3 skipped in 3778.83s (1:02:58)
+SRCFINGER_END: 4a5a257efaf3251badbdfbfb10ecec4b
+DATE_END: 2026-10-09 11:00:37 +0800
+rc=1

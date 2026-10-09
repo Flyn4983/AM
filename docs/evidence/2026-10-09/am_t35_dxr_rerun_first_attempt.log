@@ -1,0 +1,74 @@
+#35 探针**首版**的失败件（保留，不覆盖正式件）：正式件＝`am_t35_dxr_rerun.log`。
+
+缺陷＝C5 段为了省时间写 `n_steps=2` ⇒ 被求解器自身的 SSP-RK2 稳定上限守卫拒绝（那条守卫是对的，
+错的是我图省事给的小步数）。现形方式极具迷惑性：**stdout 里 C5 只剩段落标题**，正文空转，而真正的
+报错全在 stderr；进程 rc≠0。⇒ 若只看 stdout 会误判「探针跑到了 C5」。
+
+本件的 rc 与判据来源（照实）：
+  · stdout 末行＝「=== C5：运行时警告文本（真触发一次 dx>r：r=60µm、dx=100µm、ns=2） ===」，
+    **没有**正式的 `R35_VERDICT` 行 ⇒ 探针未跑到末尾；
+  · stderr 末行＝ `ValueError: params['n_steps']=2 不足：… 至少需要 n_steps>=34`（原文见下）；
+  · 二者共同确定 rc＝1（后台作业退出码同为 1）。
+修法＝C5 改 `n_steps=40`（≥34 的稳定下限、<95 的精度目标，于是**同一次调用还会额外捕到一条
+「低于 CFL 精度目标」警告**——正式件里那条正是它，属预期而非新故障）。
+
+探针 .py 在两次运行之间只改了 C5 的那一处参数与 C6 段落，正式件的 md5 记于其标题块。
+
+======================== 以下为首版运行原样输出（未编辑） ========================
+
+======== stdout ========
+CMD: CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src /tmp/amvenv/bin/python /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-09/am_t35_dxr_rerun.py
+TREE: head=c34a2e1 dirty=0
+DATE: 2026-10-09 09:23:17 +0800
+BACKEND: cpu devices=['cpu']
+SHIPPED（从源码现取，非手抄）: {'int_peak': 15.6, 'int_width': 46.7, 'int_vol': 52.8, 'pt_width': 35.1, 'pt_vol': 56.9, 'warn_width': 46.7, 'warn_vol': 52.8}
+文本读取的正对照：现取注释值=46.7  同文件历史值(⚠ 旧表)=45.0 ⇒ 两者不同 ⇒ 读取器分得出现值与史值
+运行时文本与注释文本的对比数是否同源：warn_width=46.7 vs int_width=46.7 warn_vol=52.8 vs int_vol=52.8
+[integrated] dx= 100.0 ns=   65   3.43s peak=  2378.3 nml=    34 xor=    0 Lx= 1.000 Ly= 0.300 vol=  0.0340mm³ vol_fv=  0.0340mm³
+[integrated] dx=  50.0 ns=  258   2.91s peak=  2609.7 nml=   548 xor=    5 Lx= 1.200 Ly= 0.450 vol=  0.0685mm³ vol_fv=  0.0682mm³
+[integrated] dx=  25.0 ns= 1031   3.18s peak=  2695.0 nml=  5240 xor=   65 Lx= 1.200 Ly= 0.475 vol=  0.0819mm³ vol_fv=  0.0814mm³
+[integrated] dx=  12.5 ns= 4121   3.69s peak=  2747.8 nml= 44630 xor=  564 Lx= 1.200 Ly= 0.500 vol=  0.0872mm³ vol_fv=  0.0866mm³
+[point     ] dx= 100.0 ns=   65   0.71s peak=  2836.9 nml=   111 xor=    3 Lx= 1.200 Ly= 0.400 vol=  0.1110mm³ vol_fv=  0.1095mm³
+[point     ] dx=  50.0 ns=  258   0.55s peak=  2899.7 nml=  1140 xor=   69 Lx= 1.200 Ly= 0.450 vol=  0.1425mm³ vol_fv=  0.1382mm³
+[point     ] dx=  25.0 ns= 1031   0.58s peak=  2926.1 nml= 10042 xor=  715 Lx= 1.200 Ly= 0.500 vol=  0.1569mm³ vol_fv=  0.1513mm³
+[point     ] dx=  12.5 ns= 4121   0.72s peak=  2957.5 nml= 82251 xor= 3433 Lx= 1.200 Ly= 0.500 vol=  0.1606mm³ vol_fv=  0.1573mm³
+
+=== C2/C4：dx=r(100µm) 相对 dx=r/8(12.5µm) 的偏低比 vs 文案现值 ===
+  [integrated] peak 偏低  13.45%  Ly 偏低  40.00%  计数 vol 偏低  60.99%  fv 加权 vol 偏低  60.75%
+    绝对值 peak 2378.3 -> 2747.8K   Ly 0.300 -> 0.500mm   vol 0.0340 -> 0.0872mm³   vol_fv 0.0340 -> 0.0866mm³
+    int_peak   文案= 15.60  实测= 13.45  round(实测,1)==文案 -> 已过期
+    int_width  文案= 46.70  实测= 40.00  round(实测,1)==文案 -> 已过期
+    int_vol    文案= 52.80  实测= 60.99  round(实测,1)==文案 -> 已过期
+  [point     ] peak 偏低   4.08%  Ly 偏低  20.00%  计数 vol 偏低  30.90%  fv 加权 vol 偏低  30.39%
+    绝对值 peak 2836.9 -> 2957.5K   Ly 0.400 -> 0.500mm   vol 0.1110 -> 0.1606mm³   vol_fv 0.1095 -> 0.1573mm³
+    pt_width   文案= 35.10  实测= 20.00  round(实测,1)==文案 -> 已过期
+    pt_vol     文案= 56.90  实测= 30.90  round(实测,1)==文案 -> 已过期
+
+=== C3：正对照（光斑半径 ×1.05，同 ns 再跑两档 ⇒ 三个读数必须全变） ===
+  dx= 100.0 (ns=65)  Δpeak=  -393.0K  ΔLy=-0.200mm  Δvol=-0.0230mm³
+  dx=  12.5 (ns=4121)  Δpeak=  -510.7K  ΔLy=-0.088mm  Δvol=-0.0541mm³
+  判读：非零变化 6/6（必须＝6，否则 C2 的偏低比读数对本探针不敏感 ⇒ 结论作废）
+
+=== C5：运行时警告文本（真触发一次 dx>r：r=60µm、dx=100µm、ns=2） ===
+
+======== stderr ========
+Jax plugin configuration error: Exception when calling jax_plugins.xla_cuda13.initialize()
+Traceback (most recent call last):
+  File "/home/shy/.local/lib/python3.12/site-packages/jax/_src/xla_bridge.py", line 495, in discover_pjrt_plugins
+    plugin_module.initialize()
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 370, in initialize
+    _check_cuda_versions(raise_on_first_error = True)
+  File "/home/shy/.local/lib/python3.12/site-packages/jax_plugins/xla_cuda13/__init__.py", line 274, in _check_cuda_versions
+    for d in range(cuda_versions.cuda_device_count())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: jaxlib/cuda/versions_helpers.cc:135: operation cuInit(0) failed: CUDA_ERROR_NO_DEVICE
+An NVIDIA GPU may be present on this machine, but a CUDA-enabled jaxlib is not installed. Falling back to cpu.
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-09/am_t35_dxr_rerun.py", line 188, in <module>
+    run("integrated", 100e-6, r=60e-6, n_steps=2)
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-09/am_t35_dxr_rerun.py", line 126, in run
+    th = solve_enthalpy_thermal(geometry=g, process=p,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/src/amforge/thermal_enthalpy.py", line 747, in solve_enthalpy_thermal
+    raise ValueError(
+ValueError: params['n_steps']=2 不足：dt=曝光/n_steps 超过 SSP-RK2 稳定上限 2.871e-04s（dx=100.0µm, cfl=1）。覆盖 9.521e-03s 的物理曝光至少需要 n_steps>=34（精度目标 n_steps>=95，即 cfl=0.35）。步数不足时扩散项发散，蒸发封顶会把发散伪装成可行结果。

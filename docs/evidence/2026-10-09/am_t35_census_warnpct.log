@@ -1,0 +1,36 @@
+===== #35 出域普查仪器：src 里"用户可见运行时文本嵌死百分比"有多少处 =====
+CMD（原样）: CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-09/am_t35_census_warnpct.py c34a2e1
+ARCHIVE: 2026-10-09 10:41:49 +0800   仪器 md5=eb9db6e72b7f11f12bbbd303f36c03a7   mtime=（mtime 早于归档时刻 ⇒ 跑后未改）
+TREE: head=c34a2e1 dirty=1（口径 `-- src tests`）
+
+为什么要有这件（自我纠正）：档案腿初稿里我写了"全树 warn/raise 共 **122** 处、其中嵌 `数字%` 的 1 处"，
+**这两个数当时都没有任何命令支撑**（122 是我手打的，"1 处"是把"5 个过期数字"错记成"1 个位点"）。
+实测（本件正文）＝位点 **143**、工作区嵌死数 **0**、换数前（ref=c34a2e1）的 `thermal_enthalpy.py`
+一个文件里 **2** 处（都在 :803 那条 warn 串上，"熔宽偏低 46.7%"＋"熔体积偏低 52.8%"）
+⇒ 档案正文只允许写下面这三个数，且正对照非 0 才让"0"成立。
+
+口径（写死在仪器里，可复跑）：
+  1. 位点＝AST 里的 `Call`，函数名为 `warn`／属性 `.warn`／以 `Error` 结尾的异常类 ⇒ 只数**会走到用户眼前的**；
+  2. 死数＝实参内 **字符串常量**（含 f-string 的静态片段）里匹配 `\d+(\.\d+)?\s*%` 的个数
+     ⇒ `f"{x:.1%}"` 这类**插值出来的活数**不计（那正是约定允许的写法）；
+  3. 正对照＝`git show {REF}:…` 取到临时目录后跑**同一个函数**；REF 由 argv 传入而不是记死 HEAD
+     （本片入库后 HEAD 就是换数后的树，记死 HEAD 会让正对照同义反复）。
+  ⚠ 正文里正对照宿主的相对路径显示成 `../../tmp/…` 是 `os.path.relpath(临时件, REPO)` 的副作用，
+     所指为临时副本 `/tmp/am_t35_census_c34a2e1/amforge/thermal_enthalpy.py:803`，不是仓库里的文件。
+  ⚠ 仪器**打印文案**里把正对照标成"HEAD 版"，而实际取的是 argv 传入的 `c34a2e1`——本次运行二者同值
+     （`TREE: head=c34a2e1`），故读数成立；但标签是错的（入库后 HEAD≠c34a2e1 时会误导）。
+     ⇒ 记为仪器的一处待改文案缺陷，不在本轮改（改 .py 会让其 md5 与本体件不符，得不偿失）。
+
+==== 正文（原样）====
+BODY_OFFSET=00000000000000002328
+CMD: /tmp/amvenv/bin/python /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-09/am_t35_census_warnpct.py   # 工作区（换数后）
+TREE: head=c34a2e1 dirty=1
+  扫描 src 的 .py 文件数＝115
+  用户可见调用位点（warn/warn 方法/raise *Error）＝143
+  其中「实参字面量内嵌 数字%」＝0 处，宿主 0 行
+
+  正对照的 ref＝c34a2e1（**不要用 HEAD 记死**：本片入库后 HEAD 就变成换数后的树，
+        届时必须显式传 c34a2e1，否则正对照会同义反复地读到换数后的文本）
+  正对照取材＝git show HEAD:src/amforge/thermal_enthalpy.py（927 行 → /tmp/am_t35_census_c34a2e1/amforge/thermal_enthalpy.py）
+  【正对照】HEAD 版：位点＝18，字面量内嵌 数字%＝2 处，宿主＝[('../../../../../tmp/am_t35_census_c34a2e1/amforge/thermal_enthalpy.py', 803, 2)]
+  判读：工作区＝0／HEAD＝2 ⇒ 换数确实把用户可见的死数清零，且仪器有分辨力
