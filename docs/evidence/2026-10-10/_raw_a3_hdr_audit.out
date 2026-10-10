@@ -1,0 +1,36 @@
+面表头数值溯源审计｜仓库＝/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder｜HEAD＝0dfebc2｜审计时刻＝2026-10-10 12:13:39 
+钉住：CUDA_VISIBLE_DEVICES=''（空串＝CPU）｜本件不 import jax｜显卡（C 池里的 6000 一类数的出处）＝'NVIDIA RTX A6000, 8.6'
+出处口径：C 命令读数／D 器件常量／B 本面正文／X 跨面正文（引用句须自带出处词）／S 结构式；grep 计数一律按 **命中行数**（＝`grep -c` 语义），不按出现次数
+
+── 主面（am_a3_preflight_hdr.txt，回执 14261 字节；池 C=34 D=86 B=122 X=49 HEX=146｜D 池来源=am_a3_driver.py、am_a3_preflight_controls.py、am_a3_run.sh）──
+  溯源普查：表头数字 200 个＝B=158／C=10／D=10／S=18／X=4／无出处 0／跨面无归属 0／无出处十六进制读数 0
+  行首 [PASS] 行数               实测=37  表头=37  OK
+  行首 [FAIL] 行数               实测=0   表头=0   OK
+  不锚标签位的 [FAIL] 行数           实测=0   表头未声称
+  零声称 SOLVE_VERDICT      实测=0 表头=0 OK
+  零声称 READOUT            实测=0 表头=0 OK
+  零声称 width_um           实测=0 表头=0 OK
+  零声称 靶                  实测=0 表头=0 OK
+  原始件 md5/字节 表头=8b272dceabd4/9400 实测=8b272dceabd4/9400 OK
+  cat 表头＋原始件 == 落盘正文（逐字节）OK
+  正文 mtime 表头=11:12:21 实测=11:12:21 OK
+  HEAD 表头=0dfebc2 审计时=0dfebc2 OK
+  dirty 类：表头声称 [15]｜审计时现算 total=27 evidence=22 src+tests=0｜我的 amvenv 进程（按 comm）=0
+  正文运行 mtime=11:12:21｜表头 mtime=12:02:48｜回执 mtime=12:02:56
+
+  本面判读＝PASS（红项合计 0）
+
+── 控件面（am_a3_preflight_controls_hdr.txt，回执 6284 字节；池 C=38 D=86 B=49 X=122 HEX=146｜D 池来源=am_a3_driver.py、am_a3_preflight_controls.py、am_a3_run.sh）──
+  溯源普查：表头数字 121 个＝B=104／C=11／D=5／X=1／无出处 0／跨面无归属 0／无出处十六进制读数 0
+  行首 [PASS] 行数               实测=10  表头=10  OK
+  行首 [FAIL] 行数               实测=2   表头=2   OK
+  不锚标签位的 [FAIL] 行数           实测=4   表头=4   OK
+  cat 表头＋原始件 == 落盘正文（逐字节）OK
+  正文 mtime 表头=11:15:31 实测=11:15:31 OK
+  HEAD 表头=0dfebc2 审计时=0dfebc2 OK
+  dirty 类：表头声称 [15]｜审计时现算 total=27 evidence=22 src+tests=0｜我的 amvenv 进程（按 comm）=0
+  正文运行 mtime=11:15:31｜表头 mtime=11:19:04｜回执 mtime=11:18:13
+
+  本面判读＝PASS（红项合计 0）
+
+AUDIT_VERDICT = ALL HEADER READINGS PROVENANCE-PASS

@@ -1,0 +1,39 @@
+① 本地 HEAD = 0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f
+① ls-remote refs/heads/main = 0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f  -> MATCH
+② truncated=False，tree 条目 736 = blob 668 + tree 68
+② 本地 blob = 668，父提交 = 648
+② 本片文件 25 个 = 新增 20 + 修改 5
+② 闭合式 远端 668 == 父提交 648 + 新增 20 = 668 -> PASS
+③ 路径差集：本地独有 0/668  远端独有 0/668
+④ 全库共有 668 条 ⇒ blob SHA 不符 0/668
+④ 本片 25 文件（A 20／M 5）单列复核 ⇒ 远端缺失 0/25，SHA 不符 0/25，MATCH 25/25
+   MATCH  A  '.workbuddy/memory/2026-10-10.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_t27t33_preflight.log'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify25.err'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify25.out'
+   MATCH  A  'docs/evidence/2026-10-09/am_s25_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify25.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify25.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t27t33_preflight_probe.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t27t33_preflight_probe.py'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s26_msg_controls.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_t27_full.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_msg.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_msg_controls.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_msg_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_facts.txt'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_full_regression.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_full_run.sh'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_hdr_tpl.txt'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_postedit_consumer_census.log'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+   MATCH  M  'src/amforge/thermal_enthalpy.py'
+   MATCH  A  'tests/test_evap_model.py'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/668（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/668，远端独有 0/667
+⑤ 正对照 C（闭合式右边 +1）⇒ 668 == 669 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/25，SHA 不符 0/25（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS

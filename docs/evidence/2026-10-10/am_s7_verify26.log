@@ -1,0 +1,105 @@
+生成时刻: 2026-10-10 10:02:41 +0800
+CMD     : 正文那条运行＝CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_s7_verify26.py
+          （stdout→_raw_verify26.out，stderr→_raw_verify26.err，两条都在本件里被复跑并逐字节比对；
+          这两件在生成本表头**之前**就用 cp -p 逐字节抄进本目录，md5＝1c95e0b7e2bc／d41d8cd98f00，
+          mtime 保留 ⇒ 下面"首次归档运行"那个时刻是原次运行时刻，不是复制时刻）
+          本表头由同解释器跑 am_s26_hdr.py 生成，它内部又用同一环境复跑了上面那条命令一次。
+          入库节奏**由 git 现取**（不是叙述）：上一片（25 号）回执链在 HEAD 清单
+          5/5 件，再上一片（24 号）链在其父提交 5/5 件
+          ＝一片一环的节奏在两片上都成立；本片的链（尺子／回执／两件原始件／本生成器）在 HEAD 清单
+          0/5 件 ⇒ 本件留给分片 27 入库。
+ENV     : CUDA_VISIBLE_DEVICES=（空串＝CPU 钉住；钉住口径**从档案现取**＝开发日志 §26.28 (k)
+          那句「不动 GPU」，不是凭对话记忆转述）；
+          本件**不 import jax**（只跑 git／GitHub API），带空串是习惯性钉住而不是必需，照实说明。
+脚本    : docs/evidence/2026-10-10/am_s7_verify26.py（＝分片 18 那把尺子的**逐字节副本**：与 docs/evidence/2026-10-09/am_s7_verify18.py 现比 md5＝相同，
+          本件 md5 0d20117bb82f；**全树** docs/evidence/*/ 下 glob＋md5 现算＝同一把尺子已有 7 份逐字节副本
+          （含本件），多片共用同一仪器，不是"为这一片重写一把尺子"。口径本轮**改了**：上一片只 glob 自己的
+          日期目录，本片尺子抄在另一个目录 ⇒ 沿用旧口径此处只数出 1 份。这个数**现算**，写死它就随片腐烂）
+TREE    : head=0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f parent=547dbf9b6ef633cf5808ea46d6461a83d415ab9c dirty(src+tests)=0
+SRC指纹 : 2a49fedf28e08e8d5a68ae23124e391d（口径与全量回归件一致 ⇒ 核验时被测树就是本片落地的那棵树）
+GPU     : 本表头生成时现取 nvidia-smi compute 进程 5 个，其中我的解释器（/proc/PID/cmdline 含 /tmp/amvenv）
+          所留 0/5 个（须 0）；口径与全量回归件的归还段相同。
+RUN     : 表头生成时**复跑**核验件：rc=0、stderr 0 字节（0＝没有一条警告被吞），且复跑 stdout 与
+          下面的正文区**逐字节相同**（本件写入前有断言）⇒ 判读行与正文是同一次运行的口径，非两次拼接。
+          首次归档运行 2026-10-10 09:44:16 +0800（其 stderr 留档案 0 字节），复跑于 2026-10-10 10:02:41 +0800。
+判读    : 远端 main == 本地 HEAD；tree 条目 736 = blob 668 + tree 68；
+          闭合式 远端 668 == 父提交 648 + 本片新增(A) 20 ＝ 668 -> PASS；
+          双向路径差集 0/668 与 0/668；全库 blob SHA 不符 0/668；
+          本片单列复核 25/25 MATCH（A 20／M 5 个文件）。
+四个正对照: A 远端一条 sha 首位改 f ⇒ 不符 1/668；B 远端删一条路径 ⇒ 本地独有 1/668、远端独有 0/667；
+          C 闭合式右边 +1 ⇒ 668 == 669 判 FAIL；D 远端删**本片**一条路径 ⇒ 本片缺失 1/25、SHA 不符 0/25。
+          四条读数一律从正文 ⑤ 段正则现取（本表头不许自己造数），逐条都能红、所以不是空转。
+分母口径: 每个 0 都与其分母同印（0/668、0/668、25/25），
+          没有"光秃秃的 0"。
+正文区  : 下面 BODY_OFFSET 之后＝核验件原始 stdout，逐字节未改（含 ①〜⑤ 与 LANDING_VERDICT 行）。
+复核    : 在仓库根跑 cmp -i 8633:0 docs/evidence/2026-10-10/am_s7_verify26.log docs/evidence/2026-10-10/_raw_verify26.out   （rc=0 才算正文区逐字节相同；两侧偏移各 +1 必须变红）
+同片对照: 本片新增 20 件，与 /tmp **同名件现比 md5**（本表头自己数，不抄任何一份档案里的件数）＝
+          相同 2 件／不同 1 件（am_t27_facts.txt）／/tmp 已无同名件 17 件（临时件被清理或当初就没落在 /tmp）。
+          其中逐字节**不同**的是 am_t27_facts.txt：/tmp 那份与档案那份是两个版本（差异由 md5 现比判出，来历不在本表头里编）。⇒ 这条只作辅助溯源，落地证明以正文区为准。
+用途    : S7 分片 26 的落地回执（片号由 HEAD 提交说明现取，并与本件文件名 am_s7_verify26.py
+          互证，两边不符即拒绝归档 ⇒ 机械克隆不再能把上一片的故事安在本片头上）。入库清单由
+          `git show --name-status HEAD` 现取（本表头自己数、自己列名）＝
+          新增 20 件（2026-10-10.md、_raw_t27t33_preflight.log、_raw_verify25.err、_raw_verify25.out、am_s25_hdr.py、am_s7_verify25.log、am_s7_verify25.py、am_t27t33_preflight_probe.log、am_t27t33_preflight_probe.py、_raw_s26_msg_controls.log、_raw_t27_full.log、am_s26_msg.py、am_s26_msg_controls.log、am_s26_msg_controls.py、am_t27_facts.txt、am_t27_full_regression.log、am_t27_full_run.sh、am_t27_hdr_tpl.txt、am_t27_postedit_consumer_census.log、test_evap_model.py）＋修改 5 件（MEMORY.md、开发日志.md、项目开发总览.md、项目评估与下一步计划_2026-10-06.md、thermal_enthalpy.py）；逐条 SHA 复核在正文区 ④ 段。
+          本轮开发日志 §26.28 (h) 引用的回执是**上一片**的 am_s7_verify25.log（25 号）；
+          这条"哪一子条引用了哪份回执"不是手打的：先现取最后一个 `### 26\.\d+` 标题（＝28），
+          再在该节正文里找**唯一**含 am_s7_verify25.log 的子条字母；对本件（am_s7_verify26.log）的日志引用
+          要到下一轮才出现，本表头不预先声称它已被引用。
+教训    : ① 仪器复用＝同一把尺子量多片，比对才有效；② 闭合式的右边含本片新增数，所以它随片而变、不是恒等式：
+          分片 18 的档案印「远端 575 == 父提交 574 + 新增 1 = 575」、本片印「远端 668 == 父提交 648 ＋ 新增 20 ＝ 668」，
+          两条各自被控制 C（右边 +1）证过"能红"；但闭合式只数**个数**，看不见"少一个＋多一个"的形状，
+          所以必须与双向路径差集、全库 SHA 不符两条**同读**，三条一起才构成落地证明；③ 表头不用 f-string
+          承载（§26.27 (q) 的成因），改用 PLACEHOLDER＋replace，写盘后再查残留；④ 本件由上一片的生成器
+          **机械克隆**（sed 只换得出文件名里的片号）而来 ⇒ 凡"来历／片号／节号字母／份数"写死在注文里的
+          都会随片腐烂，diff 不会自动改它。事故标本**从档案里现取**（不是凭记忆转述）：生成器
+          `docs/evidence/2026-10-09/am_s24_hdr.py` 的"教训"行原文印着「S7 分片 24（分片 **22** 的回执＋…）」——同一句里外层片号 24、括号里
+          22，两个数不同 ⇒ 那句故事说的是 22 号那一片，而写它的生成器是 24 号自己的。
+          本片的防法不是手改文字，而是四条**现取＋互证**闸门：(a) 片号从 HEAD 提交说明现取，并与本件文件名
+          互证（两边都＝26）；(b) 日志节号从开发日志现取最后一个 `### 26\.\d+`（＝28），
+          子条字母再由"该节里唯一引用上一片回执的那一条"现取（＝h）——上一片用的是
+          `### 26.27 \(\w\)` 三级标题正则，本轮日志没有三级字母标题，沿用即**空转**；
+          (c) 入库清单从 `git show --name-status HEAD` 现取，并与正文区 ④ 段的 A／M 计数互证（20/5）；
+          (d) 尺子份数与上一片回执**改全树 glob**：旧"本目录"口径在本片只数出 1 份 ⇒ 会把"一把尺子
+          量多片"印成"本片自带一把新尺子"，比对当场失去意义。教训一句话：**数字一律现取，文字也要；不能现取的文字就只能引用一份能被命令查到的档案原文。**
+          ⑤ 本轮新增（已入档 §26.28 (i)）：**占位符只替换纯数值／原子读数**，不许把整串
+          tally（"2 failed, 286 passed, 3 skipped"）塞进需要单值的中文句法位；这类错乱在 cmp 里全绿
+          ⇒ 只有**回读表头**才看得见，本件写盘后一并印出顶格字段行数，人读一遍才算完。
+BODY_OFFSET=8633
+① 本地 HEAD = 0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f
+① ls-remote refs/heads/main = 0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f  -> MATCH
+② truncated=False，tree 条目 736 = blob 668 + tree 68
+② 本地 blob = 668，父提交 = 648
+② 本片文件 25 个 = 新增 20 + 修改 5
+② 闭合式 远端 668 == 父提交 648 + 新增 20 = 668 -> PASS
+③ 路径差集：本地独有 0/668  远端独有 0/668
+④ 全库共有 668 条 ⇒ blob SHA 不符 0/668
+④ 本片 25 文件（A 20／M 5）单列复核 ⇒ 远端缺失 0/25，SHA 不符 0/25，MATCH 25/25
+   MATCH  A  '.workbuddy/memory/2026-10-10.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_t27t33_preflight.log'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify25.err'
+   MATCH  A  'docs/evidence/2026-10-09/_raw_verify25.out'
+   MATCH  A  'docs/evidence/2026-10-09/am_s25_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify25.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_s7_verify25.py'
+   MATCH  A  'docs/evidence/2026-10-09/am_t27t33_preflight_probe.log'
+   MATCH  A  'docs/evidence/2026-10-09/am_t27t33_preflight_probe.py'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s26_msg_controls.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_t27_full.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_msg.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_msg_controls.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_msg_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_facts.txt'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_full_regression.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_full_run.sh'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_hdr_tpl.txt'
+   MATCH  A  'docs/evidence/2026-10-10/am_t27_postedit_consumer_census.log'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+   MATCH  M  'src/amforge/thermal_enthalpy.py'
+   MATCH  A  'tests/test_evap_model.py'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/668（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/668，远端独有 0/667
+⑤ 正对照 C（闭合式右边 +1）⇒ 668 == 669 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/25，SHA 不符 0/25（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS

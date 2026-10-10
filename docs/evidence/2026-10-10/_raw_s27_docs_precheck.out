@@ -1,0 +1,11 @@
+PRECHECK docs/开发日志.md：4266 → 4287 行（＋21），标记 1 次｜更正腿另计 2 处
+PRECHECK docs/项目评估与下一步计划_2026-10-06.md：901 → 914 行（＋13），标记 1 次｜更正腿另计 0 处
+PRECHECK docs/项目开发总览.md：530 → 544 行（＋14），标记 1 次｜更正腿另计 1 处
+PRECHECK .workbuddy/memory/2026-10-10.md：83 → 102 行（＋19），标记 1 次｜更正腿另计 0 处
+PRECHECK .workbuddy/memory/MEMORY.md：458 → 473 行（＋15），标记 1 次｜更正腿另计 0 处
+审计件复跑：AUDIT_VERDICT = ALL HEADER READINGS PROVENANCE-PASS｜主面表头数字 200 个（B=158／C=10／D=10／S=18／X=4）／控件面 121 个｜正对照 10/10 条命中，基线 rc=0
+字节闭合：主面 4861＋9400=14261｜控件面 3411＋2873=6284｜更正锚点 3 处（旧值 词边界 历史面 0／改前 3／诱饵 1／子串 4）
+过期值检测器三面：历史面 0／改前工作树 3／改后全文未自证 0｜标本 5／抹掉真值后红 5｜自纠上一条 23（本轮 +0）
+分片 26：main 0dfebc2｜blob 668 闭合 668==648+20=668｜差集 0/668、0/668｜SHA 不符 0/668｜本片 25/25｜BOFF 8633 cmp 0/1/1｜顶格 16＝FIELDS 16｜尺子 7 份
+树：HEAD 0dfebc2（父 547dbf9）｜dirty total 32／evidence 27／src+tests 0｜SRC 指纹 2a49fedf28e08e8d5a68ae23124e391d＝回执那一条 2a49fedf28e08e8d5a68ae23124e391d｜GPU 4 个、我的 0/4
+（预检模式：加 --write 才落盘。）

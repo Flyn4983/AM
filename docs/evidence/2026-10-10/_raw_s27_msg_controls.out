@@ -1,0 +1,36 @@
+分片 27 信息仪器干跑正对照｜被验仪器＝am_s27_msg.py（md5 bcf7ce823575）｜跑在同一目录、用同一把探测器
+真件基线 8 条全过｜坏件 24 条｜判据＝坏件必拒绝**且命中指定闸门句**、真件必通过
+真暂存集＝新增 35 件／修改 5 件｜§26.29 子条 a-l（12 条）
+  A0-回执闸门 真件 ⇒ 通过：{'remote': '668', 'parent': '648', 'na': '20', 'expect': '668', 'verdict': 'LANDING_VERDICT = ALL CHECKS PASS'
+  A1-回归件解析 真件 ⇒ 通过：{'tally': '2 failed, 286 passed, 3 skipped in 3903.07s', 'nf': 2, 'npass': 286, 'nskip': 3, 'wall': '3903.07s'
+  A2-角色分桶（真暂存集） 真件 ⇒ 通过：{'分片 26 回执链': ['_raw_verify26.err', '_raw_verify26.out', 'am_s26_hdr.py', 'am_s7_verify26.log', 'am_s7_verify2
+  A3-写手两出处互证 真件 ⇒ 通过：[{'rel': 'docs/开发日志.md', 'old': '4266', 'new': '4287', 'delta': 21, 'corr': 2, 'head': 4182, 'since_head': 105
+  A4-cmp 三件套＋表头字段反查 真件 ⇒ 通过：([0, 1, 1], 16, 16)
+  A5-暂存日志节号 真件 ⇒ 通过：('29', ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'], 0, 1)
+  A6-shortstat 单数形状取数 真件 ⇒ 通过：('1', '1', '1')
+  A7-shortstat 与 numstat 闭合（真暂存集） 真件 ⇒ 通过：('40 files changed, 4436 insertions(+), 1 deletion(-)', 40, 4436, 1)
+  C1-闭合式右边 +1 坏件 ⇒ 拒绝（命中「闭合式在信息生成器里不成立」）：AssertionError: 闭合式在信息生成器里不成立（669/648/20/668）⇒ 不许引用
+  C2-路径差集非零 坏件 ⇒ 拒绝（命中「非零差集」）：AssertionError: 回执里有非零差集／SHA 不符
+  C3-单列复核缺一 坏件 ⇒ 拒绝（命中「单列复核不是全绿」）：AssertionError: 单列复核不是全绿：本片单列复核 24/25 MATCH（A 20／M 5 个文件）
+  C4-判读行降级 坏件 ⇒ 拒绝（命中「不是 ALL CHECKS PASS」）：AssertionError: 回执判读行不是 ALL CHECKS PASS：LANDING_VERDICT = PROBLEM（见上面非零项）
+  C5-truncated 翻真 坏件 ⇒ 拒绝（命中「truncated=」）：AssertionError: 回执正文 truncated=True
+  C6-tree 条目少一条 坏件 ⇒ 拒绝（命中「tree 条目 ≠ blob＋tree」）：AssertionError: tree 条目 ≠ blob＋tree
+  C7-正文与表头 blob 数分裂 坏件 ⇒ 拒绝（命中「正文的 blob 数与表头闭合式左值不等」）：AssertionError: 正文的 blob 数与表头闭合式左值不等 ⇒ 两出处不同
+  C8-陌生件落进 0 个桶 坏件 ⇒ 拒绝（命中「落进 0 个桶」）：AssertionError: zctl_unexpected.bin 落进 0 个桶 ⇒ 角色口径不唯一，拒绝生成
+  C9-一件落进两个桶 坏件 ⇒ 拒绝（命中「落进 2 个桶」）：AssertionError: am_s27_docs.py 落进 2 个桶 ⇒ 角色口径不唯一，拒绝生成
+  C10-增量与箭头两侧不等 坏件 ⇒ 拒绝（命中「写手声称＋」）：AssertionError: docs/开发日志.md：写手声称＋22 与 4266→4287 不等
+  C11-新行数被改成不是暂存 blob 坏件 ⇒ 拒绝（命中「≠ 暂存 blob 实得」）：AssertionError: docs/开发日志.md：新行数 4288 ≠ 暂存 blob 实得 4287 ⇒ 两出处不等
+  C12-增量夸大到超过 HEAD 净增 坏件 ⇒ 拒绝（命中「对 HEAD 净增」）：AssertionError: docs/开发日志.md：对 HEAD 净增 105 < 本轮增量 187 ⇒ 分解不成立
+  C13-少报一张面 坏件 ⇒ 拒绝（命中「五张面」）：AssertionError: 写手报告应覆盖五张面，现取 4 行
+  C14-SRCFINGER 缺 END 坏件 ⇒ 拒绝（命中「SRCFINGER 只取到」）：AssertionError: SRCFINGER 只取到 ['START']
+  C15-SRCFINGER 起≠止 坏件 ⇒ 拒绝（命中「起≠止」）：AssertionError: SRCFINGER 起≠止 ⇒「回归期间源码一字未动」不成立
+  C16-FIELDS 取不到 坏件 ⇒ 拒绝（命中「取不到 FIELDS 赋值」）：AssertionError: 在 /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-10/zctl_s27_msg_
+  C17-偏移 +2 的 cmp 坏件 ⇒ 拒绝（命中「须 [0,1,1]」）：AssertionError: cmp 三件套复跑＝[1, 1, 1]（须 [0,1,1]）⇒ 回执正文区不是那次运行的逐字节后缀
+  C18-子条字母断号 坏件 ⇒ 拒绝（命中「不连续」）：AssertionError: §26.29 的子条字母不连续：['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'q', 'j', 'k', 'l']
+  C19-入库句被删 坏件 ⇒ 拒绝（命中「没有引用上一片回执名」）：AssertionError: §26.29 里没有引用上一片回执名 ⇒ 入库句不在了
+  C20-钉住口径原文被删 坏件 ⇒ 拒绝（命中「取不到钉住口径原文」）：AssertionError: §26.29 里取不到钉住口径原文
+  C21-删除数虚高 1 坏件 ⇒ 拒绝（命中「删除数」）：AssertionError: shortstat 删除数 2 ≠ numstat 现算 1 ⇒ 单复数取数漏项／分组没吃到
+  C22-增加数虚高 1 坏件 ⇒ 拒绝（命中「增加数」）：AssertionError: shortstat 增加数 4437 ≠ numstat 现算 4436
+  C23-文件数虚高 1 坏件 ⇒ 拒绝（命中「文件数」）：AssertionError: shortstat 文件数 41 ≠ numstat 现算行数 40
+  C24-deletions 子句被摘掉 坏件 ⇒ 拒绝（命中「删除数」）：AssertionError: shortstat 删除数 0 ≠ numstat 现算 1 ⇒ 单复数取数漏项／分组没吃到
+CONTROL_VERDICT = ALL DRY-RUN GATES CAN GO RED

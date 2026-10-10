@@ -1,0 +1,32 @@
+生成时刻: 2026-10-10 10:03:33 +0800
+CMD     : CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_s26_hdr_controls.py
+          （stdout→/tmp/_raw_s26_hdr_controls.out，stderr→/tmp/_raw_s26_hdr_controls.err；下面正文区＝该 stdout 的
+          **cp -p 逐字节副本** docs/evidence/2026-10-10/_raw_s26_hdr_controls.out，md5＝6f504a02da92／d41d8cd98f00，
+          stderr 留档 0 字节＝没有一条警告被吞；mtime 保留 ⇒ "那次运行"的时刻是原次，不是复制次）
+          表头由同解释器的一段一次性 heredoc 生成（不是可复跑的生成器件；正文区与表头的分界由下面"复核"证明）。
+ENV     : CUDA_VISIBLE_DEVICES=（空串＝CPU 钉住；口径出处＝开发日志 §26.28 (k) 那句「不动 GPU」）；
+          本件不 import jax（只跑 subprocess 起同解释器＋读文件），带空串是习惯性钉住。
+被测    : docs/evidence/2026-10-10/am_s26_hdr.py（表头生成器，md5 前 12=a531709881da）
+          ＋扰动副本 zctl_s26_hdr_*.py（跑在**同一目录**：生成器用自身位置反推仓库根，副本若在 /tmp
+          则 rc≠0 的原因是"git 在 / 上跑"＝环境错而非闸门错，这条本轮实测到）；跑完即删，本目录现存副本 0 件（须 0）。
+判读    : 基线（未扰动副本）＝1 条且 rc=0（⇒ 所有红的对照面成立）；扰动 8 条，
+          每条判据＝rc≠0 **且** stderr 含指定闸门句（只看 rc 会把环境错当成闸门红）；
+          命中 8/8；正文判读行＝ALL CONTROLS CAN GO RED。
+TREE    : head=0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f dirty(src+tests)=0
+复核    : 在仓库根跑 cmp -i 2339:0 docs/evidence/2026-10-10/am_s26_hdr_controls.log docs/evidence/2026-10-10/_raw_s26_hdr_controls.out
+用途    : 分片 26 回执（am_s7_verify26.log）的**表头仪器正对照**档案：证明本回执表头那四条新闸门
+          （回执链计数、链口径的 int/str 归一、尺子全树 glob、子条引用唯一性）都能红，
+          也记录两处仪器自身缺陷（副本落错目录⇒八条假红；歧义扰动猜子串「回执」⇒实测只命中 1 条＝空转，
+          改空模式）。与本片的落地证明同批入库（留给分片 27）。
+BODY_OFFSET=2339
+基线（未扰动副本）rc=0 且进预检分支＝True（所有红的对照面）
+扰动条数＝8｜每条判据＝rc≠0 且 stderr 含指定闸门句
+  C1 回执链少一件（把生成器从链口径里删掉）｜rc=1｜期望句「上一片回执链在 HEAD 里只 4/5」命中
+  C2 链计数口径退回 int/str 混比（归一化失效）｜rc=1｜期望句「上一片回执链在 HEAD 里只 0/5」命中
+  C3 尺子 glob 指到不存在的目录（本件没被自己数到）｜rc=1｜期望句「本件的尺子副本没被自己的 glob 数到」命中
+  C4 子条引用不唯一（空模式：每条子条必命中）｜rc=1｜期望句「引用出处不唯一」命中
+  C5 子条引用查无（正则口径又变了）｜rc=1｜期望句「在 §26.28 里匹配到 0 条子条」命中
+  C6 正文判读行被改坏（回执不该被当作全过归档）｜rc=1｜期望句「本件不该被当作回执归档」命中
+  C7 复跑 stdout 与归档正文不同（仪器不可复现）｜rc=1｜期望句「复跑 stdout 与归档正文不同」命中
+  C8 入库清单两个出处互证失效（body 侧 +1）｜rc=1｜期望句「核验件印出的入库数」命中
+CONTROL_VERDICT = ALL CONTROLS CAN GO RED
