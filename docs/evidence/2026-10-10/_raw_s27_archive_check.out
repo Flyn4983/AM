@@ -1,0 +1,11 @@
+本轮四段新追加＝开发日志 (m)、当日纪实、计划文档、总览条目（起始标记各唯一命中 1 处）
+开发日志那段：现取声称 25 条全部命中原样｜HEAD＝2cfc84c 父＝0dfebc2｜A／M／合计＝35／5／40
+另外三份各查 5/5/5 条读数，缺失 0 条
+落地证明现算：tree 条目 771＝blob 703＋tree 68｜闭合式 703==668＋35｜差集 0/703 与 0/703｜SHA 不符 0/703｜本片 40/40 MATCH
+回执 12826 B＝表头 9370＋正文 3456｜cmp 三联＝[0, 1, 1]｜顶格字段 16＝FIELDS 声明 16
+尺子全树副本 8 份（md5 前 12 0d20117bb82f）｜SRC 指纹 2a49fedf28e08e8d5a68ae23124e391d｜表头控件扰动 11 条｜提交说明面基线 8／坏件 24
+下一片锚点：§26.29 里 am_s7_verify27.log 唯一被子条 ['m'] 引用｜标本生成器＝docs/evidence/2026-10-09/am_s24_hdr.py｜zctl 残留 0
+入库节奏：本片回执链 5 件（am_s7_verify27.py／.log、_raw_verify27.out／.err、am_s27_hdr.py）在 HEAD 清单里 0/5 件 ⇒ 交分片 28 入库
+内存扰动 7 条读数闸门＋1 条锚点闸门全部变红
+钉住：我的解释器在卡上留有 0 个 compute 进程（断言，总数不入档）；生产树 src+tests 改动 0 件
+ARCHIVE_VERDICT = LANDING READINGS AND NEXT-SLICE ANCHORS PASS

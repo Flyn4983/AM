@@ -532,8 +532,15 @@ def toplane_readability(solid, xax, yax, top_idx, fx, sub, sub_runs, r_b, dx,
                 n_foot=int(foot.size), n_foot_solid=int(foot.sum()))
 
 
+# smoke 档的**软闸名单**：这两条判据的对象是形态分辨率，粗网格（dx=r_b）按构造不满足；
+# 对 stage=smoke 只报告不求解资格（见 run_case 里的 [SOFT] 分支），pilot／full 仍按硬闸计。
+SOFT_FOR_SMOKE = ("G6 每步激光移动 ≤ 0.5·r_b（时间采样充分）",
+                  "J6 形态档 dx ≤ r_b/2")
+
+
 def run_case(geom, xax, yax, zax, top_z, sub, sub_runs, prog, plan, fx, r_b, alpha,
-             heat_scale, arm, stage, n_tracks, strategy, T_iso_vals, n_all_runs, cap):
+             heat_scale, arm, stage, n_tracks, strategy, T_iso_vals, n_all_runs, cap,
+             ic_probe=False):
     """一个 (N, 臂) 的预检闸门＋（非 preflight 时）求解与读数。所有数字都来自现算。"""
     dx = float(geom.spacing)
     n_steps, t_exp, dt_target, dt_rk2, alpha0 = schedule(geom, prog, plan)
@@ -624,10 +631,22 @@ def run_case(geom, xax, yax, zax, top_z, sub, sub_runs, prog, plan, fx, r_b, alp
           f"nvox={nvox} n_steps={n_steps} voxel_steps={nvox*n_steps:.3e} "
           f"path={float(prog.total_length())*1e3:.3f}mm 折点={int(prog.points.shape[0])} "
           f"帧={n_frames}")
+    # 本文件头 J6 那条口径（:41）写的是「dx=r_b 只用于接线烟测，那一条**不产出**任何形态数字」，
+    # 但首版把 J6／G6 当**硬闸**用 ⇒ smoke 档按构造永远走不到求解（2026-10-10 14:09 实测：三条道次
+    # 全部 `SOLVER_NOT_RUNNABLE`，零次求解、零条墙钟）。这两条判据的对象是**形态分辨率**（网格够不够细、
+    # 每步激光移动够不够小），粗网格接线档对它们按构造不满足 ⇒ 对 stage=smoke 只作 [SOFT] 报告、
+    # 不入 all_pass，并在下方禁用形态数字；pilot／full 仍是硬闸。这是修判据的**适用面**，不是放宽判据。
+    soft_hit = []
     for tag, ok, detail in g:
-        print(f"  [{'PASS' if ok else 'FAIL'}] {tag} — {detail}")
+        soft = stage == "smoke" and tag in SOFT_FOR_SMOKE
+        if soft:
+            soft_hit.append(tag)
+        print(f"  [{'SOFT' if soft else ('PASS' if ok else 'FAIL')}] {tag} — {detail}")
+    if stage == "smoke":
+        miss = [t for t in SOFT_FOR_SMOKE if t not in soft_hit]
+        assert not miss, f"smoke 软闸名单没找到这些闸门 ⇒ 名单与标签漂移：{miss}"
     print(f"  [INFO] G3b 道间间隙（J10，只报不判）— {gb['note']}")
-    all_pass = all(ok for _, ok, _ in g)
+    all_pass = all(ok for tag, ok, _ in g if tag not in soft_hit)
     if stage == "preflight":
         return dict(all_pass=all_pass, vox=nvox, n_steps=n_steps, n_gates=len(g))
     if not all_pass:
@@ -642,14 +661,56 @@ def run_case(geom, xax, yax, zax, top_z, sub, sub_runs, prog, plan, fx, r_b, alp
         th.temperature_evolution.block_until_ready()
     wall = time.perf_counter() - t0
     ic_k = fx["T0_C"] + 273.15
+    _mc = get_material(MATERIAL)
+    t_amb = float(_mc.T_ambient)
+    t_sol_ref = float(_mc.T_solidus)
     pk = np.asarray(th.peak_temperature)
     nfr = None if th.temperature_evolution is None else np.asarray(
         th.temperature_evolution).shape
     print(f"  解出：wall={wall:.2f}s 帧形={nfr} min(peak)={float(pk.min()):.3f}K"
-          f"（IC={ic_k:.2f}K；若为 300.000K 则 IC 未生效）")
-    if abs(float(pk.min()) - ic_k) > 0.1:
-        print("  READOUT_FAIL = IC 未生效或被顶替 ⇒ 本条读数作废（不比对靶值）")
-        return dict(all_pass=False, wall=wall)
+          f"（夹具 IC={ic_k:.2f}K，材料卡 T_ambient={t_amb:.2f}K）")
+    # G8 把首版那条「若为 300.000K 则 IC 未生效」拆成两件**不同的**事。首版注释以为把 IC 走
+    # boundary_conditions 就能绕开"被顶成 300K"——2026-10-10 14:2x 实测（/tmp/a3_ic_probe_try2.out）
+    # 推翻了这个说法：``temperature_of_enthalpy`` 的二分下界写死 ``T_lo=T_amb``
+    # （src/amforge/thermal_enthalpy.py:130），**任何 H≤0 的态都读回 T_amb**——293.15K→H=−3.278057e7
+    # →读回 300.0000K（+6.850K），而 300/305/1563K 的往返误差都是 0.000e+00（正对照）。
+    # ⇒ 正向映射接受 T<T_amb、逆向不接受＝静默的单侧不对称。另外 ``peak_temperature`` 是
+    # **逐体素峰值场**（:32、:974 ``peak=jnp.maximum(peak,Tn)``，init=0），不是逐帧峰值 ⇒ 判据
+    # 该问"冷体素的峰值是否等于**可表示的**初温"。
+    ok8a = ic_k >= t_amb - 1e-9
+    # G8b 取**实体掩膜**上的峰值最小值，不取全场：气相体素的 H0 恒为 0 ⇒ 它们的峰值就是 T_amb，
+    # 一旦 ic > T_amb（E/F 斜率腿）全场 min(peak) 读到的是气相壳而不是初温 ⇒ 判据会假红。
+    # 2026-10-10 14:4x 实测：--amb-k 293.15 --t0-c 26.85 时全场 min(peak)=293.15K（气相）、
+    # 实体 min(peak)=300.00K（正是声明的 ic）⇒ 按实体取才是「IC 真进了场」这条问句。
+    pk_solid = float(pk[solid].min()) if bool(solid.any()) else float("nan")
+    ok8b = abs(pk_solid - max(ic_k, t_amb)) <= 0.1
+    gap_pct = (t_amb - ic_k) / max(t_sol_ref - t_amb, 1e-9) * 100
+    tail8a = ("⇒ 实际跑的初温被逆向映射顶成 T_amb，不是夹具声明的 T0" if not ok8a
+              else "⇒ 初温可表示，跑的正是夹具声明的 T0")
+    for tag, ok8, detail in (
+            ("G8a 夹具 IC 在焓模型里可表示（ic ≥ 材料卡 T_ambient）", ok8a,
+             f"ic={ic_k:.4f}K vs T_amb={t_amb:.4f}K ⇒ 缺口 {t_amb - ic_k:+.4f}K"
+             f"；占「升到 T_sol 所需显焓」的 {gap_pct:.4f}%（T_sol={t_sol_ref:.1f}K）"
+             f"{tail8a}"),
+            ("G8b 冷体素峰值＝可表示初温（IC 真进了场，未被顶替）", ok8b,
+             f"min(peak 实体)={pk_solid:.4f}K vs max(ic,T_amb)={max(ic_k, t_amb):.4f}K"
+             f"（全场 min(peak)={float(pk.min()):.4f}K，含气相壳⇒只报不判；tol=0.1K；"
+             f"帧形={nfr}）")):
+        print(f"  [{'PASS' if ok8 else 'FAIL'}] {tag} — {detail}")
+    ic_keep = False
+    if not (ok8a and ok8b):
+        if not ic_probe:
+            print("  READOUT_FAIL = IC 不可表示（G8a）或被顶替（G8b）⇒ 本条读数作废（不比对靶值）"
+                  "；这是**夹具保真**问题，不是求解崩溃")
+            return dict(all_pass=False, wall=wall, ic_ok=False)
+        # 敏感度探针档：G8 仍然是 FAIL（all_pass 记 False，靶值比对照常打印但不作评分），
+        # 只把求解与形态读数跑完，用来量化「逆向映射把 IC 顶成 T_amb」对形态的影响有多大。
+        ic_keep = True
+        print("  IC_PROBE_KEEP = G8 未过但读数保留 ⇒ 本条**不是**基准读数（all_pass=False），"
+              "只用于 #51 的敏感度比对；本档若产出形态数字，每行都带 [PROBE] 标记"
+              f"（当前 stage={stage}：smoke 档按 J6 口径不印数字）")
+    if ic_keep:
+        print("  以下形态读数＝探针档（IC 已被逆向映射顶替），**不得**引作 A3 基准评分。")
     ro = readout_from_frames(th.temperature_evolution, xax, yax, zax, top_z, sub,
                              sub_runs, prog, n_steps, n_frames, r_b, T_iso_vals)
     if not ro.get("ok"):
@@ -666,11 +727,23 @@ def run_case(geom, xax, yax, zax, top_z, sub, sub_runs, prog, plan, fx, r_b, alp
             if not rr.get("ok"):
                 print(f"    {iso_key}{ver}: READOUT_FAIL = {rr['why']}")
                 continue
-            line = (f"    {iso_key}{ver}: 宽={rr['width_um']:.2f}µm "
+            if stage == "smoke":
+                # J6 未满足 ⇒ 本档**不产出任何形态数字**（本文件头 :41 的自定口径）：这里只报
+                # 「读数核接得上」的布尔与计数，宽/积的具体值一律不印，避免粗网格数字被日后误引。
+                print(f"    {iso_key}{ver}: 接线=True 宽有限={math.isfinite(rr['width_um'])} "
+                      f"积有限={math.isfinite(rr['area_um2'])} 行数={rr['n_rows']} "
+                      f"有熔={rr['rows_hot']} 触边={rr['touched']}"
+                      f"（smoke 档不印形态数字）")
+                continue
+            line = (f"    {'[PROBE] ' if ic_keep else ''}{iso_key}{ver}: "
+                    f"宽={rr['width_um']:.2f}µm "
                     f"(布尔 {rr['width_bool_um']:.2f}，差 {rr['cut_minus_bool_um']:+.2f}) "
                     f"积={rr['area_um2']:.0f}µm² (布尔 {rr['area_bool_um2']:.0f}) "
                     f"行数={rr['n_rows']} 有熔={rr['rows_hot']} 触边={rr['touched']}")
-            if iso_key == "solidus" and ver == "":
+            if iso_key == "solidus" and ver == "" and ic_keep:
+                # 探针档不比对靶值：靶行里的「偏差 x% ⇒ 达标」字样会被日后误引（#51 红线）。
+                line += " | 靶值比对：跳过（IC_PROBE 档，all_pass 已记 False）"
+            if iso_key == "solidus" and ver == "" and not ic_keep:
                 for q, bar in BARS.items():
                     tv = targs[q].get("all")
                     if not tv:
@@ -685,10 +758,26 @@ def run_case(geom, xax, yax, zax, top_z, sub, sub_runs, prog, plan, fx, r_b, alp
                     if d2 is not None:
                         line += f"，去离群版中位 {to['median']:.1f} ⇒ 偏差 {d2:.1f}%"
             print(line)
-    verdict = "OK" if ro["solidus"].get("touched", 0) == 0 else "READOUT_TOUCHED_EDGE"
+    # G9＝触边闸。首版只把 touched 印在 SOLVE_VERDICT 里、**不入** all_pass ⇒ 被试片边界截断的
+    # 宽／积照样进了趋势评分（2026-10-10 14:4x pilot 实测：N=2 触边 17/56 行 ⇒ 积 116532µm²，
+    # N=3 触边 33/55 行 ⇒ 积反而降到 55844µm²（道次更多、能量更多而形态更小＝物理不可能，
+    # 唯一的解释是窗口被边界切走）⇒ 这两条读数是**下界**不是测量值，必须可红）。
+    touch = max(int(ro[k].get("touched", 0)) for k in T_iso_vals for v in ("", "_R2"))
+    n_rows = int(ro["solidus"].get("n_rows", 0))
+    ok9 = touch == 0
+    verdict = "OK" if ok9 else "READOUT_TOUCHED_EDGE"
+    print(f"  [{'PASS' if ok9 else 'FAIL'}] G9 读数窗未被试片边界切割（触边行数==0） — "
+          f"max touched={touch}／窗口行数={n_rows}（四组读数 solidus／solidus_R2／liquidus／"
+          f"liquidus_R2 里取最大）⇒ "
+          + ("读数完整，可进趋势评分"
+             if ok9 else
+             "熔池被试片边界截断 ⇒ 宽／积只是**下界**，本条不得进 18 道趋势评分；"
+             "这是 #30「加大试片」裁决的直接证据"))
     print(f"  SOLVE_VERDICT = {verdict} wall={wall:.2f}s arm={arm}")
-    return dict(all_pass=True, wall=wall, vox=nvox, n_steps=n_steps,
-                readout=ro.get("solidus"), targets=targs, verdict=verdict)
+    return dict(all_pass=(not ic_keep) and ok9, wall=wall, vox=nvox, n_steps=n_steps,
+                ic_ok=bool(ok8a and ok8b), touched=touch,
+                readout=(None if stage == "smoke" else ro.get("solidus")),
+                targets=targs, verdict=verdict)
 
 
 def main():
@@ -705,9 +794,42 @@ def main():
                     help="J11 的能量臂")
     ap.add_argument("--measured-per-track", type=float, default=None,
                     help="pilot 实测每道均摊墙钟 [s]；stage=full 必需（N3⑤）")
+    ap.add_argument("--amb-k", type=float, default=None,
+                    help="覆写材料卡 T_ambient [K]（夹具保真：G8a 要求基准 T0 在焓模型里可表示，"
+                         "而逆向映射把下界写死在 T_ambient）；缺省＝材料卡原值")
+    ap.add_argument("--t0-c", type=float, default=None,
+                    help="覆写夹具声明的初温 T0 [°C]（只动 IC／预热这一条链：fx['T0_C'] 进 "
+                         "plan_for 的预热、solver_params 的 IC 与 G8a 的 ic_k，物性参数一律不动）。"
+                         "用于在**固定环境温度**下单独测 d(形态)/d(IC) 的斜率，两腿都可过 G8a。")
+    ap.add_argument("--ic-probe", action="store_true",
+                    help="**敏感度探针档**：G8a 判 IC 不可表示时按原口径作废本条基准读数；本开关"
+                         "只让求解与形态读数**继续跑完**，用于量化「IC 被顶替」对形态的影响。"
+                         "该档产出的任何宽度/面积都**不得**进基准比对（all_pass 仍为 False）。")
     a = ap.parse_args()
+    global MATERIAL
+    if a.amb_k is not None:
+        import dataclasses
+        from amforge.materials import AM_MATERIALS
+        base = get_material(MATERIAL)
+        base_name = MATERIAL                      # 覆写会改全局 MATERIAL，基卡名要先钉住
+        key = f"{MATERIAL}_amb{a.amb_k:g}K"
+        AM_MATERIALS[key] = base.replace(T_ambient=a.amb_k)
+        changed = [f.name for f in dataclasses.fields(base)
+                   if getattr(base, f.name) != getattr(AM_MATERIALS[key], f.name)]
+        assert changed == ["T_ambient"], f"覆写动了不止一个字段：{changed}"
+        MATERIAL = key
+        print(f"材料卡覆写：注册名 {key}＝基卡 {base_name} 只换 T_ambient "
+              f"{float(base.T_ambient):.4f}K→{a.amb_k:.4f}K"
+              f"（{len(dataclasses.fields(base))} 字段逐字段现比，改动集＝{changed} "
+              f"⇒ 其余 {len(dataclasses.fields(base)) - 1} 个含 T_sol/T_liq/ρ/cp/k/L 全同）")
     mat = get_material(MATERIAL)
     fx = load_fixture()
+    if a.t0_c is not None:
+        t0_base = fx["T0_C"]
+        fx["T0_C"] = float(a.t0_c)
+        print(f"夹具 IC 覆写：T0_C {t0_base:.4f}°C→{fx['T0_C']:.4f}°C"
+              f"（ic={(fx['T0_C'] + 273.15):.4f}K；只改初温链＝plan_for 预热＋solver_params IC"
+              f"＋G8a 的 ic_k，其余夹具键与物性参数不动）")
     r_b = beam_radius_m()
     alpha = a.alpha if a.alpha is not None else fx["alpha_calibrated"]
     dx_um = a.dx if a.dx is not None else (r_b * 1e6 if a.stage == "smoke"
@@ -760,7 +882,8 @@ def main():
             results.append((n, arm, run_case(geom, xax, yax, zax, top_z, sub, sub_runs,
                                             prog, plan, fx, r_b, alpha, hs, arm,
                                             a.stage, n, a.strategy, T_iso_vals,
-                                            len(all_runs), cap)))
+                                            len(all_runs), cap,
+                                            ic_probe=a.ic_probe)))
     walls = [r["wall"] for _, _, r in results if "wall" in r]
     if walls:
         worst_n = max(n for n, _, r in results if "wall" in r)
@@ -781,7 +904,9 @@ def main():
                   f"非降={all(b >= a0 * 0.98 for a0, b in zip(ws, ws[1:]))} "
                   f"末/首={ws[-1]/ws[0]:.2f}（J7：趋势才是主判据）")
     print(f"STAGE_DONE = {a.stage} 道次={tracks} 臂={arms} "
-          f"全闸过={all(r.get('all_pass') for _, _, r in results)}")
+          f"硬闸全过={all(r.get('all_pass') for _, _, r in results)}"
+          + (f" 软闸={len(SOFT_FOR_SMOKE)}条/道次（J6／G6 在 dx=r_b 按构造不过⇒只作 [SOFT] 报告，"
+             f"本档不产出形态数字）" if a.stage == "smoke" else ""))
     if a.stage == "preflight":
         print("PREFLIGHT_VERDICT = 见上；本件未解，零条形态数字")
 

@@ -1,0 +1,5 @@
+ROOT = /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder
+CMD = CUDA_VISIBLE_DEVICES="" JAX_PLATFORMS=cpu PYTHONPATH=src timeout 590 /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_a3_driver.py --stage pilot --tracks 1 --arms norm --ic-probe
+rc=0 arm=A
+-rw-rw-r-- 1 shy shy    0 10月 10 14:34 docs/evidence/2026-10-10/_raw_a3ic_A.err
+-rw-rw-r-- 1 shy shy 5801 10月 10 14:35 docs/evidence/2026-10-10/_raw_a3ic_A.out

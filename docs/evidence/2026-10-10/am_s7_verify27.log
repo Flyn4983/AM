@@ -1,0 +1,123 @@
+生成时刻: 2026-10-10 13:29:35 +0800
+CMD     : 正文那条运行＝CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_s7_verify27.py
+          （stdout→_raw_verify27.out，stderr→_raw_verify27.err，两条都在本件里被复跑并逐字节比对；
+          这两件在生成本表头**之前**就用 cp -p 逐字节抄进本目录，md5＝fe8c77e635ea／d41d8cd98f00，
+          mtime 保留 ⇒ 下面"首次归档运行"那个时刻是原次运行时刻，不是复制时刻）
+          本表头由同解释器跑 am_s27_hdr.py 生成，它内部又用同一环境复跑了上面那条命令一次。
+          入库节奏**由 git 现取**（不是叙述）：上一片（26 号）回执链在 HEAD 清单
+          5/5 件，再上一片（25 号）链在其父提交 5/5 件
+          ＝一片一环的节奏在两片上都成立；本片的链（尺子／回执／两件原始件／本生成器）在 HEAD 清单
+          0/5 件 ⇒ 本件留给分片 28 入库。
+ENV     : CUDA_VISIBLE_DEVICES=（空串＝CPU 钉住；钉住口径**从档案现取**＝开发日志 §26.29 (j)
+          那句「不动 GPU」，不是凭对话记忆转述）；
+          本件**不 import jax**（只跑 git／GitHub API），带空串是习惯性钉住而不是必需，照实说明。
+脚本    : docs/evidence/2026-10-10/am_s7_verify27.py（＝分片 18 那把尺子的**逐字节副本**：与 docs/evidence/2026-10-09/am_s7_verify18.py 现比 md5＝相同，
+          本件 md5 0d20117bb82f；**全树** docs/evidence/*/ 下 glob＋md5 现算＝同一把尺子已有 8 份逐字节副本
+          （含本件），多片共用同一仪器，不是"为这一片重写一把尺子"。这条全树口径**不是本轮改的**（本轮沿用），
+          但两个读数都现取并同印：只 glob 本目录的旧口径此处数出 2 份，全树数出 8 份 ⇒
+          跨日期抄放时旧口径会数漏。这些数**现算**，写死它就随片腐烂）
+TREE    : head=2cfc84ce4fcc25d1cc92126d06cf3762220b4bc6 parent=0dfebc22ca9a1880d9d02c6bc3f2c7523174f21f dirty(src+tests)=0
+SRC指纹 : 2a49fedf28e08e8d5a68ae23124e391d（口径与全量回归件一致 ⇒ 核验时被测树就是本片落地的那棵树）
+GPU     : 本表头生成时现取 nvidia-smi compute 进程 4 个，其中我的解释器（/proc/PID/cmdline 含 /tmp/amvenv）
+          所留 0/4 个（须 0）；口径与全量回归件的归还段相同。
+RUN     : 表头生成时**复跑**核验件：rc=0、stderr 0 字节（0＝没有一条警告被吞），且复跑 stdout 与
+          下面的正文区**逐字节相同**（本件写入前有断言）⇒ 判读行与正文是同一次运行的口径，非两次拼接。
+          首次归档运行 2026-10-10 13:20:09 +0800（其 stderr 留档案 0 字节），复跑于 2026-10-10 13:29:35 +0800。
+判读    : 远端 main == 本地 HEAD；tree 条目 771 = blob 703 + tree 68；
+          闭合式 远端 703 == 父提交 668 + 本片新增(A) 35 ＝ 703 -> PASS；
+          双向路径差集 0/703 与 0/703；全库 blob SHA 不符 0/703；
+          本片单列复核 40/40 MATCH（A 35／M 5 个文件）。
+四个正对照: A 远端一条 sha 首位改 f ⇒ 不符 1/703；B 远端删一条路径 ⇒ 本地独有 1/703、远端独有 0/702；
+          C 闭合式右边 +1 ⇒ 703 == 704 判 FAIL；D 远端删**本片**一条路径 ⇒ 本片缺失 1/40、SHA 不符 0/40。
+          四条读数一律从正文 ⑤ 段正则现取（本表头不许自己造数），逐条都能红、所以不是空转。
+分母口径: 每个 0 都与其分母同印（0/703、0/703、40/40），
+          没有"光秃秃的 0"。
+正文区  : 下面 BODY_OFFSET 之后＝核验件原始 stdout，逐字节未改（含 ①〜⑤ 与 LANDING_VERDICT 行）。
+复核    : 在仓库根跑 cmp -i 9370:0 docs/evidence/2026-10-10/am_s7_verify27.log docs/evidence/2026-10-10/_raw_verify27.out   （rc=0 才算正文区逐字节相同；两侧偏移各 +1 必须变红）
+同片对照: 本片新增 35 件，与 /tmp **同名件现比 md5**（本表头自己数，不抄任何一份档案里的件数）＝
+          相同 6 件／不同 0 件（无）／/tmp 已无同名件 29 件（临时件被清理或当初就没落在 /tmp）。
+          没有一件不同 ⇒ /tmp 现存的同名件全部逐字节相同。⇒ 这条只作辅助溯源，落地证明以正文区为准。
+用途    : S7 分片 27 的落地回执（片号由 HEAD 提交说明现取，并与本件文件名 am_s7_verify27.py
+          互证，两边不符即拒绝归档 ⇒ 机械克隆不再能把上一片的故事安在本片头上）。入库清单由
+          `git show --name-status HEAD` 现取（本表头自己数、自己列名）＝
+          新增 35 件（_raw_a3_hdr_audit.err、_raw_a3_hdr_audit.out、_raw_a3_hdr_audit_controls.err、_raw_a3_hdr_audit_controls.out、_raw_a3_preflight.err、_raw_a3_preflight.out、_raw_a3_preflight_controls.err、_raw_a3_preflight_controls.out、_raw_s26_hdr_controls.err、_raw_s26_hdr_controls.out、_raw_s27_docs.err、_raw_s27_docs.out、_raw_s27_docs_precheck.err、_raw_s27_docs_precheck.out、_raw_s27_msg_controls.err、_raw_s27_msg_controls.out、_raw_verify26.err、_raw_verify26.out、am_a3_driver.py、am_a3_hdr_audit.py、am_a3_hdr_audit_controls.py、am_a3_preflight.log、am_a3_preflight_controls.log、am_a3_preflight_controls.py、am_a3_preflight_controls_hdr.txt、am_a3_preflight_hdr.txt、am_a3_run.sh、am_s26_hdr.py、am_s26_hdr_controls.log、am_s26_hdr_controls.py、am_s27_docs.py、am_s27_msg.py、am_s27_msg_controls.py、am_s7_verify26.log、am_s7_verify26.py）＋修改 5 件（2026-10-10.md、MEMORY.md、开发日志.md、项目开发总览.md、项目评估与下一步计划_2026-10-06.md）；逐条 SHA 复核在正文区 ④ 段。
+          本轮开发日志 §26.29 (l) 引用的回执是**上一片**的 am_s7_verify26.log（26 号）；
+          这条"哪一子条引用了哪份回执"不是手打的：先现取最后一个 `### 26\.\d+` 标题（＝29），
+          再在该节正文里找**唯一**含 am_s7_verify26.log 的子条字母；对本件（am_s7_verify27.log）的日志引用
+          要到下一轮才出现，本表头不预先声称它已被引用。
+教训    : ① 仪器复用＝同一把尺子量多片，比对才有效；② 闭合式的右边含本片新增数，所以它随片而变、不是恒等式：
+          分片 18 的档案印「远端 575 == 父提交 574 + 新增 1 = 575」、本片印「远端 703 == 父提交 668 ＋ 新增 35 ＝ 703」，
+          两条各自被控制 C（右边 +1）证过"能红"；但闭合式只数**个数**，看不见"少一个＋多一个"的形状，
+          所以必须与双向路径差集、全库 SHA 不符两条**同读**，三条一起才构成落地证明；③ 表头不用 f-string
+          承载（§26.27 (q) 的成因），改用 PLACEHOLDER＋replace，写盘后再查残留；④ 本件由上一片的生成器
+          **机械克隆**（sed 只换得出文件名里的片号）而来 ⇒ 凡"来历／片号／节号字母／份数"写死在注文里的
+          都会随片腐烂，diff 不会自动改它。事故标本**从档案里现取**（不是凭记忆转述）：生成器
+          `docs/evidence/2026-10-09/am_s24_hdr.py` 的"教训"行原文印着「S7 分片 24（分片 **22** 的回执＋…）」——同一句里外层片号 24、括号里
+          22，两个数不同 ⇒ 那句故事说的是 22 号那一片，而写它的生成器是 24 号自己的。
+          本片的防法不是手改文字，而是四条**现取＋互证**闸门：(a) 片号从 HEAD 提交说明现取，并与本件文件名
+          互证（两边都＝27）；(b) 日志节号从开发日志现取最后一个 `### 26\.\d+`（＝29），
+          子条字母再由"该节里唯一引用上一片回执的那一条"现取（＝l）——早先版本用过"三级标题带
+          字母"的正则，日志结构一变它就**整条取空**（静默拿到上一轮的字母或直接抛），所以口径要先于读数复查；
+          (c) 入库清单从 `git show --name-status HEAD` 现取，并与正文区 ④ 段的 A／M 计数互证（35/5）；
+          (d) 尺子份数与上一片回执**按全树 glob**（本轮沿用该口径，两个读数都现取）：旧"本目录"口径
+          在本片只数出 2 份 ⇒ 会把"一把尺子
+          量多片"印成"本片自带一把新尺子"，比对当场失去意义。教训一句话：**数字一律现取，文字也要；不能现取的文字就只能引用一份能被命令查到的档案原文。**
+          ⑤ 本轮新增（已入档 §26.29 (l)）：**极性翻转不是扰动**——只把判读从「须 0 才算红」
+          翻成「须 >0 才算红」、不注入任何坏输入的"对照"能把自己说成绿，那不是对照。本件的控件面按同一条口径做：
+          每条扰动改的是**生成器源码副本**或**喂给闸门的输入**，判据＝rc≠0 **且**命中指定闸门句，未扰动基线先
+          rc=0 且进预检分支。（表头写盘后仍要**回读**：字段行数、残留占位符、cmp 三件套——语义错乱在 cmp 里是全绿的。）
+BODY_OFFSET=9370
+① 本地 HEAD = 2cfc84ce4fcc25d1cc92126d06cf3762220b4bc6
+① ls-remote refs/heads/main = 2cfc84ce4fcc25d1cc92126d06cf3762220b4bc6  -> MATCH
+② truncated=False，tree 条目 771 = blob 703 + tree 68
+② 本地 blob = 703，父提交 = 668
+② 本片文件 40 个 = 新增 35 + 修改 5
+② 闭合式 远端 703 == 父提交 668 + 新增 35 = 703 -> PASS
+③ 路径差集：本地独有 0/703  远端独有 0/703
+④ 全库共有 703 条 ⇒ blob SHA 不符 0/703
+④ 本片 40 文件（A 35／M 5）单列复核 ⇒ 远端缺失 0/40，SHA 不符 0/40，MATCH 40/40
+   MATCH  M  '.workbuddy/memory/2026-10-10.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_hdr_audit.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_hdr_audit.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_hdr_audit_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_hdr_audit_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s26_hdr_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s26_hdr_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_docs.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_docs.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_docs_precheck.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_docs_precheck.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_msg_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_msg_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify26.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify26.out'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_driver.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_hdr_audit.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_hdr_audit_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_preflight.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_preflight_controls.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_preflight_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_preflight_controls_hdr.txt'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_preflight_hdr.txt'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_run.sh'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_hdr_controls.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s26_hdr_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s27_docs.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s27_msg.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s27_msg_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify26.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify26.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/703（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/703，远端独有 0/702
+⑤ 正对照 C（闭合式右边 +1）⇒ 703 == 704 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/40，SHA 不符 0/40（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS

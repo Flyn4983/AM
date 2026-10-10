@@ -1,0 +1,3 @@
+写盘完成： /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-10/am_s7_verify27.log 12826 bytes
+cmp 复核 rc（同偏移须 0）＝ 0 ｜左 +1 须非 0＝ 1 ｜右 +1 须非 0＝ 1 ｜顶格字段行数＝ 16 / 16
+md5 现比 /tmp 同名件＝同 6 ／异 0 ／缺 29 ，共 35 ｜GPU 我的进程＝ 0 / 4 ｜复跑 stdout 与正文逐字节相同＝ True
