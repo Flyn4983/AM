@@ -1,0 +1,161 @@
+生成时刻: 2026-10-10 17:04:18 +0800
+CMD     : 正文那条运行＝CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_s7_verify28.py
+          （stdout→_raw_verify28.out，stderr→_raw_verify28.err，两条都在本件里被复跑并逐字节比对；
+          这两件在生成本表头**之前**就用 cp -p 逐字节抄进本目录，md5＝2b9a09bef1a1／d41d8cd98f00，
+          mtime 保留 ⇒ 下面"首次归档运行"那个时刻是原次运行时刻，不是复制时刻）
+          本表头由同解释器跑 am_s28_hdr.py 生成，它内部又用同一环境复跑了上面那条命令一次。
+          入库节奏**由 git 现取**（不是叙述）：上一片（27 号）回执链在 HEAD 清单
+          5/5 件，再上一片（26 号）链在其父提交 5/5 件
+          ＝一片一环的节奏在两片上都成立；本片的链（尺子／回执／两件原始件／本生成器）在 HEAD 清单
+          0/5 件 ⇒ 本件留给分片 29 入库。
+ENV     : CUDA_VISIBLE_DEVICES=（空串＝CPU 钉住；钉住口径**从档案现取**＝开发日志 §26.30 (补记的树与钉住)
+          那句「继续，还是不动GPU」，不是凭对话记忆转述）；
+          本件**不 import jax**（只跑 git／GitHub API），带空串是习惯性钉住而不是必需，照实说明。
+脚本    : docs/evidence/2026-10-10/am_s7_verify28.py（＝分片 18 那把尺子的**逐字节副本**：与 docs/evidence/2026-10-09/am_s7_verify18.py 现比 md5＝相同，
+          本件 md5 0d20117bb82f；**全树** docs/evidence/*/ 下 glob＋md5 现算＝同一把尺子已有 9 份逐字节副本
+          （含本件），多片共用同一仪器，不是"为这一片重写一把尺子"。这条全树口径**不是本轮改的**（本轮沿用），
+          但两个读数都现取并同印：只 glob 本目录的旧口径此处数出 3 份，全树数出 9 份 ⇒
+          跨日期抄放时旧口径会数漏。这些数**现算**，写死它就随片腐烂）
+TREE    : head=cbd1a9aa4c556287b912a15884a8b3fbed6540da parent=2cfc84ce4fcc25d1cc92126d06cf3762220b4bc6 dirty(src+tests)=0
+SRC指纹 : 2a49fedf28e08e8d5a68ae23124e391d（口径与全量回归件一致 ⇒ 核验时被测树就是本片落地的那棵树）
+GPU     : 本表头生成时现取 nvidia-smi compute 进程 3 个，其中我的解释器（/proc/PID/cmdline 含 /tmp/amvenv）
+          所留 0/3 个（须 0）；口径与全量回归件的归还段相同。
+RUN     : 表头生成时**复跑**核验件：rc=0、stderr 0 字节（0＝没有一条警告被吞），且复跑 stdout 与
+          下面的正文区**逐字节相同**（本件写入前有断言）⇒ 判读行与正文是同一次运行的口径，非两次拼接。
+          首次归档运行 2026-10-10 16:58:44 +0800（其 stderr 留档案 0 字节），复跑于 2026-10-10 17:04:18 +0800。
+判读    : 远端 main == 本地 HEAD；tree 条目 832 = blob 764 + tree 68；
+          闭合式 远端 764 == 父提交 703 + 本片新增(A) 61 ＝ 764 -> PASS；
+          双向路径差集 0/764 与 0/764；全库 blob SHA 不符 0/764；
+          本片单列复核 67/67 MATCH（A 61／M 6 个文件）。
+四个正对照: A 远端一条 sha 首位改 f ⇒ 不符 1/764；B 远端删一条路径 ⇒ 本地独有 1/764、远端独有 0/763；
+          C 闭合式右边 +1 ⇒ 764 == 765 判 FAIL；D 远端删**本片**一条路径 ⇒ 本片缺失 1/67、SHA 不符 0/67。
+          四条读数一律从正文 ⑤ 段正则现取（本表头不许自己造数），逐条都能红、所以不是空转。
+分母口径: 每个 0 都与其分母同印（0/764、0/764、67/67），
+          没有"光秃秃的 0"。
+正文区  : 下面 BODY_OFFSET 之后＝核验件原始 stdout，逐字节未改（含 ①〜⑤ 与 LANDING_VERDICT 行）。
+复核    : 在仓库根跑 cmp -i 12024:0 docs/evidence/2026-10-10/am_s7_verify28.log docs/evidence/2026-10-10/_raw_verify28.out   （rc=0 才算正文区逐字节相同；两侧偏移各 +1 必须变红）
+同片对照: 本片新增 61 件，与 /tmp **同名件现比 md5**（本表头自己数，不抄任何一份档案里的件数）＝
+          相同 8 件／不同 0 件（无）／/tmp 已无同名件 53 件（临时件被清理或当初就没落在 /tmp）。
+          没有一件不同 ⇒ /tmp 现存的同名件全部逐字节相同。⇒ 这条只作辅助溯源，落地证明以正文区为准。
+用途    : S7 分片 28 的落地回执（片号由 HEAD 提交说明现取，并与本件文件名 am_s7_verify28.py
+          互证，两边不符即拒绝归档 ⇒ 机械克隆不再能把上一片的故事安在本片头上）。入库清单由
+          `git show --name-status HEAD` 现取（本表头自己数、自己列名）＝
+          新增 61 件（_raw_a3_pilot_amb_g9_norm_t123.err、_raw_a3_pilot_amb_g9_norm_t123.out、_raw_a3_pilot_amb_norm_t123.err、_raw_a3_pilot_amb_norm_t123.out、_raw_a3_pilot_amb_raw_N1.err、_raw_a3_pilot_amb_raw_N1.out、_raw_a3_preflight_regress.err、_raw_a3_preflight_regress.out、_raw_a3_preflight_regress_norm.out、_raw_a3_smoke_E_leg.err、_raw_a3_smoke_E_leg.out、_raw_a3_smoke_g8b_airshell_red.err、_raw_a3_smoke_g8b_airshell_red.out、_raw_a3_smoke_g8bfix_card300.err、_raw_a3_smoke_g8bfix_card300.out、_raw_a3_smoke_g8fix_ambk29315.err、_raw_a3_smoke_g8fix_ambk29315.out、_raw_a3_smoke_g8fix_card300.err、_raw_a3_smoke_g8fix_card300.out、_raw_a3_smoke_icprobe.err、_raw_a3_smoke_icprobe.out、_raw_a3_smoke_regress2_card300.err、_raw_a3_smoke_regress2_card300.out、_raw_a3_smoke_t0c_red_ctl.err、_raw_a3_smoke_t0c_red_ctl.out、_raw_a3ic_A.err、_raw_a3ic_A.out、_raw_a3ic_A_cmd.log、_raw_a3ic_B.err、_raw_a3ic_B.out、_raw_a3ic_B_cmd.log、_raw_a3ic_C.err、_raw_a3ic_C.out、_raw_a3ic_C_cmd.log、_raw_a3ic_D.err、_raw_a3ic_D.out、_raw_a3ic_D_cmd.log、_raw_a3ic_E.err、_raw_a3ic_E.out、_raw_a3ic_E_cmd.log、_raw_a3ic_F.err、_raw_a3ic_F.out、_raw_a3ic_F_cmd.log、_raw_s27_archive_check.err、_raw_s27_archive_check.out、_raw_s27_hdr_controls.err、_raw_s27_hdr_controls.out、_raw_s27_hdr_write.err、_raw_s27_hdr_write.out、_raw_s28_msg_controls.err、_raw_s28_msg_controls.out、_raw_verify27.err、_raw_verify27.out、am_a3_ic_clamp_probe.sh、am_s27_archive_check.py、am_s27_hdr.py、am_s27_hdr_controls.py、am_s28_msg.py、am_s28_msg_controls.py、am_s7_verify27.log、am_s7_verify27.py）＋修改 6 件（2026-10-10.md、am_a3_driver.py、am_a3_run.sh、开发日志.md、项目开发总览.md、项目评估与下一步计划_2026-10-06.md）；逐条 SHA 复核在正文区 ④ 段。
+          本轮开发日志 §26.30 (入库面（写在这里是为了让分片 28 的回执表头能把"引用上一片回执"这件事从档案现取，而不是凭对话记忆）) 引用的回执是**上一片**的 am_s7_verify27.log（27 号）；
+          这条"哪一子条引用了哪份回执"不是手打的：先现取最后一个 `### 26\.\d+` 标题（＝30），
+          再在该节正文里找**唯一**含 am_s7_verify27.log 的子条标签（本轮日志的子条形制是行首 `- **标签**`，
+          不是上一轮 §26.29 的行首 `**(x)**` ⇒ 取子条的正则随形制改过，见"教训"(b)）；对本件（am_s7_verify28.log）的日志引用
+          要到下一轮才出现，本表头不预先声称它已被引用。
+教训    : ① 仪器复用＝同一把尺子量多片，比对才有效；② 闭合式的右边含本片新增数，所以它随片而变、不是恒等式：
+          分片 18 的档案印「远端 575 == 父提交 574 + 新增 1 = 575」、本片印「远端 764 == 父提交 703 ＋ 新增 61 ＝ 764」，
+          两条各自被控制 C（右边 +1）证过"能红"；但闭合式只数**个数**，看不见"少一个＋多一个"的形状，
+          所以必须与双向路径差集、全库 SHA 不符两条**同读**，三条一起才构成落地证明；③ 表头不用 f-string
+          承载（§26.27 (q) 的成因），改用 PLACEHOLDER＋replace，写盘后再查残留；④ 本件由上一片的生成器
+          **机械克隆**（sed 只换得出文件名里的片号）而来 ⇒ 凡"来历／片号／节号与子条标签／份数"写死在注文里的
+          都会随片腐烂，diff 不会自动改它。事故标本**从档案里现取**（不是凭记忆转述）：生成器
+          `docs/evidence/2026-10-09/am_s24_hdr.py` 的"教训"行原文印着「S7 分片 24（分片 **22** 的回执＋…）」——同一句里外层片号 24、括号里
+          22，两个数不同 ⇒ 那句故事说的是 22 号那一片，而写它的生成器是 24 号自己的。
+          本片的防法不是手改文字，而是四条**现取＋互证**闸门：(a) 片号从 HEAD 提交说明现取，并与本件文件名
+          互证（两边都＝28）；(b) 日志节号从开发日志现取最后一个 `### 26\.\d+`（＝30），
+          子条**标签**再由"该节里唯一引用上一片回执的那一条"现取（＝入库面（写在这里是为了让分片 28 的回执表头能把"引用上一片回执"这件事从档案现取，而不是凭对话记忆））——早先版本用过"三级标题带
+          字母"的正则，日志结构一变它就**整条取空**（静默拿到上一轮的标签或直接抛），所以口径要先于读数复查；
+          **本轮就撞上了第二次形制变化**：上一片的生成器按行首 `**(x)**` 取子条，而 §26.30 的子条写成行首
+          `- **中文标签**` ⇒ 那把旧尺子在 §26.30 上数出 **0** 条子条（本件若不改口径就直接抛"取不到子条"）。
+          改完的锚句不是"能跑通"就算数，它由本片的控件面逐条造红：形制指错（取空）、标签引用不唯一（歧义）、
+          引用查无、以及节号写死，四类坏输入各命中一条指定闸门句；
+          (c) 入库清单从 `git show --name-status HEAD` 现取，并与正文区 ④ 段的 A／M 计数互证（61/6）；
+          (d) 尺子份数与上一片回执**按全树 glob**（本轮沿用该口径，两个读数都现取）：旧"本目录"口径
+          在本片只数出 3 份 ⇒ 会把"一把尺子
+          量多片"印成"本片自带一把新尺子"，比对当场失去意义。教训一句话：**数字一律现取，文字也要；不能现取的文字就只能引用一份能被命令查到的档案原文。**
+          ⑤ 本轮口径（引句从 §26.30 (腿③的落点（同轮补记，pilot 面跑完之后）＝A3 的阶梯只到 N=1 就撞上 #30) 现取，本轮落地子条随后并入同一节）：
+          **判据的可通过性**——G9 之前那条"18 道趋势"判据在仪器自己的形状上是绿的、在物理上是假绿（把被试片
+          边界切走的读数当测量值评分）。同一条规矩这轮又命中两次，两次都命中在**对照面自己**身上：
+          ⑴ 提交信息生成器的键表自审闸门原本"按文件名再去找源码"，而控件面跑的是同目录副本 ⇒ 它审的永远是
+          原件，那三条闸门天生红不了（改成读 `__file__` 之后才可红）；⑵ 判据原本只要求"stderr 里出现那句
+          闸门话"，而 Python 3.11+ 的 traceback 会把**源码行原样回显**进 stderr ⇒ 一条崩在别处的 TypeError
+          也能让那条对照"通过"（改成按**抛出的那一行**判红；顺带发现闸门的消息式子本身会对 `**{…}` 解包出的
+          None 键调 ast.dump 而先崩，看客拿不到闸门句）。⇒ 一条"从没红过的闸门"和"坏闸门"读数相同；控件面
+          必须逐条造红，而且**判"红"的方式自己也要被造一次红**。（表头写盘后仍要**回读**：字段行数、残留
+          占位符、cmp 三件套——语义错乱在 cmp 里是全绿的。）
+BODY_OFFSET=12024
+① 本地 HEAD = cbd1a9aa4c556287b912a15884a8b3fbed6540da
+① ls-remote refs/heads/main = cbd1a9aa4c556287b912a15884a8b3fbed6540da  -> MATCH
+② truncated=False，tree 条目 832 = blob 764 + tree 68
+② 本地 blob = 764，父提交 = 703
+② 本片文件 67 个 = 新增 61 + 修改 6
+② 闭合式 远端 764 == 父提交 703 + 新增 61 = 764 -> PASS
+③ 路径差集：本地独有 0/764  远端独有 0/764
+④ 全库共有 764 条 ⇒ blob SHA 不符 0/764
+④ 本片 67 文件（A 61／M 6）单列复核 ⇒ 远端缺失 0/67，SHA 不符 0/67，MATCH 67/67
+   MATCH  M  '.workbuddy/memory/2026-10-10.md'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_pilot_amb_g9_norm_t123.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_pilot_amb_g9_norm_t123.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_pilot_amb_norm_t123.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_pilot_amb_norm_t123.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_pilot_amb_raw_N1.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_pilot_amb_raw_N1.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight_regress.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight_regress.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_preflight_regress_norm.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_E_leg.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_E_leg.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8b_airshell_red.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8b_airshell_red.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8bfix_card300.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8bfix_card300.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8fix_ambk29315.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8fix_ambk29315.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8fix_card300.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_g8fix_card300.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_icprobe.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_icprobe.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_regress2_card300.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_regress2_card300.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_t0c_red_ctl.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3_smoke_t0c_red_ctl.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_A.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_A.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_A_cmd.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_B.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_B.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_B_cmd.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_C.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_C.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_C_cmd.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_D.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_D.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_D_cmd.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_E.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_E.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_E_cmd.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_F.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_F.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_a3ic_F_cmd.log'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_archive_check.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_archive_check.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_hdr_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_hdr_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_hdr_write.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s27_hdr_write.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_msg_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_msg_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify27.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify27.out'
+   MATCH  M  'docs/evidence/2026-10-10/am_a3_driver.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_a3_ic_clamp_probe.sh'
+   MATCH  M  'docs/evidence/2026-10-10/am_a3_run.sh'
+   MATCH  A  'docs/evidence/2026-10-10/am_s27_archive_check.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s27_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s27_hdr_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s28_msg.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s28_msg_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify27.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify27.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/764（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/764，远端独有 0/763
+⑤ 正对照 C（闭合式右边 +1）⇒ 764 == 765 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/67，SHA 不符 0/67（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS
