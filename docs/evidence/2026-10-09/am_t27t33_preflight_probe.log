@@ -1,0 +1,57 @@
+===== #27/#33 代码腿预检（CPU 钉住，只测不改，改前 all-PASS）=====
+PROBE: docs/evidence/2026-10-09/am_t27t33_preflight_probe.py  md5=3a954844d55cc9773a3742d289bd112b
+RAW:   正文＝预检脚本 stdout 逐字节后缀（下方 cmp 验证）
+TREE : 预检运行于改前工作树（HEAD=547dbf9，thermal_enthalpy 尚未加 _evap_sink_hk）
+DATE : 脚本正文 elapsed=17s；抓取件 mtime=2026-10-09 22:17:10
+DEVICE: 每个子进程内部钉 CUDA_VISIBLE_DEVICES='' ⇒ CPU
+VERDICT: P1/P2/P3/P4 四项前提全 PASS（P3＝thermal_enthalpy 的 HK 消费者=0＝改前缺口确认）⇒ 判可进入 #27 代码腿实现轮
+----
+== #27/#33 代码腿预检（CPU 钉住，只测不改）==
+tree HEAD: 547dbf9b6ef633cf5808ea46d6461a83d415ab9c
+device = '' (CUDA_VISIBLE_DEVICES 由每个子进程内部钉住)
+
+[P1] 15 位点按源码文本在现树重解（复用选型探针 SITES，不硬编行号）
+   ok     S01-sigma   现树 thermal_enthalpy.py:682    选型轮 thermal_enthalpy.py:658 （行号漂移，文本指纹仍命中）
+   ok     S02-sigma   现树 thermal_enthalpy.py:686    选型轮 thermal_enthalpy.py:662 （行号漂移，文本指纹仍命中）
+   ok     S03-sigma   现树 meltpool.py:1637   选型轮 meltpool.py:1637        
+   ok     S04-lift    现树 meltpool.py:1636   选型轮 meltpool.py:1636        
+   ok     S05-lift    现树 thermal_enthalpy.py:685    选型轮 thermal_enthalpy.py:661 （行号漂移，文本指纹仍命中）
+   ok     S06-lift    现树 thermal_enthalpy.py:693    选型轮 thermal_enthalpy.py:669 （行号漂移，文本指纹仍命中）
+   ok     S07-lift    现树 thermal_enthalpy.py:478    选型轮 thermal_enthalpy.py:465 （行号漂移，文本指纹仍命中）
+   ok     S08-knob    现树 meltpool.py:1361   选型轮 meltpool.py:1361        
+   ok     S09-knob    现树 thermal_enthalpy.py:691    选型轮 thermal_enthalpy.py:667 （行号漂移，文本指纹仍命中）
+   ok     S10-knob    现树 thermal_enthalpy.py:690    选型轮 thermal_enthalpy.py:666 （行号漂移，文本指纹仍命中）
+   ok     S11-knob    现树 particle_am.py:1202   选型轮 particle_am.py:1203     （行号漂移，文本指纹仍命中）
+   ok     S12-knob    现树 powder_bed.py:675    选型轮 powder_bed.py:675       
+   ok     S13-crit    现树 contracts.py:274    选型轮 contracts.py:274        
+   ok     S14-crit    现树 process.py:216    选型轮 process.py:216          
+   ok     S15-crit    现树 inverse.py:834    选型轮 inverse.py:834          
+[PASS] P1 位点漂移普查：15 位点文本仍唯一命中 — 全 ok=True，行号漂移 8/15（漂移无害，因判定按文本非行号）
+
+[P2] 缺省经验封顶臂 child("tuned","conv") 在当前树复现 G0 锚点
+   锚点（从 am_t4_full_regression.log 现取）：peak0=2937.060997302282  h20000=2908.771450618092
+    [conv/tuned] 16s shape=[8, 8, 8] dx=80µm n_solid=216 sink_fn=_evap_sink
+   peak0 实测 2937.060997302282 ⇒ 逐位= 锚点
+   h=20000 实测 2908.771450618092 ⇒ 逐位= 锚点
+   末态均值实测 2720.8020 vs 2720.8±0.05
+   峰值落点 idx=[2, 3, 6] fv=0.5000000000000003 自由面=1.0 n_solid=216
+[PASS] P2 G0 锚点在 #18 后的当前树仍逐位复现（⇒ 选型结论对当前树有效） — peak0=True h20000=True mean=True
+
+[P3] HK 物理量消费者普查（grep 树内调用点）
+   [消费者] src/amforge/meltpool.py:802:    mdot = mat.evaporation_flux(T)
+   [消费者] src/amforge/meltpool.py:832:    p_recoil = jnp.minimum(mat.recoil_pressure(T), cfg.recoil_pressure_cap)
+   [定义/自调用] src/amforge/materials.py:205:        p_sat = self.recoil_pressure(T) / 0.54  # 去掉 Anisimov 系数得饱和蒸气压
+   汇总：meltpool 消费者=2  thermal_enthalpy 消费者=0  materials 定义处=1  真·越界消费者=0
+[PASS] P3 HK 消费者只在 meltpool；thermal_enthalpy 仍无物理封顶（缺口确认） — enthalpy 调用=0（应 0） meltpool=2（应≥2） 真越界=0（应 0；materials 定义处自调已单列）
+
+[P4] 结构不变量（子进程 import 生产模块）
+P4a _evap_sink(c=0) @ T>T_lo 恒 0 = True 值: [0.0, 0.0, 0.0, 0.0]
+P4b tuned 在 T<=T_lo 恒 0 = True 值: [0.0, 0.0, 0.0, 0.0]
+JSON::{"a_ok": true, "b_ok": true}
+
+[PASS] P4 结构不变量：置 0 生效 ∧ 低温不介入 ∧ HK 在熔化区中性（V1 复核） — c=0→0=True  tuned低温0=True  HK(T_liq)/Qp=0.00002%<0.1%=True
+
+[预检套判]
+  ⇒ 四项前提全部成立：**可以进入 #27 代码腿实现轮**（只加 evap_model 选择器＋无参数 HK 封顶，默认仍 tuned ⇒ 绝对数值逐位不变、规避半动口径）。默认切换与 #33 值重标定随 #10/A3 的 18 道外部靶进行。
+
+elapsed=17s  rc=0

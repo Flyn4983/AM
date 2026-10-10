@@ -1,0 +1,30 @@
+CMD: CUDA_VISIBLE_DEVICES= JAX_ENABLE_X64=1 PYTHONPATH=src /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_s26_msg_controls.py
+TREE: head=547dbf9 dirty=2
+DATE: 2026-10-10 09:43:01 +0800
+MD5_MSG=56cbd8c77d23fbb968c937716f6d4997
+MD5_CTL=3c00e21091d8516b69099e5dff3c5bc4
+STDERR_BYTES=0
+rc=0
+[C1-tally-shape] 坏件 ⇒ 拒绝：AttributeError: 'NoneType' object has no attribute 'group'
+[C1-tally-real] 真件 ⇒ 通过：2 failed, 286 passed, 3 skipped in 3903.07s (1:05:03)
+[C2-rc-missing] 坏件 ⇒ 拒绝：AttributeError: 'NoneType' object has no attribute 'group'
+[C2-rc-real] 真件 ⇒ 通过：1
+[C3-eline-count] 坏件 ⇒ 拒绝：AssertionError: 两条红的 E 行实取 1 条 ⇒ 判据形状已变，不许静默通过
+[C3-eline-real] 真件 ⇒ 通过：2
+[C4-finger-diff] 坏件 ⇒ 拒绝：AssertionError: SRCFINGER 起≠止 ⇒「回归期间源码一字未动」不成立，不许进信息
+[C4-finger-real] 真件 ⇒ 通过：True
+[C5-progress] 真件 `.`×286 F×2 s×1 → 扰动 `.`×285 F×3 Σ变化 (1, 1)
+[C6-closure] 坏件 ⇒ 拒绝：AssertionError: 闭合式在信息生成器里不成立（('648', '624', '25', 'PASS')／blob 648）⇒ 不许引用它
+[C6-closure-real] 真件 ⇒ 通过：('648', '623', '25', 'PASS')
+[C7-match] 坏件 ⇒ 拒绝：AssertionError: 单列复核不是全绿：('31', '25', '6', '0', '31', '0', '31', '30', '31')
+[C8-verdict] 坏件 ⇒ 拒绝：AssertionError: 回执判读行不是 ALL CHECKS PASS：LANDING_VERDICT = PROBLEM（见上面非零项）
+[C9-ruler] 真 md5 ⇒ 7 份；坏 md5 ⇒ 0 份（须 0，真值须 ≥2）
+[C10-shortstat-old] 坏件 ⇒ 拒绝：AttributeError: 'NoneType' object has no attribute 'group'
+[C10-shortstat-new] 真件 ⇒ 通过：('22', '1900', '3')
+[C11-base-passed] 坏件 ⇒ 拒绝：AssertionError: passed 增量 6 ≠ 新测试条数 5 ⇒ 有测试掉网或悄悄转绿
+[C11-base-eline] 坏件 ⇒ 拒绝：AssertionError: 两条红的 E 行与基线不再逐字节相等 ⇒ 默认档被改动了
+[C11-rc0] 坏件 ⇒ 拒绝：AssertionError: rc=0≠1 ⇒ 红灯清单变了，『两条既有红灯』的口径不再成立
+[C11-real] 真件 ⇒ 通过：((2, 286, 3), (2, 281, 3))
+---- 套判 ----
+n_tests=5  真件全过＝True
+CONTROL_VERDICT = ALL DETECTORS CAN GO RED

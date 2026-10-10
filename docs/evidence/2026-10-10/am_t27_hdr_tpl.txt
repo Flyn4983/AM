@@ -1,0 +1,29 @@
+===== #27 代码腿全量回归记分（CPU 钉住，交付树 @@HEAD@@＋dirty=@@DIRTY@@）=====
+RUN:  docs/evidence/2026-10-10/am_t27_full_run.sh  md5=@@RUN_MD5@@
+      （正文＝该脚本 stdout 的逐字节后缀，见文末 cmp；本件头部的所有数字均由命令现取，非手抄）
+CMD/TREE/DATE_START/SRCFINGER_START：见正文首 4 行（运行脚本自身写入）
+TALLY: @@TALLY@@  @@WALL@@
+RC   : @@RC@@（rc=1＝两条**已登记的既有红灯**，非本轮引入；两条红的 E 行逐字节＝基线，见下）
+计数字四路闭合：
+  ① 汇总行结局 = 291（= @@TALLY@@）
+  ② 进度字符（正文进度行，现数）= `.`×@@PROGRESS_DOT@@ ＋ `F`×@@PROGRESS_F@@ ＋ `s`×@@PROGRESS_S@@ = 289
+  ③ 跑前 `pytest --collect-only -q`（同一脏树）末行 = “@@COLLECT@@ tests collected”
+  ④ 闭合：collected @@COLLECT@@ ＋ 2 条**模块级** importorskip（`test_gui_app.py`、`test_gui_app2.py`
+     于收集期 skip ⇒ 不进收集计数、不占进度字符、却计入汇总行 skipped）= 291 ＝ ① ⇒ PASS
+两红逐行＝基线（默认档 `tuned` 未切换 ⇒ 绝对数值必须逐位不变）：
+  #27  tests/test_boundary.py::test_convection_removes_energy
+       E AssertionError: h=20000 应压低峰值：2908.771450618092 vs 2937.060997302282
+  A0   tests/test_enthalpy_thermal.py::test_meltpool_converges_across_beam_resolving_grids
+       E AssertionError: 熔体积不收敛：0.060249999999999984 vs 0.06946874999999998
+  本轮两条 `^E AssertionError:` 行（现数 @@E_COUNT_NOW@@ 条）与基线件
+  `docs/evidence/2026-10-09/_raw_s18_full.log`（现数 @@E_COUNT_BASE@@ 条）排序后逐字节 diff ⇒
+  rc=@@E_DIFF_RC@@（0＝两红逐行相同）
+新增测试：`tests/test_evap_model.py` 5 条全部 passed（`grep test_evap_model` 不在 FAILED/SKIPPED 名单）
+无新增 skip/xfail：汇总行 skipped 计数＝3（＝基线 3，未增不减）；`grep -ic 'xfail|xpass'`=@@XFAIL@@（须 0）
+SRCFINGER 起止相等＝@@FINGER@@ ＝ @@FINGER_END@@ ⇒ 回归期间 src/tests 一字未动
+DATE_START=@@DATE_START@@   DATE_END=@@DATE_END@@
+DEVICE: CPU 钉住（运行脚本内 `CUDA_VISIBLE_DEVICES=`）；落笔现取卡上 compute 进程 @@GPU_APPS_AT_WRITE@@ 个、
+        我的解释器（/proc/PID/cmdline 含 `/tmp/amvenv`）＝@@GPU_MINE@@（须 0）⇒ 全轮未占 GPU。
+处置：#27 **代码腿**达成（evap_model 选择器＋无参数 HK 封顶，默认仍 tuned ⇒ 绝对数值逐位不变，规避半动口径）；
+      #27 整体仍 in_progress——腿②（缺省 tuned→hk 切换）＋ #33 的 15 位点系数重标定只能对 A3 的
+      18 道外部趋势靶打分 ⇒ 随 #10/A3 进行，本轮不做默认切换。

@@ -584,6 +584,23 @@ def _evap_sink(T, T_lo, T_hi, c):
     return c * ss * jnp.maximum(T - T_lo, 0.0)
 
 
+def _evap_sink_hk(T, mat, dx):
+    """Hertz–Knudsen 蒸发/反冲散热封顶（**无自由标定参数**，#27）。
+
+    ``S(T) = ṁ(T) · L_v / dx``  [W/m³]，其中 ``ṁ = mat.evaporation_flux(T)`` 走
+    Clausius–Clapeyron 饱和蒸气压——强度只由材料卡（``T_boil`` / ``latent_vapor`` /
+    ``molar_mass``）与accommodation 0.82 决定，**不含可被标定到某个测试上的系数**。
+
+    与经验 ``_evap_sink`` 的两点差异（选型轮 `am_t27_evap_sink_probe.log` 实测）：
+    ① 让 `test_convection_removes_energy` 那条 2% 压峰守护在**阈值一字不动**下成立
+    （tuned −0.963% → hk −7.553%）；② 在钳位区给反演/优化交付符号正确的梯度
+    （∂peak/∂P：tuned −0.060 → hk +0.383）。低温熔化区平滑趋零（V1：HK(T_liq)/Q_peak
+    ≈ 2e-5%），不干扰潜热相变。与 `meltpool.py` 的表面蒸发项同源，那里界面用 |∇F|，
+    此处把 [W/m²] 摊成 [J/m³/s] 用 1/dx（与 boundary.py 的表面散热约定一致）。
+    """
+    return mat.evaporation_flux(T) * mat.latent_vapor / dx
+
+
 # ---------------------------------------------------------------------------
 # 主求解器
 # ---------------------------------------------------------------------------
@@ -634,6 +651,16 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
     # 8000K+；低温熔化区不介入，故不影响正常相变与可微性。可由 params 覆盖。
     c_evap = float(p.get("evap_coeff", 3.0e11))
     T_evap_lo = T_boil - 200.0
+    # 蒸发封顶的模型选择器（#27）。**缺省 "tuned" ⇒ 绝对数值逐位不变**：默认切换
+    # （tuned→hk 抬峰 +14.48%）与 #33 的系数重标定只能对 A3 的 18 道**外部趋势靶**打分，
+    # 在无靶时提前切换＝二次作废绝对峰值数（本项目反复登记的"半动口径"陷阱），故留给
+    # #10/A3。此处仅提供三臂，供 A3 对照与外部靶核对逐臂选取：
+    #   "tuned"＝经验 smoothstep·c_evap（现生产缺省）；"hk"＝无自由参数 Hertz–Knudsen；
+    #   "none"＝完全关闭（与 `evap_coeff=0` 等价），供 A3「无蒸发」基准对齐。
+    evap_model = str(p.get("evap_model", "tuned")).lower()
+    if evap_model not in ("tuned", "hk", "none"):
+        raise ValueError(
+            f"evap_model 只能是 'tuned'|'hk'|'none'，收到 {evap_model!r}")
 
     spacing = jnp.asarray(geometry.spacing, dtype=jnp.float64)  # tracer 安全
     dx = spacing
@@ -903,8 +930,13 @@ def solve_enthalpy_thermal(*, geometry, process, params=None):
         lap = _div_alpha_grad(H, alpha, dx, mask=mask)
         # 源/散热按固相体积分数 fv 加权（不是二值 mask）：见上方 fv 定义
         Q = _source_at(t) * fv
-        # 蒸发封顶：仅在 T→T_boil 时介入，把峰值钳制在蒸气化上限（不影响熔化）
-        evap = _evap_sink(T, T_evap_lo, T_boil, c_evap) * fv
+        # 蒸发封顶：按 evap_model 选三臂（缺省 tuned ⇒ 与改前逐位相同，见上方选择器注释）
+        if evap_model == "hk":
+            evap = _evap_sink_hk(T, mat, dx) * fv
+        elif evap_model == "none":
+            evap = jnp.zeros_like(fv)
+        else:
+            evap = _evap_sink(T, T_evap_lo, T_boil, c_evap) * fv
         # —— #23：整条右端项除以 cut-cell 热容权重 cap_w（推导见 CUT_CAPACITY_FLOOR）。
         # 物理内容：`fv·dx³·dH/dt = dx³·lap + fv·dx³·(q − loss)`，即**热容按实有材料计**、
         # 而**注入剂量不变**（改前的错处是左边用了整格热容：δ=0 档计算域质量比剂量多

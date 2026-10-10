@@ -1,0 +1,15 @@
+===== #27 代码腿改后正对照：HK 物理量消费者普查 =====
+TREE: head=547dbf9 dirty=2（含未提交的 thermal_enthalpy.py 改动）
+DATE: 2026-10-10 09:21:29 +0800
+对照基线（改前）: docs/evidence/2026-10-09/am_t27t33_preflight_probe.log 的 P3 —— thermal_enthalpy HK 消费者=0（缺口）
+----
+改后 thermal_enthalpy.py 的 HK 封顶消费者（return mat.evaporation_flux 代码行）= 1  （改前 0 → 改后 ≥1 ⇒ 缺口按预测填上）
+  587:def _evap_sink_hk(T, mat, dx):
+  590:    ``S(T) = ṁ(T) · L_v / dx``  [W/m³]，其中 ``ṁ = mat.evaporation_flux(T)`` 走
+  601:    return mat.evaporation_flux(T) * mat.latent_vapor / dx
+  935:            evap = _evap_sink_hk(T, mat, dx) * fv
+meltpool.py 的 HK/反冲消费者 = 2（应仍为 2 ⇒ 本轮未碰 meltpool）
+  802:    mdot = mat.evaporation_flux(T)
+  832:    p_recoil = jnp.minimum(mat.recoil_pressure(T), cfg.recoil_pressure_cap)
+----
+判定: TE_HK≥1 且 meltpool==2 ⇒ PASS（改动只落进 thermal_enthalpy 的那处缺口）
