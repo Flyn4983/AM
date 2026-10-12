@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_msg_controls.py", line 416, in <module>
+    main()
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_msg_controls.py", line 324, in main
+    assert base_rc == 0, ("未扰动副本就没通过（rc=%s）⇒ 本件的正对照全部无效，先修仪器。stderr 尾巴：\n%s"
+           ^^^^^^^^^^^^
+AssertionError: 未扰动副本就没通过（rc=1）⇒ 本件的正对照全部无效，先修仪器。stderr 尾巴：
+           ^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/zctl_s30_msg_mtno9xsd.py", line 552, in build
+    faces = faces_check(modified)
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/zctl_s30_msg_mtno9xsd.py", line 351, in faces_check
+    assert not sh("git", "-c", "core.quotePath=false", "diff", "--name-only").strip(), \
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 还有未暂存的已跟踪改动 ⇒ 我核对的暂存 blob 不是最终要提交的那一份

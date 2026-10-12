@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-10/am_s29_archive_check.py", line 314, in <module>
+    assert PREVCITE == 1, "§26.%s 里引用上一片回执名 %s 的顶级子条有 %d 条（须恰好 1）" % (
+           ^^^^^^^^^^^^^
+AssertionError: §26.32 里引用上一片回执名 am_s7_verify28.log 的顶级子条有 0 条（须恰好 1）

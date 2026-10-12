@@ -1,0 +1,4 @@
+① 守卫触发＝rc==TIMEOUT（探针里压到 5s，真件里的上限是 300s）
+② 孙进程已随进程组消失（PID 是每次变的 volatile 读数⇒只断言不入 stdout；检测器正对照＝活的判在、杀的判不在，两次都实测）
+③ 副本已删（本目录文件数前后相同这条只断言不入 stdout：它会随归档件自己移动 ⇒ volatile）
+TIMEOUT_GUARD_VERDICT = GUARD FIRES AND KILLS THE GROUP

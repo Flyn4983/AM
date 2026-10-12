@@ -1,0 +1,42 @@
+① 本地 HEAD = efb7226291d12a2962bdded3992d69a8966a1193
+① ls-remote refs/heads/main = efb7226291d12a2962bdded3992d69a8966a1193  -> MATCH
+② truncated=False，tree 条目 855 = blob 787 + tree 68
+② 本地 blob = 787，父提交 = 764
+② 本片文件 28 个 = 新增 23 + 修改 5
+② 闭合式 远端 787 == 父提交 764 + 新增 23 = 787 -> PASS
+③ 路径差集：本地独有 0/787  远端独有 0/787
+④ 全库共有 787 条 ⇒ blob SHA 不符 0/787
+④ 本片 28 文件（A 23／M 5）单列复核 ⇒ 远端缺失 0/28，SHA 不符 0/28，MATCH 28/28
+   MATCH  M  '.workbuddy/memory/2026-10-10.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_archive_check.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_archive_check.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_hdr_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_hdr_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_hdr_precheck.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_hdr_precheck.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_hdr_write.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s28_hdr_write.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_msg_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_msg_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_msg_controls_red1.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_msg_controls_red1.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_msg_controls_red2.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_msg_controls_red2.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify28.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify28.out'
+   MATCH  A  'docs/evidence/2026-10-10/am_s28_archive_check.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s28_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s28_hdr_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s29_msg.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s29_msg_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify28.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify28.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/787（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/787，远端独有 0/786
+⑤ 正对照 C（闭合式右边 +1）⇒ 787 == 788 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/28，SHA 不符 0/28（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS

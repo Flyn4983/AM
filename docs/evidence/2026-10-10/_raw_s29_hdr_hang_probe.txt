@@ -1,0 +1,27 @@
+# 分片 29 表头控件面第一次运行的卡死现场（现取，非追述）
+# 取法：本件由下面这条命令的第一手输出拼成；每条读数都带取样时刻
+PROBE_AT1=2026-10-10 21:56:07 +0800
+
+## ps -o pid,ppid,etimes,stat（按 PID 指名，不用模式匹配）
+3029754 3029752    7781 S
+3030032 3029754    7717 S
+3030034 3030032    7717 S
+3030041 3030034    7717 S
+3030042 3030041    7717 S
+
+## cmdline（tr \0 空格）
+3029754: /tmp/amvenv/bin/python docs/evidence/2026-10-10/am_s29_hdr_controls.py 
+3030032: /tmp/amvenv/bin/python /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-10/zctl_s29_hdr_i5dijcjs.py 
+3030034: /tmp/amvenv/bin/python /home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-10/am_s7_verify29.py 
+3030041: git ls-remote --heads origin 
+3030042: /usr/bin/ssh -o SendEnv=GIT_PROTOCOL git@github.com git-upload-pack 'Flyn4983/AM.git' 
+## 那条 ssh 持有的 TCP
+ESTAB    0      0                                 10.136.250.71:47810           20.205.243.166:22   users:(("ssh",pid=3030042,fd=3))              
+
+## 原始件尺寸（0 字节＝一条 case 都没产出）
+0 _raw_s29_hdr_controls.out
+0 _raw_s29_hdr_controls.err
+0 总计
+
+## 扰动副本残留
+zctl_s29_hdr_i5dijcjs.py
