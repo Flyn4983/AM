@@ -1,0 +1,21 @@
+== 现取：HEAD＝5d7db86（父 efb7226｜提交时刻 2026-10-12 17:16:17 +0800）｜片号＝31（由 HEAD 主题现取）｜上一片回执＝am_s7_verify30.log（目录 docs/evidence/2026-10-12 由 glob 现取）
+   待入库＝未跟踪 60＋修改 5＝65 处｜src+tests 改动 0｜分组（和＝5＋4＋3＋4＋9＋3＋5＋12＋5＋1＋1＋8＝60）：回执链 5 **5**／表头预检与写盘两面 4 **4**／表头控件面 3 **3**／控件面红灯现场 4 **4**／只读仪器与其各面 9 **9**／只读仪器的控件面 3 **3**／落地腿 5 **5**／落地腿红灯现场 12 **12**／归档自查腿 5 **5**／当日纪实 1 **1**／本片归档写入件 1 **1**／本件自己的预检与写盘两面（含红灯现场） 8 **8**
+   上一片回执＝am_s7_verify30.log（18068 B／155 行＝表头 14404＋正文 3664，BODY_OFFSET 已复算）｜判读行「LANDING_VERDICT = ALL CHECKS PASS」｜正文区与原始件逐字节相同
+   三面控件面：提交说明 12574 B（48 条／UNCOVERED 8）｜表头 9648 B（红 31＋绿 3／UNCOVERED 5／自查 3）｜只读仪器 7592 B（红 20＋绿 3／UNCOVERED 6）
+   归档自查件 34519 B（md5 60000254a37d）stdout 2433 B／stderr 0 B＝声称 41 条全命中、正对照逐行数到 10 条 ⇒「ARCHIVE_VERDICT = ALL CLAIMS LIVE AND PRESENT, ALL CONTROLS CAN GO RED」
+   两次红灯现场：attempt1 484 B／589 B（收面自查把正确实现判红）｜attempt2 9645 B／0 B（判据恒假，「× 」行 1 条）
+   尺子＝md5 前 12 `0d20117bb82f` 一族现数 11 份（同一 glob 形状 12 份，差额有名字＝am_s7_verify18_dryrun.py）⇒ 本片抄第 12 份
+   SRC 指纹：默认 locale＝2a49fedf28e08e8d5a68ae23124e391d（＝上一片回执表头的值）｜LC_ALL=C＝13916e23e7262c65320479794ba8b252 ⇒ 差异只来自 sort 的 collation
+   GPU 归属：NVML 普查＝NVML 不可用（rc=18／「Failed to initialize NVML: Driver/library version mismatch」／内核模块 580.173.02 ≠ 用户态库 580.178）｜替代口径（/proc argv[0] 整词）＝我的解释器进程 0/1326 个｜松散子串同清单现数 1 个（argv[0]＝/bin/bash）｜合成对照＝松散 1／整词 0｜unattended-upgrade 进程 1 个（旁证）
+== named() 自检：好模板渲染逐字节正确、裸百分号／全角槽／未取值的槽各被拦下 -> PASS
+== 结构闸门
+   DEV：9 行｜括号按行配平｜粗体成对｜尾换行｜无残留槽 -> PASS
+   OVER：4 行｜括号按行配平｜粗体成对｜尾换行｜无残留槽 -> PASS
+   PLAN：8 行｜括号按行配平｜粗体成对｜尾换行｜无残留槽 -> PASS
+   DAILY：8 行｜括号按行配平｜粗体成对｜尾换行｜无残留槽 -> PASS
+   WBIDX：6 行｜括号按行配平｜粗体成对｜尾换行｜无残留槽 -> PASS
+   五面节号形制全部＝§26.NN（检测器对自己的坏样本抓到 1 处）-> PASS
+   §33 四条节内唯一性各恰好 1 处，且各配一条「再复述就变成 2 处」的正对照 -> PASS
+   总览锚点恰好 1 处；五个追加／插入目标末字节都是换行 -> PASS
+   邻接断言：五面各 2–6 对「标签＋值」在渲染结果里原文命中 -> PASS
+== 渲染完成：/tmp/out31/{DEV,OVER,PLAN,DAILY,WBIDX}.md ＋ ctx.txt

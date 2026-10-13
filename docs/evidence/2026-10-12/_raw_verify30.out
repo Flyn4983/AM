@@ -1,0 +1,55 @@
+① 本地 HEAD = 5d7db86cc472a6d04bf2178f490c9111fc3384e9
+① ls-remote refs/heads/main = 5d7db86cc472a6d04bf2178f490c9111fc3384e9  -> MATCH
+② truncated=False，tree 条目 893 = blob 824 + tree 69
+② 本地 blob = 824，父提交 = 787
+② 本片文件 41 个 = 新增 37 + 修改 4
+② 闭合式 远端 824 == 父提交 787 + 新增 37 = 824 -> PASS
+③ 路径差集：本地独有 0/824  远端独有 0/824
+④ 全库共有 824 条 ⇒ blob SHA 不符 0/824
+④ 本片 41 文件（A 37／M 4）单列复核 ⇒ 远端缺失 0/41，SHA 不符 0/41，MATCH 41/41
+   MATCH  A  '.workbuddy/memory/2026-10-12.md'
+   MATCH  M  '.workbuddy/memory/MEMORY.md'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_archive_check.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_archive_check.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_after_write.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_after_write.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_controls.attempt1-0byte.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_controls.attempt1-0byte.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_controls.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_controls.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_hang_probe.txt'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_precheck.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_precheck.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_write.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_hdr_write.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_timeout_probe.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_s29_timeout_probe.out'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify29.err'
+   MATCH  A  'docs/evidence/2026-10-10/_raw_verify29.out'
+   MATCH  A  'docs/evidence/2026-10-10/am_s29_archive_check.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s29_hdr.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s29_hdr_controls.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s29_timeout_probe.py'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify29.log'
+   MATCH  A  'docs/evidence/2026-10-10/am_s7_verify29.py'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s29_archive_check_rerun_in_s30.err'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s29_archive_check_rerun_in_s30.out'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_docs_rerun_after_selfcopy.err'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_docs_rerun_after_selfcopy.out'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_msg_controls.err'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_msg_controls.out'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_msg_controls_red1.err'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_msg_controls_red1.out'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_msg_controls_red2.err'
+   MATCH  A  'docs/evidence/2026-10-12/_raw_s30_msg_controls_red2.out'
+   MATCH  A  'docs/evidence/2026-10-12/am_s30_docs.py'
+   MATCH  A  'docs/evidence/2026-10-12/am_s30_msg.py'
+   MATCH  A  'docs/evidence/2026-10-12/am_s30_msg_controls.py'
+   MATCH  M  'docs/开发日志.md'
+   MATCH  M  'docs/项目开发总览.md'
+   MATCH  M  'docs/项目评估与下一步计划_2026-10-06.md'
+⑤ 正对照 A（远端 .workbuddy/memory/2026-08-16.md 的 sha 首位改 f）⇒ 不符 1/824（必须 ≥1）
+⑤ 正对照 B（远端删一条路径）⇒ 本地独有 1/824，远端独有 0/823
+⑤ 正对照 C（闭合式右边 +1）⇒ 824 == 825 判 FAIL（须 FAIL）
+⑤ 正对照 D（远端删本片一条路径）⇒ 本片缺失 1/41，SHA 不符 0/41（缺失数必须＝1，否则单列复核是空转）
+LANDING_VERDICT = ALL CHECKS PASS

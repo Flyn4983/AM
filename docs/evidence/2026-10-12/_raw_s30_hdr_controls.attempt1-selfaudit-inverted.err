@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_hdr_controls.py", line 584, in <module>
+    main()
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_hdr_controls.py", line 555, in main
+    assert n2, "md5 快照的比对函数抓不出不一致 ⇒ 口径 ③ 那条写保护是空转"
+           ^^
+AssertionError: md5 快照的比对函数抓不出不一致 ⇒ 口径 ③ 那条写保护是空转

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/am_s30_docs_landing.py", line 134, in <module>
+    r30 = open(os.path.join(EVID, R30LOG), encoding="utf-8").read()
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s7_verify31.log'

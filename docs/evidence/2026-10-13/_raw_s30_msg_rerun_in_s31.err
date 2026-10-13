@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_msg.py", line 105, in <module>
+    assert PREVDIR != E, "上一片回执与本件同目录 ⇒ 本轮的跨日期登记要改（见 §26.32 的入库面那条）"
+           ^^^^^^^^^^^^
+AssertionError: 上一片回执与本件同目录 ⇒ 本轮的跨日期登记要改（见 §26.32 的入库面那条）

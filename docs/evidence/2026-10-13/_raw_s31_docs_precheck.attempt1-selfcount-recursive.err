@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_docs.py", line 115, in <module>
+    assert NU + NM == 57, "落笔现数＝%d＋%d＝%d 处（本节的闭合式写的是 57）⇒ 先确认工作树有没有被动过" % (
+           ^^^^^^^^^^^^^
+AssertionError: 落笔现数＝54＋5＝59 处（本节的闭合式写的是 57）⇒ 先确认工作树有没有被动过

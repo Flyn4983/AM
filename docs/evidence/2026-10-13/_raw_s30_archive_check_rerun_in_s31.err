@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_archive_check.py", line 419, in <module>
+    assert n == want, "%s 在磁盘上的 §26.%s 里命中 %d 处（须恰好 %d）⇒ 分片 %s 的生成器会拒绝归档" % (
+           ^^^^^^^^^
+AssertionError: 上一片的 LESSON 锚句 在磁盘上的 §26.33 里命中 0 处（须恰好 1）⇒ 分片 31 的生成器会拒绝归档

@@ -1,0 +1,8 @@
+四张输入面片号现取自文件名并互证＝ 30 ｜ am_s7_verify30.log、_raw_verify30.out、am_s30_hdr.py、_raw_s30_hdr_write.out
+BODY_OFFSET（从盘上现读）＝ 14404 ｜该行原文＝ BODY_OFFSET=14404
+回执总长＝ 18068 ｜回执总长 − 偏移＝ 3664 ｜原始件字节数＝ 3664 → 闭合
+cmp -i 三联（本件自己起进程跑的，不是抄生成器的）＝ 0 / 1 / 1
+顶格字段行数＝ 16 / 16 （声明取自 docs/evidence/2026-10-12/am_s30_hdr.py ，ast 现取不执行）｜同序＝ True
+两出处闭合＝写盘面(0／1／1，字段 16/16，18068 bytes) 与本件(盘上现解) 同值
+输入面 md5 跑前后逐一相同＝True（4 张面） ｜只读普查对象＝ docs/evidence/2026-10-12/am_s30_hdr_after.py 命中坏构造＝ 0
+HDR_AFTER_VERDICT = ALL READ-ONLY CHECKS PASS

@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_docs_landing.py", line 558, in <module>
+    assert "x docs/ y" == named("自检/斜杠槽", "x %(EVIDREL)s y"), "含斜杠的值填进具名槽被改写了"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 含斜杠的值填进具名槽被改写了

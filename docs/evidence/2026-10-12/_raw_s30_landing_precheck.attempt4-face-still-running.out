@@ -1,0 +1,4 @@
+   守卫常量回填验：整词表 9 个名字都带片号 30、8 个在盘上（缺席＝归档自查腿 1 件）｜前缀／现场件名／证据目录同日 -> PASS
+== 现取：HEAD＝5d7db86（父 efb7226｜提交时刻 2026-10-12 17:16:17 +0800）｜入库 A 37＋M 4＝41 件｜numstat 3818/0 与 shortstat 闭合｜src+tests 改动 0｜片号＝30
+   回执现取：am_s7_verify30.log＝18068 B／155 行＝表头 14404＋正文 3664（逐字节 == 原始件）｜闭合差＝0｜SRC 指纹与盘上现算同值 -> PASS
+   提交说明面：_raw_s30_msg_controls.out 12574 B（md5 cbc88f7c33fd／stderr 0）｜声明 48｜超时 0｜造不出红路 8｜判读＝CONTROL_VERDICT = ALL CONTROLS CAN GO RED

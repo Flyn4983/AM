@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_msg_controls.py", line 840, in <module>
+    main()
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_msg_controls.py", line 747, in main
+    assert len(hitl) == 1, "基线标记句在副本 stdout 里命中 %d 行（须 1）⇒ 该句写窄了或模板被抄了两遍" % len(hitl)
+           ^^^^^^^^^^^^^^
+AssertionError: 基线标记句在副本 stdout 里命中 2 行（须 1）⇒ 该句写窄了或模板被抄了两遍

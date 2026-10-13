@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_archive_check.py", line 371, in <module>
+    assert not MISSING, "有 %d 条现取读数在档案里搜不到原样：%s" % (
+           ^^^^^^^^^^^
+AssertionError: 有 1 条现取读数在档案里搜不到原样：判据侧的抛出出处='第 **440** 行那条不动点上限砍到 1，子运行 rc=1、stderr 末行逐字符'

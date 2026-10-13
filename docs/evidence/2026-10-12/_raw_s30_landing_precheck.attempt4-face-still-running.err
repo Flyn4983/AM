@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_docs_landing.py", line 244, in <module>
+    CTX[pfx + "_DEC"] = one(dec_pat, txt, face + " 的声明条数")
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_docs_landing.py", line 61, in one
+    assert len(hits) == 1, "%s 命中 %d 处（须恰好 1）：%s" % (what, len(hits), hits[:3])
+           ^^^^^^^^^^^^^^
+AssertionError: 表头面 的声明条数 命中 0 处（须恰好 1）：[]

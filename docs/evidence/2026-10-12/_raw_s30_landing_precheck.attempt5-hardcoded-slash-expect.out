@@ -1,0 +1,15 @@
+   守卫常量回填验：整词表 9 个名字都带片号 30、8 个在盘上（缺席＝归档自查腿 1 件）｜前缀／现场件名／证据目录同日 -> PASS
+== 现取：HEAD＝5d7db86（父 efb7226｜提交时刻 2026-10-12 17:16:17 +0800）｜入库 A 37＋M 4＝41 件｜numstat 3818/0 与 shortstat 闭合｜src+tests 改动 0｜片号＝30
+   回执现取：am_s7_verify30.log＝18068 B／155 行＝表头 14404＋正文 3664（逐字节 == 原始件）｜闭合差＝0｜SRC 指纹与盘上现算同值 -> PASS
+   提交说明面：_raw_s30_msg_controls.out 12574 B（md5 cbc88f7c33fd／stderr 0）｜声明 48｜超时 0｜造不出红路 8｜判读＝CONTROL_VERDICT = ALL CONTROLS CAN GO RED
+   表头面：_raw_s30_hdr_controls.out 9648 B（md5 7522bdbf96e4／stderr 0）｜声明 31｜超时 0｜造不出红路 5｜判读＝CONTROL_VERDICT = ALL CONTROLS CAN GO RED
+   只读仪器面：_raw_s30_hdr_after_controls.out 7592 B（md5 20ee791ab915／stderr 0）｜声明 20｜超时 0｜造不出红路 6｜判读＝CONTROL_VERDICT = ALL CONTROLS CAN GO RED
+   自审反转现场：stdout 484 B／stderr 589 B｜抛出行「md5 快照的比对函数抓不出不一致 ⇒ 口径 ③ 那条写保护是空转」｜崩掉的批＝红路 31＋绿路 3＝34 条
+   notb 判定表从源码结构现取＝7 形状（须收 2／须拒 5），尺子自己的 5 个坏样本全被拒 -> PASS
+   判据侧现场：stdout 9645 B／stderr 0 B｜未命中 1 行｜判读＝CONTROL_VERDICT = PROBLEM（有闸门空转）｜实得抛出行在生成器第 440 行「BODY_OFFSET 未收敛 ⇒ 拒绝归档」
+   修复取证：notb 谓词判定表 7 个形状（须收 2／须拒 5）｜本面自查 2 条 → 3 条
+   待入库现数（易失，不作下一轮分母）：未跟踪 39＋修改 0＝39 处｜分组和＝5＋4＋3＋4＋7＋2＋3＋3＋8＝39
+   分组断言的正对照：回执链 组由 5 件降到 4 件（改窄 `am_s30_hdr\.py` 一支） -> PASS
+   GPU：卡名现取＝NVIDIA RTX A6000｜分母 >0 与否都算合法（易失，总数不写进本件 stdout）｜我的＝0｜同一匹配器对自己的 PID 数出 1 -> PASS
+   节号 §26.32 与补记序号 §W 补记 6 均从档案现取 -> PASS
+   CTX 100 个键全部是非空单行字符串（值从命令现取，没有一个是我手敲的）-> PASS

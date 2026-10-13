@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_hdr_after.py", line 197, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_hdr_after.py", line 160, in main
+    assert not loose, "回执表头里有顶格却不像字段的行：" + str(loose[:2])
+           ^^^^^^^^^
+AssertionError: 回执表头里有顶格却不像字段的行：['① 本地 HEAD = 5d7db86cc472a6d04bf2178f490c9111fc3384e9', '① ls-remote refs/heads/main = 5d7db86cc472a6d04bf2178f490c9111fc3384e9  -> MATCH']

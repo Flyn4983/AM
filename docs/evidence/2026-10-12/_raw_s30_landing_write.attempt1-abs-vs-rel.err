@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-12/am_s30_docs_landing.py", line 798, in <module>
+    assert _mpost == sorted(FACES5), "写盘后被改动的面不是预期的五张：%s" % _mpost
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 写盘后被改动的面不是预期的五张：['.workbuddy/memory/2026-10-12.md', '.workbuddy/memory/MEMORY.md', 'docs/开发日志.md', 'docs/项目开发总览.md', 'docs/项目评估与下一步计划_2026-10-06.md']
