@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_hdr_controls.py", line 881, in <module>
+    main()
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_hdr_controls.py", line 744, in main
+    ensure_quota(len(CASES) + len(GREENS) - idx)
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_hdr_controls.py", line 553, in ensure_quota
+    rem2, _, _ = quota()
+                 ^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_hdr_controls.py", line 524, in quota
+    assert m and r and lm, "读不到 GitHub 配额响应头 ⇒ 配额闸门没法工作，本件一条子运行都不该起"
+           ^^^^^^^^^^^^^^
+AssertionError: 读不到 GitHub 配额响应头 ⇒ 配额闸门没法工作，本件一条子运行都不该起

@@ -1,0 +1,19 @@
+探针装配＝ docs/evidence/2026-10-13/zprobe_s31_after_headlen ｜表头值尾加两个空格（回执总长 +2）
+子进程 rc＝ 1
+--- 仪器 stdout ---
+片号三向互证＝四张输入面（31、31、31、31）＋本件文件名＋HEAD 提交说明 全部＝31｜四张面＝am_s7_verify31.log、_raw_verify31.out、am_s31_hdr.py、_raw_s31_hdr_write.out
+第 ④ 条约束的实测出处＝上一片标本 docs/evidence/2026-10-12/_raw_s30_hdr_after_red1.err（片号由本片 31 − 1 现取，全树 glob 唯一命中；两枚症状 needle 都在原文里查到）
+BODY_OFFSET（从盘上现读）＝ 18930 ｜该行原文＝ BODY_OFFSET=18930
+回执总长＝ 25863 ｜回执总长 − 偏移＝ 6933 ｜原始件字节数＝ 6933 → 闭合
+cmp -i 三联（本件自己起进程跑的，不是抄生成器的）＝ 0 / 1 / 1
+顶格字段行数＝ 16 / 16 （声明取自 docs/evidence/2026-10-13/zprobe_s31_after_headlen/am_s31_hdr.py ，ast 现取不执行）｜同序＝ True
+--- 仪器 stderr（末行即抛出的那条闸门）---
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/zprobe_s31_after_headlen/am_s31_hdr_after.py", line 275, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/zprobe_s31_after_headlen/am_s31_hdr_after.py", line 256, in main
+    assert wbytes == len(lb), "写盘面报出 %d 字节 ≠ 盘上现有 %d 字节 ⇒ 写过之后这张家档案被人动过" % (
+           ^^^^^^^^^^^^^^^^^
+AssertionError: 写盘面报出 25861 字节 ≠ 盘上现有 25863 字节 ⇒ 写过之后这张家档案被人动过
+探针目录已删＝ True

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_msg.py", line 118, in <module>
+    PREVSEC = int(one(r"开发日志 §26\.(\d+)", SUBJ, "HEAD 提交说明里的日志节号"))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_msg.py", line 61, in one
+    assert len(outs) == 1, "%s：模式取到 %d 处（须恰好 1）⇒ 出处不唯一或已腐烂，拒绝生成" % (what, len(outs))
+           ^^^^^^^^^^^^^^
+AssertionError: HEAD 提交说明里的日志节号：模式取到 0 处（须恰好 1）⇒ 出处不唯一或已腐烂，拒绝生成

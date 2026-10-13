@@ -1,0 +1,122 @@
+生成时刻: 2026-10-13 11:08:56 +0800
+CMD     : 正文那条运行＝CUDA_VISIBLE_DEVICES= /tmp/amvenv/bin/python docs/evidence/2026-10-13/am_s7_verify31.py
+          （stdout→_raw_verify31.out，stderr→_raw_verify31.err，两条都在本件里被复跑并逐字节比对；
+          这两件由那次运行**直接写进本目录**（shell 重定向，无 /tmp 中转、无 cp -p）⇒ md5＝1a8eb7d1e867／d41d8cd98f00
+          就是那次运行的原始流，下面"首次归档运行"的时刻取的是这两件的 mtime，不是复制时刻）
+          本表头由同解释器跑 am_s31_hdr.py 生成，它内部又用同一环境复跑了上面那条命令一次。
+          入库节奏**由 git 现取**（不是叙述）：上一片（30 号）回执链在 HEAD 清单
+          5/5 件，再上一片（29 号）链在其父提交 5/5 件
+          ＝一片一环的节奏在两片上都成立；本片的链（尺子／回执／两件原始件／本生成器）在 HEAD 清单
+          0/5 件 ⇒ 本件留给分片 32 入库。
+ENV     : CUDA_VISIBLE_DEVICES=（空串＝CPU 钉住；钉住口径**从档案现取**＝开发日志 §26.33 (钉住口径与红线（当前「继续，不碰GPU」）)
+          那句「继续，不碰GPU」，不是凭对话记忆转述）；
+          本件**不 import jax**（只跑 git／GitHub API），带空串是习惯性钉住而不是必需，照实说明。
+脚本    : docs/evidence/2026-10-13/am_s7_verify31.py（＝分片 18 那把尺子的**逐字节副本**：与 docs/evidence/2026-10-09/am_s7_verify18.py 现比 md5＝相同，
+          本件 md5 0d20117bb82f；**全树** docs/evidence/*/ 下 glob＋md5 现算＝同一把尺子已有 12 份逐字节副本
+          （含本件），多片共用同一仪器，不是"为这一片重写一把尺子"。这条全树口径**不是本轮改的**（本轮沿用），
+          但两个读数都现取并同印：只 glob 本目录的旧口径此处数出 1 份，全树数出 12 份 ⇒
+          跨日期抄放时旧口径会数漏。这些数**现算**，写死它就随片腐烂）
+TREE    : head=030f1de8d453c98707542dcd2eff9ca2f6cd59d7 parent=5d7db86cc472a6d04bf2178f490c9111fc3384e9 dirty(src+tests)=0
+SRC指纹 : 2a49fedf28e08e8d5a68ae23124e391d（口径与全量回归件一致 ⇒ 核验时被测树就是本片落地的那棵树）
+GPU     : 本表头生成时 nvidia-smi **仍起不来**（rc=18，首行「Failed to initialize NVML: Driver/library version mismatch」）⇒ 「我没占卡」这条红线本轮没有它原来那把尺子，
+          改由 /proc 的 argv[0] **整词**匹配承担：分母＝1337 个 PID，数到我的解释器（/tmp/amvenv/bin/python，排除本件与父进程）
+          ＝0/1337（须 0，非 0 本件当场拒绝归档）；两条按构造的对照＝合成 argv[0] 命中 1／命令行
+          **含**该路径而 argv[0] 是 /bin/bash 的命中 0（须 1／0，否则整词匹配本身不可信）；同一条合成命令行
+          再按**松散子串**口径量一次＝1（须 1，与整词的 0 相对）⇒ "为什么不能用子串匹配"由这一对
+          按构造的读数承担。现场松散口径本轮数出 0 个（argv[0] 依次为 无），而开发日志 §26.33
+          那次记的是 1 个 ⇒ 现场形状随轮而变，本件不把它当判据、只把上面那一对当判据。
+          根因的两个版本读数（内核模块／用户态库）由本片提交信息生成器现取并写进提交说明，本表头不重复取、不另起口径。
+RUN     : 表头生成时**复跑**核验件：rc=0、stderr 0 字节（0＝没有一条警告被吞），且复跑 stdout 与
+          下面的正文区**逐字节相同**（本件写入前有断言）⇒ 判读行与正文是同一次运行的口径，非两次拼接。
+          首次归档运行 2026-10-13 10:48:57 +0800（其 stderr 留档案 0 字节），复跑于 2026-10-13 11:08:56 +0800。
+判读    : 远端 main == 本地 HEAD；tree 条目 968 = blob 898 + tree 70；
+          闭合式 远端 898 == 父提交 824 + 本片新增(A) 74 ＝ 898 -> PASS；
+          双向路径差集 0/898 与 0/898；全库 blob SHA 不符 0/898；
+          本片单列复核 79/79 MATCH（A 74／M 5 个文件）。
+四个正对照: A 远端一条 sha 首位改 f ⇒ 不符 1/898；B 远端删一条路径 ⇒ 本地独有 1/898、远端独有 0/897；
+          C 闭合式右边 +1 ⇒ 898 == 899 判 FAIL；D 远端删**本片**一条路径 ⇒ 本片缺失 1/79、SHA 不符 0/79。
+          四条读数一律从正文 ⑤ 段正则现取（本表头不许自己造数），逐条都能红、所以不是空转。
+分母口径: 每个 0 都与其分母同印（0/898、0/898、79/79），
+          没有"光秃秃的 0"。
+正文区  : 下面 BODY_OFFSET 之后＝核验件原始 stdout，逐字节未改（含 ①〜⑤ 与 LANDING_VERDICT 行）。
+复核    : 在仓库根跑 cmp -i 18928:0 docs/evidence/2026-10-13/am_s7_verify31.log docs/evidence/2026-10-13/_raw_verify31.out   （rc=0 才算正文区逐字节相同；两侧偏移各 +1 必须变红）
+同片对照: 本片新增 74 件，与 /tmp **同名件现比 md5**（本表头自己数，不抄任何一份档案里的件数）＝
+          相同 2 件／不同 0 件（无）／/tmp 已无同名件 72 件（临时件被清理或当初就没落在 /tmp）。
+          没有一件不同 ⇒ /tmp 现存的同名件全部逐字节相同。⇒ 这条只作辅助溯源，落地证明以正文区为准。
+用途    : S7 分片 31 的落地回执（片号由 HEAD 提交说明现取，并与本件文件名 am_s7_verify31.py
+          互证，两边不符即拒绝归档 ⇒ 机械克隆不再能把上一片的故事安在本片头上）。入库清单由
+          `git show --name-status HEAD` 现取（本表头自己数、自己列名）＝
+          新增 74 件（2026-10-13.md、_raw_s30_archive_check.attempt1-claim-space-mismatch.err、_raw_s30_archive_check.attempt1-claim-space-mismatch.out、_raw_s30_archive_check.err、_raw_s30_archive_check.out、_raw_s30_hdr_after.err、_raw_s30_hdr_after.out、_raw_s30_hdr_after_controls.err、_raw_s30_hdr_after_controls.out、_raw_s30_hdr_after_pre_final.err、_raw_s30_hdr_after_pre_final.out、_raw_s30_hdr_after_red1.err、_raw_s30_hdr_after_red1.out、_raw_s30_hdr_after_write.err、_raw_s30_hdr_after_write.out、_raw_s30_hdr_controls.attempt1-selfaudit-inverted.err、_raw_s30_hdr_controls.attempt1-selfaudit-inverted.out、_raw_s30_hdr_controls.attempt2-notb-unsatisfiable.err、_raw_s30_hdr_controls.attempt2-notb-unsatisfiable.out、_raw_s30_hdr_controls.err、_raw_s30_hdr_controls.out、_raw_s30_hdr_precheck.err、_raw_s30_hdr_precheck.out、_raw_s30_hdr_write.err、_raw_s30_hdr_write.out、_raw_s30_landing_precheck.attempt1-slicenumber.err、_raw_s30_landing_precheck.attempt1-slicenumber.out、_raw_s30_landing_precheck.attempt2-locator-grammar.err、_raw_s30_landing_precheck.attempt2-locator-grammar.out、_raw_s30_landing_precheck.attempt3-decl-needle-ambiguous.err、_raw_s30_landing_precheck.attempt3-decl-needle-ambiguous.out、_raw_s30_landing_precheck.attempt4-face-still-running.err、_raw_s30_landing_precheck.attempt4-face-still-running.out、_raw_s30_landing_precheck.attempt5-hardcoded-slash-expect.err、_raw_s30_landing_precheck.attempt5-hardcoded-slash-expect.out、_raw_s30_landing_precheck.err、_raw_s30_landing_precheck.out、_raw_s30_landing_write.attempt1-abs-vs-rel.err、_raw_s30_landing_write.attempt1-abs-vs-rel.out、_raw_s30_landing_write.err、_raw_s30_landing_write.out、_raw_verify30.err、_raw_verify30.out、am_s30_archive_check.py、am_s30_docs_landing.py、am_s30_hdr.py、am_s30_hdr_after.py、am_s30_hdr_after_controls.py、am_s30_hdr_controls.py、am_s7_verify30.log、am_s7_verify30.py、_raw_s30_archive_check_rerun_in_s31.err、_raw_s30_archive_check_rerun_in_s31.out、_raw_s30_msg_rerun_in_s31.err、_raw_s30_msg_rerun_in_s31.out、_raw_s31_docs_precheck.attempt1-selfcount-recursive.err、_raw_s31_docs_precheck.attempt1-selfcount-recursive.out、_raw_s31_docs_precheck.err、_raw_s31_docs_precheck.out、_raw_s31_docs_write.attempt1-selfcount-recursive.err、_raw_s31_docs_write.attempt1-selfcount-recursive.out、_raw_s31_docs_write.attempt2-selfguard-hits-itself.err、_raw_s31_docs_write.attempt2-selfguard-hits-itself.out、_raw_s31_docs_write.err、_raw_s31_docs_write.out、_raw_s31_msg_controls.attempt1-mark-line-hits-twice.err、_raw_s31_msg_controls.attempt1-mark-line-hits-twice.out、_raw_s31_msg_controls.attempt2-twelve-controls-idled.err、_raw_s31_msg_controls.attempt2-twelve-controls-idled.out、_raw_s31_msg_controls.err、_raw_s31_msg_controls.out、am_s31_docs.py、am_s31_msg.py、am_s31_msg_controls.py）＋修改 5 件（2026-10-12.md、MEMORY.md、开发日志.md、项目开发总览.md、项目评估与下一步计划_2026-10-06.md）；逐条 SHA 复核在正文区 ④ 段。
+          本轮开发日志 §26.33 (入库面（本条存在的唯一理由＝让分片 31 的回执表头把「引用上一片回执」这件事从档案现取，而不是凭对话记忆）) 引用的回执是**上一片**的 am_s7_verify30.log（30 号）；
+          这条"哪一子条引用了哪份回执"不是手打的：先现取最后一个 `### 26\.\d+` 标题（＝33），
+          再在该节正文里找**唯一**含 am_s7_verify30.log 的子条标签（本轮日志的子条形制是行首 `- **标签**`，
+          不是上一轮 §26.29 的行首 `**(x)**` ⇒ 取子条的正则随形制改过，见"教训"(b)）；对本件（am_s7_verify31.log）的日志引用
+          要到下一轮才出现，本表头不预先声称它已被引用。
+教训    : ① 仪器复用＝同一把尺子量多片，比对才有效；② 闭合式的右边含本片新增数，所以它随片而变、不是恒等式：
+          分片 18 的档案印「远端 575 == 父提交 574 + 新增 1 = 575」、本片印「远端 898 == 父提交 824 ＋ 新增 74 ＝ 898」，
+          两条各自被控制 C（右边 +1）证过"能红"；但闭合式只数**个数**，看不见"少一个＋多一个"的形状，
+          所以必须与双向路径差集、全库 SHA 不符两条**同读**，三条一起才构成落地证明；③ 表头不用 f-string
+          承载（§26.27 (q) 的成因），改用 PLACEHOLDER＋replace，写盘后再查残留；④ 本件由上一片的生成器
+          **机械克隆**（sed 只换得出文件名里的片号）而来 ⇒ 凡"来历／片号／节号与子条标签／份数"写死在注文里的
+          都会随片腐烂，diff 不会自动改它。事故标本**从档案里现取**（不是凭记忆转述）：生成器
+          `docs/evidence/2026-10-09/am_s24_hdr.py` 的"教训"行原文印着「S7 分片 24（分片 **22** 的回执＋…）」——同一句里外层片号 24、括号里
+          22，两个数不同 ⇒ 那句故事说的是 22 号那一片，而写它的生成器是 24 号自己的。
+          本片的防法不是手改文字，而是四条**现取＋互证**闸门：(a) 片号从 HEAD 提交说明现取，并与本件文件名
+          互证（两边都＝31）；(b) 日志节号从开发日志现取最后一个 `### 26\.\d+`（＝33），
+          子条**标签**再由"该节里唯一引用上一片回执的那一条"现取（＝入库面（本条存在的唯一理由＝让分片 31 的回执表头把「引用上一片回执」这件事从档案现取，而不是凭对话记忆））——早先版本用过"三级标题带
+          字母"的正则，日志结构一变它就**整条取空**（静默拿到上一轮的标签或直接抛），所以口径要先于读数复查；
+          两种形制各自落在哪些节**不由本件叙述**：按节普查行首形制给出"旧形制 `**(x)**` 最后出现的节"＝§26.29，
+          上一片那一节（节号从上一片回执表头那句「本轮开发日志 §26.NN」现取）＝§26.32，本节＝§26.33；
+          两节的形制条数现数＝上一片 新8／旧0 条，本片 新7／旧0 条 ⇒ 两片都只用
+          新形制（旧形制 0 条），子条形制锚句**没改**；"没改"不等于"没验"，本件的控件面仍逐条造红：形制指错（把锚句指回
+          `**(x)**` ⇒ 取空）、标签引用不唯一（歧义）、引用查无、节号写死，四类坏输入各命中一条指定闸门句——
+          **沿用一条口径的第一风险，是它悄悄变成空转**。
+          **本轮确实改了一处锚句**：LESSON 那条从上一片的 `对照的可满足性` 换成本节的 `自审的方向性`（上一片那个短语
+          由本件从上一片那把生成器的源码里现取，不是凭对话记忆）⇒ 换过的锚句同样要证明它抓得住：把 needle 指歪
+          （换成日志里查无此句的短语）必须让本件当场拒绝，needle 命中两条时必须按"出处不唯一"拒绝，而不是静默拿到第一条。
+          (c) 入库清单从 `git show --name-status HEAD` 现取，并与正文区 ④ 段的 A／M 计数互证（74/5）；
+          (d) 尺子份数与上一片回执**按全树 glob**（本轮沿用该口径，两个读数都现取）：旧"本目录"口径
+          在本片只数出 1 份 ⇒ 会把"一把尺子
+          量多片"印成"本片自带一把新尺子"，比对当场失去意义。教训一句话：**数字一律现取，文字也要；不能现取的文字就只能引用一份能被命令查到的档案原文。**
+          ⑤ 本轮口径（引句从 §26.33 (自审的方向性＝从分片 30 的落地半腿带进本片的口径) 现取，本轮落地子条随后并入同一节）：
+          **自审的方向性**——从上一片的落地半腿带进本节（§26.33 里那条子条就是它的出处，标签由本件现取
+          ＝自审的方向性＝从分片 30 的落地半腿带进本片的口径；那句口径的原文也从同一条子条现取＝「一条对照必须同时能红能绿，而「判红的方式」自己也要被造一次红。」）。本片它命中六处，
+          六处都在**控件面自己**身上：
+          ⓪ 判"红"的那段代码**先红了一次**：第一次跑纸面预检就拒绝（标本 _raw_s31_msg_controls.attempt1-mark-line-hits-twice.out，那一版的 CASES 声明＝110 条），
+          它"期望句在源码里必须只出现一次"的假设被 C1 打破——同一个短语在生成器里现数 2 处（第
+          61 与 69 行，两个行号取自标本那行自己的方括号读数）⇒ 位置口径改成"任一出现处 ±3"之后才允许真跑；
+          ⑴ **扰动没有真的移动匹配集**（四条）：C5 把回执 glob 的片号 `%d` 松成 `%s`，而那条 glob 本来就带 `*`
+          ⇒ 两种写法命中同一批文件、副本 rc=0；C69 把未跟踪行 needle 从 `?? ` 收成 `??`，本表头生成时同一份
+          porcelain（`-uall`）现数＝5 行未跟踪，其中"以 `??` 开头但不以 `?? ` 开头"的＝0 行 ⇒ 两种写法
+          本轮数同一批（这条经实测确认本轮**造不出红**，与其余各条一并进 UNCOVERED，共 10 条）；
+          C63／C96 的第一版是"删掉闭合式里的一项比较"⇒ 那是**放宽**判据，坏输入照旧
+          通过，换成反向比较才让合法集合真的变小；C77 把钉 locale 改钉 en_US.UTF-8，而它不是本机默认 ⇒ 两条读数
+          照样不同、耦合检测照旧绿，改成"把两条都钉成 LC_ALL=C"才红；C18 把无代码腿普查的作用域指到 docs ⇒ 那条
+          闸门本轮对它无话（rc=0），因为 docs 确实被动过，坏输入不构成坏输入；
+          ⑵ **扰动落点里没有那个变量**：C22／C23 都引用 `added`，而它是 `build()` 的局部、在 `faces_check`
+          作用域里根本不存在 ⇒ 抛的是 `NameError` 而不是闸门句；C22 改到调用处（把实参换成新增清单），
+          C23 改用作用域里真有的 `pinned_faces`（relpath 与 basename 两种形状必不相等）；
+          ⑶ **期望句不是原文／落点不是那条**：C57 的期望句我多打了一个"的"字（闸门句必须逐字节回抄源码原句）；
+          C17 第一版"不切到分号"实际先撞在前面的「修改面 ≠ §26.33 登记的那批」而不是本轮想指的那条 ⇒ 落点按
+          "这个坏输入真的先撞哪条"重新指认，坏输入本身换成"把清单分隔符 `／` 改成 `；`"；
+          ⑷ **克隆腿的抛序**：C110 克隆本归档的写入件并带 `--write` 跑它，本意是让"有别的仪器正在跑"那条守卫拦停，
+          实测它先撞自己那句闭合式 ⇒ 期望句改登记**实际打出的那一条**，守卫那一侧进 UNCOVERED（不许凭本意声称验过）；
+          ⑸ **绿路也要有配方出处**：G2 那条"默认 locale 的指纹＝回归件登记值"起初命中 2 份日志 ⇒ 断言的分母自己
+          就错位；改成从生成器源码现取 `REGS` 那一行的 pattern，glob 与仪器共用同一条口径。
+          第一次真跑共 12 条没红在指定闸门上（标本 _raw_s31_msg_controls.attempt2-twelve-controls-idled.out，判读行「PROBLEM（有闸门空转）」，顶格「× 」行现数＝12 条；
+          上面点名的控件号集合与该标本的 × 行集合**在本件里由一条断言互证**，不等即拒绝归档 ⇒ 编号不可能是我编的）；
+          那一版 CASES 声明＝112 条、扰动条数＝113 条。重新指认后重跑的那张 _raw_s31_msg_controls.out（CASES 声明＝111 条｜
+          保持绿＝5 条｜超时＝0 条｜扰动条数＝112 条）判读行「ALL CONTROLS CAN GO RED」才是本件引用的全过面，
+          它对自身锚点的那条普查（C48 那条"超时必须为零的链改成容忍一条 ⇒ 环境故障被当全过"必须红）就是
+          "判红的方式自己也造一次红"的落地形状。⇒ 一条"从没红过的闸门"和"坏闸门"读数相同；控件面必须逐条造红，
+          而"这条造不出红"必须是一个允许登记、且带原因的结果，不是假装验过。
+          另有一条从上一片沿用到本片的**流程**侧实测：编辑一张**已暂存**的仪器 ⇒ 未暂存漂移闸门先打掉未扰动基线、
+          整轮控件作废 ⇒ "跑控件面之前先把控件面自己 `git add`"是那条闸门的时序前提（本片每改一次就重新 `git add`
+          一次，本件引用的那张控件面与它当时读到的源码是同一份暂存内容）。
+          （表头写盘后仍要**回读**：字段行数、残留占位符、cmp 三件套——语义错乱在 cmp 里是全绿的。）
+BODY_OFFSET=18928
+
+（预检模式：未写盘。加 --write。）
+尺子全树份数＝ 12 （本目录口径＝ 1 ）｜子条＝§26.33 (入库面（本条存在的唯一理由＝让分片 31 的回执表头把「引用上一片回执」这件事从档案现取，而不是凭对话记忆）)｜钉住出处＝(钉住口径与红线（当前「继续，不碰GPU」）)「继续，不碰GPU」 ｜f-string 成因出处＝ §26.27 (q) ｜标本生成器＝ docs/evidence/2026-10-09/am_s24_hdr.py
+回执链现取：上一片在 HEAD＝ 5 / 5 ｜再上一片在父提交＝ 5 / 5 ｜本片在 HEAD＝ 0 / 5
+md5 现比 /tmp 同名件＝同 2 ／异 0 ／缺 72 ，共 74 ｜GPU 我的解释器进程＝ 0 / 1337

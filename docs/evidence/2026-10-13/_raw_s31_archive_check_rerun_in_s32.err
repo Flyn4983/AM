@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_archive_check.py", line 459, in <module>
+    assert len(BULLETS) == 8, "§26.%s 顶级子条＝%d 条（须 7 条登记＋1 条落地＝8）" % (SECREF, len(BULLETS))
+           ^^^^^^^^^^^^^^^^^
+AssertionError: §26.34 顶级子条＝7 条（须 7 条登记＋1 条落地＝8）

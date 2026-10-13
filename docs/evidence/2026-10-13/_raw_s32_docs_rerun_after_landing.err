@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s32_docs.py", line 166, in <module>
+    assert NA + NM == 49, "落笔现数＝已暂存新增 %d＋修改 %d＝%d 处（本节的闭合式写的是 49）⇒ 先确认工作树有没有被动过、本件的面是否已先落盘" % (
+           ^^^^^^^^^^^^^
+AssertionError: 落笔现数＝已暂存新增 50＋修改 5＝55 处（本节的闭合式写的是 49）⇒ 先确认工作树有没有被动过、本件的面是否已先落盘

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_hdr_after_controls.py", line 695, in <module>
+    main()
+  File "/home/shy/桌面/2026年开发-显式冲击有限元-物质点法-sph-fvm+am/AM-Qoder/docs/evidence/2026-10-13/am_s31_hdr_after_controls.py", line 616, in main
+    ok, why = res
+              ^^^
+UnboundLocalError: cannot access local variable 'res' where it is not associated with a value
